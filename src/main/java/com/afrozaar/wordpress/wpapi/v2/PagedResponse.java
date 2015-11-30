@@ -1,7 +1,10 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import org.springframework.http.HttpHeaders;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class PagedResponse<T> {
 
@@ -10,7 +13,6 @@ public class PagedResponse<T> {
     final String next;
     final String previous;
     final List<T> list;
-
 
     public PagedResponse(String self, String next, String previous, List<T> list) {
         this.self = self;
@@ -30,8 +32,9 @@ public class PagedResponse<T> {
     public boolean hasPrevious() {
         return Objects.nonNull(previous);
     }
-    public String getPrevious() {
-        return previous;
+
+    public Optional<String> getPrevious() {
+        return Optional.ofNullable(previous);
     }
 
     public String getSelf() {
@@ -57,8 +60,10 @@ public class PagedResponse<T> {
             return new Builder<>();
         }
 
-        public Builder<BT> withNext(String next) {
-            this.next = next;
+        public Builder<BT> withNext(Optional<String> next) {
+            if (next.isPresent()) {
+                this.next = next.get();
+            }
             return this;
         }
 
@@ -67,8 +72,10 @@ public class PagedResponse<T> {
             return this;
         }
 
-        public Builder<BT> withPrevious(String previous) {
-            this.previous = previous;
+        public Builder<BT> withPrevious(Optional<String> previous) {
+            if (previous.isPresent()) {
+                this.previous = previous.get();
+            }
             return this;
         }
 
@@ -78,12 +85,16 @@ public class PagedResponse<T> {
         }
 
         public PagedResponse<BT> build() {
-            return new PagedResponse<>(next, self, previous, posts);
+            return new PagedResponse<>(self, next, previous, posts);
         }
 
         public Builder<BT> withPages(int pages) {
             this.pages = pages;
             return this;
+        }
+
+        public Builder<BT> withPages(HttpHeaders headers) {
+            return withPages(Integer.valueOf(headers.get(Strings.HEADER_TOTAL_PAGES).get(0)));
         }
     }
 }

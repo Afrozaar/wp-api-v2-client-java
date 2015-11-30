@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author johan
@@ -21,13 +22,15 @@ public class PagedResponseTest {
 
         PagedResponse<Post> postResponse = PagedResponse.Builder.<Post>aPagedResponse()
                 .withSelf("http://example.com/self")
-                .withNext("http://example.com/self?page=1")
+                .withNext(Optional.of("http://example.com/self?page=1"))
                 .withPosts(posts)
                 .build();
 
         assertThat(postResponse.hasPrevious()).isFalse();
         assertThat(postResponse.hasNext()).isTrue();
         assertThat(postResponse.getList()).isEmpty();
+
+
 
     }
 

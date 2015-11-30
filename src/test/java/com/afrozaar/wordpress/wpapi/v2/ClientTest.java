@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
@@ -16,7 +18,7 @@ public class ClientTest {
 
     @Test
     public void foo() {
-        Assertions.assertThat("x").isEqualTo("x");
+        assertThat("x").isEqualTo("x");
     }
 
     @Test
@@ -34,7 +36,10 @@ public class ClientTest {
 
         final PagedResponse<Post> postPagedResponse = client.fetchPosts();
 
-        final long count = postPagedResponse.list.stream().count();
+        assertThat(postPagedResponse.hasNext()).isTrue();
+        assertThat(postPagedResponse.hasPrevious()).isFalse();
+        assertThat(postPagedResponse.getPrevious().isPresent()).isFalse();
+
 
         // TODO:
 

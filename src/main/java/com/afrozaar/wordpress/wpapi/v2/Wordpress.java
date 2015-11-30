@@ -9,4 +9,6 @@ public interface Wordpress {
 
     PagedResponse<Post> fetchPosts(SearchRequest search);
 
+
+
 }
