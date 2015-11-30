@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ import java.util.Map;
 public class Client implements Wordpress {
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter()));
 
     final private String baseUrl;
     final private String username;
