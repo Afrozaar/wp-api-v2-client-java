@@ -1,0 +1,8 @@
+/**/.settings
+/**/.project
+/**/extras/
+/**/.idea/
+/**/*.iml
+/**/target/
+/**/pom.xml~
+
