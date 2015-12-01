@@ -2,22 +2,28 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import org.springframework.http.HttpHeaders;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 public class PagedResponse<T> {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PagedResponse.class);
     // captures the state of a response from wordpress
     final String self;
     final String next;
     final String previous;
+    final int pages;
     final List<T> list;
 
-    public PagedResponse(String self, String next, String previous, List<T> list) {
+    public PagedResponse(String self, String next, String previous, int pages, List<T> list) {
         this.self = self;
         this.next = next;
         this.previous = previous;
+        this.pages = pages;
         this.list = list;
     }
 
@@ -25,8 +31,8 @@ public class PagedResponse<T> {
         return Objects.nonNull(next);
     }
 
-    public String getNext() {
-        return next;
+    public Optional<String> getNext() {
+        return Optional.ofNullable(next);
     }
 
     public boolean hasPrevious() {
@@ -45,13 +51,21 @@ public class PagedResponse<T> {
         return list;
     }
 
+    public void debug() {
+        LOG.trace("next.self      = {}", this.self);
+        LOG.trace("next.prev      = {}", this.previous);
+        LOG.trace("next.next      = {}", this.next);
+        LOG.trace("next.pages     = {}", this.pages);
+        LOG.trace("next.list.size = {}", this.list.size());
+    }
+
     public static class Builder<BT> {
-        String next;
+        private String next;
         // captures the state of a response from wordpress
-        String self;
-        String previous;
-        List<BT> posts;
-        int pages;
+        private String self;
+        private String previous;
+        private List<BT> posts;
+        private int pages;
 
         private Builder() {
         }
@@ -85,7 +99,7 @@ public class PagedResponse<T> {
         }
 
         public PagedResponse<BT> build() {
-            return new PagedResponse<>(self, next, previous, posts);
+            return new PagedResponse<>(self, next, previous, pages, posts);
         }
 
         public Builder<BT> withPages(int pages) {
@@ -94,7 +108,10 @@ public class PagedResponse<T> {
         }
 
         public Builder<BT> withPages(HttpHeaders headers) {
-            return withPages(Integer.valueOf(headers.get(Strings.HEADER_TOTAL_PAGES).get(0)));
+            headers.get(Strings.HEADER_TOTAL_PAGES).stream()
+                    .findFirst()
+                    .ifPresent(pages -> Builder.this.withPages(Integer.valueOf(pages)));
+            return this;
         }
     }
 }

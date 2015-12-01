@@ -26,8 +26,8 @@ public class PagedResponseTest {
                 .withPosts(posts)
                 .build();
 
-        assertThat(postResponse.hasPrevious()).isFalse();
-        assertThat(postResponse.hasNext()).isTrue();
+        assertThat(postResponse.getPrevious().isPresent()).isFalse();
+        assertThat(postResponse.getNext().isPresent()).isTrue();
         assertThat(postResponse.getList()).isEmpty();
 
 
