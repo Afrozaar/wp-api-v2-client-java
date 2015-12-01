@@ -7,13 +7,14 @@
         </encoder>
     </appender>
 
-    <logger name="org.springframework.web" level="DEBUG" />
+    <logger name="org.springframework.web" level="TRACE" />
     <logger name="org.springframework.http" level="DEBUG" />
     <logger name="org.springframework.web.client" level="TRACE" />
     <logger name="com.afrozaar.util.io.HashingFilterInputStream" level="TRACE" />
 
     <logger name="httpclient.wire" level="TRACE" />
     <logger name="com.afrozaar" level="DEBUG" />
+    <logger name="com.afrozaar.wordpress" level="TRACE" />
 
     <root level="INFO">
         <appender-ref ref="STDOUT" />
