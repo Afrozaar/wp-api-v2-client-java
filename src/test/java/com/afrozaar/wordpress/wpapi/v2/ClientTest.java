@@ -184,7 +184,7 @@ public class ClientTest {
         return new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
-                return ClientTest.class.getResourceAsStream("/mock-resources" + endpoint);
+                return ClientTest.class.getResourceAsStream("/mock-resources" + endpoint + ".json");
             }
         }.read();
     }
