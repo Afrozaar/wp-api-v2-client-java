@@ -12,6 +12,11 @@ public class ClientConfig {
     public ClientConfig() {
     }
 
+    private ClientConfig(boolean debug, Wordpress wordpress) {
+        this.debug = debug;
+        this.wordpress = wordpress;
+    }
+
     public boolean isDebug() {
         return debug;
     }
@@ -32,12 +37,22 @@ public class ClientConfig {
         return new Yaml().loadAs(inputStream, ClientConfig.class);
     }
 
+    public static ClientConfig of(String baseUrl, String username, String password, boolean debug) {
+        return new ClientConfig(debug, new Wordpress(baseUrl, username, password));
+    }
+
     public static class Wordpress {
         String username;
         String password;
         String baseUrl;
 
-        public Wordpress() {
+        Wordpress() {
+        }
+
+        private Wordpress(String baseUrl, String username, String password) {
+            this.baseUrl = baseUrl;
+            this.password = password;
+            this.username = username;
         }
 
         public String getBaseUrl() {
