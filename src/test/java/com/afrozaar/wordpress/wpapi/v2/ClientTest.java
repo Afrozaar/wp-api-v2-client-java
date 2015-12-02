@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static com.afrozaar.wordpress.wpapi.v2.util.ClientConfig.of;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.fail;
@@ -23,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
 import org.junit.BeforeClass;
@@ -39,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class ClientTest {
 
@@ -46,6 +50,7 @@ public class ClientTest {
     static ClientConfig clientConfig;
 
     Logger LOG = LoggerFactory.getLogger(ClientTest.class);
+    final String baseUrl = "http://localhost:8089";
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
@@ -148,5 +153,39 @@ public class ClientTest {
         } catch (IOException e) {
             fail(e.getMessage());
         }
+    }
+
+    @Test
+    public void postsTest() throws InterruptedException, IOException {
+        // given
+        stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
+                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(contentFor("/wp-json/wp/v2/posts"))
+                        .withHeader("Content-Type", "application/json")
+                        .withHeader(Strings.HEADER_TOTAL_PAGES, "3")
+                        .withHeader("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"")));
+
+        String username = "";
+        String password = "";
+
+        // when
+        final Client client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
+        final PagedResponse<Post> response = client.fetchPosts();
+        final Optional<String> next = response.getNext();
+
+        // then
+        assertThat(next).isPresent().isEqualTo(Optional.of("http://localhost:8089/wp-json/wp/v2/posts?page=2"));
+        assertThat(response.getPrevious()).isEmpty();
+    }
+
+    private byte[] contentFor(String endpoint) throws IOException {
+        return new ByteSource() {
+            @Override
+            public InputStream openStream() throws IOException {
+                return ClientTest.class.getResourceAsStream("/mock-resources" + endpoint);
+            }
+        }.read();
     }
 }
