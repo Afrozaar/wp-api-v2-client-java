@@ -52,11 +52,11 @@ public class PagedResponse<T> {
     }
 
     public void debug() {
-        LOG.trace("next.self      = {}", this.self);
-        LOG.trace("next.prev      = {}", this.previous);
-        LOG.trace("next.next      = {}", this.next);
-        LOG.trace("next.pages     = {}", this.pages);
-        LOG.trace("next.list.size = {}", this.list.size());
+        LOG.trace("response.self      = {}", this.self);
+        LOG.trace("response.prev      = {}", this.previous);
+        LOG.trace("response.next      = {}", this.next);
+        LOG.trace("response.pages     = {}", this.pages);
+        LOG.trace("response.list.size = {}", this.list.size());
     }
 
     public static class Builder<BT> {
