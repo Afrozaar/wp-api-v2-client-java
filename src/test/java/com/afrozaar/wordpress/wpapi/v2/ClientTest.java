@@ -68,6 +68,17 @@ public class ClientTest {
     }
 
     @Test
+    public void testGetPost() {
+        final Client client = ClientFactory.fromConfig(clientConfig);
+
+        final Post post = client.getPost(3629);
+
+        assertThat(post).isNotNull();
+
+        LOG.debug("post = {}", post);
+    }
+
+    @Test
     public void posts() {
         final Client client = ClientFactory.fromConfig(clientConfig);
 

@@ -1,16 +1,20 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import static com.afrozaar.wordpress.wpapi.v2.util.AuthUtil.basicAuth;
-
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.request.GetPostRequest;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
+import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.request.UpdatePostRequest;
+import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
+import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +35,7 @@ public class Client implements Wordpress {
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
 
-    final private String baseUrl;
+    public final String baseUrl;
     final private String username;
     final private String password;
     final private boolean debug;
@@ -44,6 +48,16 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post getPost(Integer id) {
+        final URI uri = GetPostRequest.newInstance().usingClient(this).buildAndExpand(id).toUri();
+        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final RequestEntity<Post> request = RequestEntity.method(HttpMethod.GET, uri).header(authTuple.k, authTuple.v).body(null);
+        final ResponseEntity<Post> exchange = restTemplate.exchange(request, Post.class);
+
+        return exchange.getBody();
+    }
+
+    @Override
     public PagedResponse<Post> fetchPosts() {
         SearchRequest initial = SearchRequest.posts(); //TODO: need better 'default'
         return fetchPosts(initial);
@@ -51,16 +65,10 @@ public class Client implements Wordpress {
 
     @Override
     public PagedResponse<Post> fetchPosts(SearchRequest search) {
-        //ResponseEntity<String> exchange = template.exchange(WP_ENDPOINT + "/list", HttpMethod.GET, new HttpEntity<String>(AuthUtil.createHeaders(USER_NAME, PASSWORD)), String.class);
-
-        final UriComponentsBuilder uriBuilder = search.forHost(baseUrl, CONTEXT);
-        final URI uri = uriBuilder.build().toUri();
-
-        // http://host/posts?page=2&filter=foo
-
-        LOG.trace("fetching {}", uri);
-
-        final ResponseEntity<Post[]> exchange = restTemplate.exchange(uri, HttpMethod.GET, basicAuth(username, password), Post[].class);
+        final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
+        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final RequestEntity<Post[]> request = RequestEntity.method(HttpMethod.GET, uri).header(authTuple.k, authTuple.v).body(null);
+        final ResponseEntity<Post[]> exchange = restTemplate.exchange(request, Post[].class);
 
         debugHeaders(exchange.getHeaders());
 
@@ -77,6 +85,18 @@ public class Client implements Wordpress {
                 .withNext(link(links, next))
                 .withPrevious(link(links, previous))
                 .build();
+    }
+
+    @Override
+    public Post updatePost(Post post) {
+        final URI uri = UpdatePostRequest.forPost(post).forHost(baseUrl, CONTEXT).buildAndExpand(post.getId()).toUri();
+        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final RequestEntity<Post> requestEntity = RequestEntity.put(uri).header(authTuple.k, authTuple.v).body(post);
+        final ResponseEntity<Post> exchange = restTemplate.exchange(requestEntity, Post.class);
+
+        debugHeaders(exchange.getHeaders());
+
+        return exchange.getBody();
     }
 
     private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
@@ -119,6 +139,6 @@ public class Client implements Wordpress {
     }
 
     private SearchRequest fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> uri) {
-        return SearchRequest.fromLink(uri.apply(response), CONTEXT);
+        return Request.fromLink(uri.apply(response), CONTEXT);
     }
 }
