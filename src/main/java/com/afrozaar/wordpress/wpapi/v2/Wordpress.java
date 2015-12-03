@@ -11,13 +11,6 @@ public interface Wordpress {
     /**
      * <pre>
      * GET /posts
-     * </pre>
-     */
-    PagedResponse<Post> fetchPosts();
-
-    /**
-     * <pre>
-     * GET /posts
      * GET /posts?page=1
      * GET /posts?page=2&meta_key=foo&meta_value=bar
      * </pre>

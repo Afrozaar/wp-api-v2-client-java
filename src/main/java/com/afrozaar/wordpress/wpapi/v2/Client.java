@@ -56,12 +56,6 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PagedResponse<Post> fetchPosts() {
-        SearchRequest initial = SearchRequest.posts(); //TODO: need better 'default'
-        return fetchPosts(initial);
-    }
-
-    @Override
     public PagedResponse<Post> fetchPosts(SearchRequest search) {
         final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
         final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
