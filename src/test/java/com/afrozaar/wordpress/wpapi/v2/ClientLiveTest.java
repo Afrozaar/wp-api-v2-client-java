@@ -21,19 +21,20 @@ import java.net.UnknownHostException;
 public class ClientLiveTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientLiveTest.class);
+
     static String yamlConfig;
     static ClientConfig clientConfig;
+    static Client client;
 
     @BeforeClass
     public static void init() throws UnknownHostException {
         yamlConfig = String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName());
         clientConfig = ClientConfig.load(ClientConfig.class.getResourceAsStream(yamlConfig));
+        client = ClientFactory.fromConfig(clientConfig);
     }
 
     @Test
     public void posts() {
-        final Client client = ClientFactory.fromConfig(clientConfig);
-
         final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
 
         final PagedResponse<Post> postPagedResponse = client.fetchPosts(SearchRequest.posts());
@@ -57,7 +58,6 @@ public class ClientLiveTest {
 
     @Test
     public void testGetPost() {
-        final Client client = ClientFactory.fromConfig(clientConfig);
 
         final Post post = client.getPost(3629);
 
@@ -68,17 +68,26 @@ public class ClientLiveTest {
 
     @Test
     public void searchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
-        final Client client = ClientFactory.fromConfig(clientConfig);
 
+        // given
         SearchRequest search = SearchRequest.Builder.aSearchRequest().withParam("filter[author]", "999").build();
 
+        // when
         final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
 
+        // then
         assertThat(postPagedResponse.getList()).isEmpty();
     }
 
     @Test
     public void searchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() {
+        // given
+        SearchRequest search = SearchRequest.Builder.aSearchRequest().withParam("filter[author]", "1").build();
 
+        // when
+        final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
+
+        // then
+        assertThat(postPagedResponse.getList()).isNotEmpty();
     }
 }
