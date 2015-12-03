@@ -23,14 +23,14 @@ public abstract class Request {
         this.uri = uri;
     }
 
-    public static SearchRequest fromLink(String link, String context) {
+    public static <T> SearchRequest<T> fromLink(String link, String context) {
         final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(link);
         final UriComponents build = builder.build();
         final ImmutableMap.Builder<String, List<String>> parBuilder = new ImmutableMap.Builder<>();
 
         build.getQueryParams().entrySet().stream().forEach(entry -> parBuilder.put(entry.getKey(), entry.getValue()));
 
-        return new SearchRequest(build.getPath().replace(context, ""), parBuilder.build());
+        return new SearchRequest<>(build.getPath().replace(context, ""), parBuilder.build());
     }
 
     protected UriComponentsBuilder init(String baseUrl, String context) {
@@ -46,13 +46,4 @@ public abstract class Request {
         params.forEach((key, values) -> builder.queryParam(key, values.toArray()));
         return builder;
     }
-
-    /*public UriComponents forHost(String baseUrl, String context, boolean expand) {
-        final UriComponentsBuilder builder = forHost(baseUrl, context);
-        if (expand) {
-            return builder.build().expand(params);
-        } else {
-            return builder.build();
-        }
-    }*/
 }

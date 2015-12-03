@@ -1,4 +1,6 @@
-package com.afrozaar.wordpress.wpapi.v2;
+package com.afrozaar.wordpress.wpapi.v2.response;
+
+import com.afrozaar.wordpress.wpapi.v2.Strings;
 
 import org.springframework.http.HttpHeaders;
 

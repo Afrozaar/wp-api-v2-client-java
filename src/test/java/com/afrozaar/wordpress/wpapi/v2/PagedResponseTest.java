@@ -3,6 +3,7 @@ package com.afrozaar.wordpress.wpapi.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
 import org.junit.Test;
 
@@ -29,8 +30,6 @@ public class PagedResponseTest {
         assertThat(postResponse.getPrevious().isPresent()).isFalse();
         assertThat(postResponse.getNext().isPresent()).isTrue();
         assertThat(postResponse.getList()).isEmpty();
-
-
 
     }
 

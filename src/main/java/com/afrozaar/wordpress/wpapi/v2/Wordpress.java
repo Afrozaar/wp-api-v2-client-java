@@ -1,30 +1,16 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
-public interface Wordpress {
+import java.util.function.Function;
+
+public interface Wordpress extends Posts {
     String CONTEXT = "/wp-json/wp/v2";
 
-    /**
-     * <pre>
-     * GET /posts
-     * GET /posts?page=1
-     * GET /posts?page=2&meta_key=foo&meta_value=bar
-     * </pre>
-     */
-    PagedResponse<Post> fetchPosts(SearchRequest search);
+    PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> previousOrNext);
 
-    Post createPost(Post post);
-
-    Post getPost(Integer id);
-
-    /**
-     * <pre>
-     * PUT /post/{id}
-     * </pre>
-     */
-    Post updatePost(Post post);
-
-    // deletePost(Integer id);
+    SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> uri);
 }

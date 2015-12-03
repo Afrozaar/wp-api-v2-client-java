@@ -6,6 +6,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.GetPostRequest;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.request.UpdatePostRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
@@ -69,7 +70,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PagedResponse<Post> fetchPosts(SearchRequest search) {
+    public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
         final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
         final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
 
@@ -138,11 +139,13 @@ public class Client implements Wordpress {
 
     }
 
-    public PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> uri) {
-        return fetchPosts(fromPagedResponse(postPagedResponse, uri));
+    @Override
+    public PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> previousOrNext) {
+        return fetchPosts(fromPagedResponse(postPagedResponse, previousOrNext));
     }
 
-    private SearchRequest fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> uri) {
-        return Request.fromLink(uri.apply(response), CONTEXT);
+    @Override
+    public SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> previousOrNext) {
+        return Request.fromLink(previousOrNext.apply(response), CONTEXT);
     }
 }

@@ -13,6 +13,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
 import com.google.common.collect.ImmutableMap;
@@ -46,7 +47,7 @@ public class ClientWireMockTest {
     private final String baseUrl = "http://localhost:8089";
 
     @Rule
-    private WireMockRule wireMockRule = new WireMockRule(8089);
+    public WireMockRule wireMockRule = new WireMockRule(8089);
 
     @Test
     public void foo() {
@@ -126,7 +127,7 @@ public class ClientWireMockTest {
         String password = "";
 
         // when
-        final Client client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
+        final Wordpress client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
         final PagedResponse<Post> response = client.fetchPosts(SearchRequest.posts());
         final Optional<String> next = response.getNext();
 

@@ -2,11 +2,13 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
@@ -27,7 +29,7 @@ public class ClientLiveTest {
 
     static String yamlConfig;
     static ClientConfig clientConfig;
-    static Client client;
+    static Wordpress client;
 
     @BeforeClass
     public static void init() throws UnknownHostException {
@@ -48,13 +50,13 @@ public class ClientLiveTest {
         assertThat(postPagedResponse.getPrevious().isPresent()).isFalse();
         assertThat(postPagedResponse.getSelf()).isEqualTo(EXPECTED);
 
-        PagedResponse<Post> next = client.get(postPagedResponse, resp -> resp.getNext().get());
+        PagedResponse<Post> response = client.get(postPagedResponse, Posts.next);
 
-        next.debug();
+        response.debug();
 
-        while (next.hasNext()) {
-            next = client.get(next, response -> response.getNext().get());
-            next.debug();
+        while (response.hasNext()) {
+            response = client.get(response, Posts.next);
+            response.debug();
         }
 
     }

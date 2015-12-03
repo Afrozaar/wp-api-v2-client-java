@@ -6,48 +6,48 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class SearchRequest extends Request {
+public class SearchRequest<T> extends Request {
 
     public SearchRequest(String uri, Map<String, List<String>> params) {
         super(uri, params);
     }
 
-    public static SearchRequest posts() {
-        return Builder.aSearchRequest().build();
+    public static <T> SearchRequest<T> posts() {
+        return Builder.<T>aSearchRequest().build();
     }
 
-    public static class Builder {
+    public static class Builder<BT> {
         ImmutableMap.Builder<String, List<String>> paramBuilder = new ImmutableMap.Builder<>();
         String uri = Request.POSTS;
 
         private Builder() {
         }
 
-        public static Builder aSearchRequest() {
-            return new Builder();
+        public static <BT> Builder<BT> aSearchRequest() {
+            return new Builder<>();
         }
 
-        public Builder withParam(String key, String... values) {
+        public Builder<BT> withParam(String key, String... values) {
             paramBuilder.put(key, Arrays.asList(values));
             return this;
         }
 
-        public Builder withParams(Map<String, List<String>> params) {
+        public Builder<BT> withParams(Map<String, List<String>> params) {
             this.paramBuilder.putAll(params);
             return this;
         }
 
-        public Builder withUri(String uri) {
+        public Builder<BT> withUri(String uri) {
             this.uri = uri;
             return this;
         }
 
-        public Builder but() {
-            return aSearchRequest().withParams(paramBuilder.build()).withUri(uri);
+        public Builder<BT> but() {
+            return Builder.<BT>aSearchRequest().withParams(paramBuilder.build()).withUri(uri);
         }
 
-        public SearchRequest build() {
-            return new SearchRequest(uri, paramBuilder.build());
+        public SearchRequest<BT> build() {
+            return new SearchRequest<>(uri, paramBuilder.build());
         }
     }
 }
