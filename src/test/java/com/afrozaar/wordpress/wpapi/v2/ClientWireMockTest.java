@@ -8,12 +8,11 @@ import static org.junit.Assert.fail;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.matching;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
+import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
 import com.google.common.collect.ImmutableMap;
@@ -28,7 +27,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -37,70 +35,22 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class ClientTest {
+public class ClientWireMockTest {
 
-    static String yamlConfig;
-    static ClientConfig clientConfig;
-
-    Logger LOG = LoggerFactory.getLogger(ClientTest.class);
-    final String baseUrl = "http://localhost:8089";
+    private Logger LOG = LoggerFactory.getLogger(ClientWireMockTest.class);
+    private final String baseUrl = "http://localhost:8089";
 
     @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8089);
-
-    @BeforeClass
-    public static void init() throws UnknownHostException {
-        yamlConfig = String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName());
-        clientConfig = ClientConfig.load(ClientConfig.class.getResourceAsStream(yamlConfig));
-    }
-
+    private WireMockRule wireMockRule = new WireMockRule(8089);
 
     @Test
     public void foo() {
         assertThat("x").isEqualTo("x");
-    }
-
-    @Test
-    public void testGetPost() {
-        final Client client = ClientFactory.fromConfig(clientConfig);
-
-        final Post post = client.getPost(3629);
-
-        assertThat(post).isNotNull();
-
-        LOG.debug("post = {}", post);
-    }
-
-    @Test
-    public void posts() {
-        final Client client = ClientFactory.fromConfig(clientConfig);
-
-        final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
-
-        final PagedResponse<Post> postPagedResponse = client.fetchPosts();
-
-        postPagedResponse.debug();
-
-        assertThat(postPagedResponse.hasNext()).isTrue();
-        assertThat(postPagedResponse.getPrevious().isPresent()).isFalse();
-        assertThat(postPagedResponse.getSelf()).isEqualTo(EXPECTED);
-
-        PagedResponse<Post> next = client.get(postPagedResponse, resp -> resp.getNext().get());
-
-        next.debug();
-
-        while (next.hasNext()) {
-            next = client.get(next, response -> response.getNext().get());
-            next.debug();
-        }
-
     }
 
     @Test
@@ -122,12 +72,6 @@ public class ClientTest {
         final MultiValueMap<String, String> queryParams = UriComponentsBuilder.fromHttpUrl("http://foo.bar/?q=searchKey&v=moo").build().getQueryParams();
 
         LOG.debug("queryParams = {}", queryParams);
-    }
-
-    @Test
-    public void testWpEndpointForPosts_shouldReturnGivenPosts() {
-        stubFor(get(urlEqualTo("http://freddie-work/wp-json/wp/v2"))
-                .withHeader("Link", matching("<http://freddie-work/wp-json/wp/v2/posts?page=2>; rel=\"next\"")));
     }
 
     @Test
@@ -183,7 +127,7 @@ public class ClientTest {
 
         // when
         final Client client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
-        final PagedResponse<Post> response = client.fetchPosts();
+        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.posts());
         final Optional<String> next = response.getNext();
 
         // then
@@ -195,7 +139,7 @@ public class ClientTest {
         return new ByteSource() {
             @Override
             public InputStream openStream() throws IOException {
-                return ClientTest.class.getResourceAsStream("/mock-resources" + endpoint + ".json");
+                return ClientWireMockTest.class.getResourceAsStream("/mock-resources" + endpoint + ".json");
             }
         }.read();
     }
