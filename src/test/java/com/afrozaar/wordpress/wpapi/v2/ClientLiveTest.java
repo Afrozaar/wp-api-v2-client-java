@@ -75,7 +75,7 @@ public class ClientLiveTest {
     public void searchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
 
         // given
-        SearchRequest search = SearchRequest.Builder.aSearchRequest().withParam("filter[author]", "999").build();
+        SearchRequest<Post> search = SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[author]", "999").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
@@ -87,7 +87,7 @@ public class ClientLiveTest {
     @Test
     public void searchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() {
         // given
-        SearchRequest search = SearchRequest.Builder.aSearchRequest().withParam("filter[author]", "1").build();
+        SearchRequest<Post> search = SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[author]", "1").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
