@@ -50,9 +50,7 @@ public class Client implements Wordpress {
     @Override
     public Post getPost(Integer id) {
         final URI uri = GetPostRequest.newInstance().usingClient(this).buildAndExpand(id).toUri();
-        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<Post> request = RequestEntity.method(HttpMethod.GET, uri).header(authTuple.k, authTuple.v).body(null);
-        final ResponseEntity<Post> exchange = restTemplate.exchange(request, Post.class);
+        final ResponseEntity<Post> exchange = doExchange(HttpMethod.GET, uri, Post.class, null);
 
         return exchange.getBody();
     }
@@ -66,11 +64,7 @@ public class Client implements Wordpress {
     @Override
     public PagedResponse<Post> fetchPosts(SearchRequest search) {
         final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
-        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<Post[]> request = RequestEntity.method(HttpMethod.GET, uri).header(authTuple.k, authTuple.v).body(null);
-        final ResponseEntity<Post[]> exchange = restTemplate.exchange(request, Post[].class);
-
-        debugHeaders(exchange.getHeaders());
+        final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
 
         final HttpHeaders headers = exchange.getHeaders();
         final List<Link> links = parseLinks(headers);
@@ -90,13 +84,17 @@ public class Client implements Wordpress {
     @Override
     public Post updatePost(Post post) {
         final URI uri = UpdatePostRequest.forPost(post).forHost(baseUrl, CONTEXT).buildAndExpand(post.getId()).toUri();
-        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<Post> requestEntity = RequestEntity.put(uri).header(authTuple.k, authTuple.v).body(post);
-        final ResponseEntity<Post> exchange = restTemplate.exchange(requestEntity, Post.class);
-
-        debugHeaders(exchange.getHeaders());
+        final ResponseEntity<Post> exchange = doExchange(HttpMethod.PUT, uri, Post.class, post);
 
         return exchange.getBody();
+    }
+
+    private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
+        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final RequestEntity<T> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
+        final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
+        debugHeaders(exchange.getHeaders());
+        return exchange;
     }
 
     private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
