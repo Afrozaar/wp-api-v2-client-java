@@ -92,6 +92,7 @@ public class Client implements Wordpress {
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
         final RequestEntity<T> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
+        debugRequest(entity);
         final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
         debugHeaders(exchange.getHeaders());
         return exchange;
@@ -104,9 +105,15 @@ public class Client implements Wordpress {
                 .findFirst();
     }
 
+    private void debugRequest(RequestEntity<?> entity) {
+        if (debug) {
+            LOG.debug("Request Entity: {}", entity);
+        }
+    }
+
     private void debugHeaders(HttpHeaders headers) {
         if (debug) {
-            LOG.debug("Headers:");
+            LOG.debug("Response Headers:");
             headers.entrySet().stream().forEach(entry -> LOG.debug("{} -> {}", entry.getKey(), entry.getValue()));
         }
     }
