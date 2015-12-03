@@ -1,5 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2.api;
 
+import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -20,7 +21,7 @@ public interface Posts {
      */
     PagedResponse<Post> fetchPosts(SearchRequest<Post> search);
 
-    Post createPost(Post post);
+    Post createPost(String title, String excerpt, String content) throws PostCreateException;
 
     Post getPost(Integer id);
 

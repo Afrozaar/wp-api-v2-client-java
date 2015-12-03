@@ -3,10 +3,8 @@ package com.afrozaar.wordpress.wpapi.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
@@ -97,16 +95,20 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void createPostTest() {
+    public void createPostTestWithSufficientData_mustNotFailWithException() throws PostCreateException {
 
-        Post post = PostBuilder.aPost()
-                .withTitle(TitleBuilder.aTitle().withRendered("Hello, World!").build())
-                .withContent(ContentBuilder.aContent().withRendered("<p>This is the sandbox</p>").build())
-                .build();
+        final String expectedTitle = "Hello, World!";
+        final String expectedExcerpt = "This is...";
+        final String expectedContent = "<p>This is the sandbox</p>\n";
 
-        final Post createdPost = client.createPost(post);
+
+        final Post createdPost = client.createPost(expectedTitle, expectedExcerpt, expectedContent);
 
         assertThat(createdPost).isNotNull();
         assertThat(createdPost.getId()).isNotNull();
+        assertThat(createdPost.getTitle().getRendered()).isEqualTo(expectedTitle);
+        assertThat(createdPost.getContent().getRendered()).isEqualTo(expectedContent);
+
+        LOG.debug("created post:\n{}", createdPost);
     }
 }

@@ -1,7 +1,9 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.request.CreatePostRequest;
 import com.afrozaar.wordpress.wpapi.v2.request.GetPostRequest;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
@@ -10,11 +12,14 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import org.slf4j.Logger;
@@ -24,6 +29,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -49,8 +55,14 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post createPost(Post post) {
-        return null;
+    public Post createPost(String title, String excerpt, String content) throws PostCreateException {
+        Map<String, String> post = ImmutableMap.of("title", title, "excerpt", excerpt, "content", content);
+        try {
+            final URI uri = CreatePostRequest.newInstance().usingClient(this).build().toUri();
+            return doExchange0(HttpMethod.POST, uri, Post.class, post).getBody();
+        } catch (HttpClientErrorException e) {
+            throw new PostCreateException(e);
+        }
     }
 
     @Override
@@ -90,8 +102,12 @@ public class Client implements Wordpress {
     }
 
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
+        return doExchange0(method, uri, typeRef, body);
+    }
+
+    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<T> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
+        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
         debugRequest(entity);
         final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
         debugHeaders(exchange.getHeaders());
@@ -117,7 +133,6 @@ public class Client implements Wordpress {
             headers.entrySet().stream().forEach(entry -> LOG.debug("{} -> {}", entry.getKey(), entry.getValue()));
         }
     }
-
 
     public List<Link> parseLinks(HttpHeaders headers) {
         //Link -> [<http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"]
