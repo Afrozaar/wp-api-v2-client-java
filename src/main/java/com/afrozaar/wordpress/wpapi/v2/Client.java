@@ -48,9 +48,22 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post createPost(Post post) {
+        return null;
+    }
+
+    @Override
     public Post getPost(Integer id) {
         final URI uri = GetPostRequest.newInstance().usingClient(this).buildAndExpand(id).toUri();
         final ResponseEntity<Post> exchange = doExchange(HttpMethod.GET, uri, Post.class, null);
+
+        return exchange.getBody();
+    }
+
+    @Override
+    public Post updatePost(Post post) {
+        final URI uri = UpdatePostRequest.forPost(post).usingClient(this).buildAndExpand(post.getId()).toUri();
+        final ResponseEntity<Post> exchange = doExchange(HttpMethod.PUT, uri, Post.class, post);
 
         return exchange.getBody();
     }
@@ -73,14 +86,6 @@ public class Client implements Wordpress {
                 .withNext(link(links, next))
                 .withPrevious(link(links, previous))
                 .build();
-    }
-
-    @Override
-    public Post updatePost(Post post) {
-        final URI uri = UpdatePostRequest.forPost(post).forHost(baseUrl, CONTEXT).buildAndExpand(post.getId()).toUri();
-        final ResponseEntity<Post> exchange = doExchange(HttpMethod.PUT, uri, Post.class, post);
-
-        return exchange.getBody();
     }
 
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {

@@ -6,8 +6,6 @@ import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 public interface Wordpress {
     String CONTEXT = "/wp-json/wp/v2";
 
-    Post getPost(Integer id);
-
     /**
      * <pre>
      * GET /posts
@@ -17,6 +15,10 @@ public interface Wordpress {
      */
     PagedResponse<Post> fetchPosts(SearchRequest search);
 
+    Post createPost(Post post);
+
+    Post getPost(Integer id);
+
     /**
      * <pre>
      * PUT /post/{id}
@@ -24,6 +26,5 @@ public interface Wordpress {
      */
     Post updatePost(Post post);
 
-
-
+    // deletePost(Integer id);
 }

@@ -1,4 +1,4 @@
-package com.afrozaar.wordpress.wpapi.v2.util.builder;
+package com.afrozaar.wordpress.wpapi.v2.model.builder;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Content;
 

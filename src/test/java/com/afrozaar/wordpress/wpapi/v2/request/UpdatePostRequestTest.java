@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.afrozaar.wordpress.wpapi.v2.Client;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.util.builder.ContentBuilder;
-import com.afrozaar.wordpress.wpapi.v2.util.builder.PostBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 
 import com.google.common.collect.ImmutableMap;
 

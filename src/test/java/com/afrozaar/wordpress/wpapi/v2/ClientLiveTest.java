@@ -3,6 +3,9 @@ package com.afrozaar.wordpress.wpapi.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
@@ -89,5 +92,19 @@ public class ClientLiveTest {
 
         // then
         assertThat(postPagedResponse.getList()).isNotEmpty();
+    }
+
+    @Test
+    public void createPostTest() {
+
+        Post post = PostBuilder.aPost()
+                .withTitle(TitleBuilder.aTitle().withRendered("Hello, World!").build())
+                .withContent(ContentBuilder.aContent().withRendered("<p>This is the sandbox</p>").build())
+                .build();
+
+        final Post createdPost = client.createPost(post);
+
+        assertThat(createdPost).isNotNull();
+        assertThat(createdPost.getId()).isNotNull();
     }
 }
