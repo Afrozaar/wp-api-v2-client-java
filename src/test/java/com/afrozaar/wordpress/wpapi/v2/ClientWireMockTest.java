@@ -28,6 +28,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 
+import org.json.JSONException;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -143,5 +145,11 @@ public class ClientWireMockTest {
                 return ClientWireMockTest.class.getResourceAsStream("/mock-resources" + endpoint + ".json");
             }
         }.read();
+    }
+
+    @Test
+    public void getJson() throws JSONException {
+        WordpressInstance wordpress = new WordpressInstance();
+        wordpress.printJsonObject();
     }
 }
