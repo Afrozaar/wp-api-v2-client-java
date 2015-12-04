@@ -3,8 +3,7 @@ package com.afrozaar.wordpress.wpapi.v2;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.request.CreatePostRequest;
-import com.afrozaar.wordpress.wpapi.v2.request.GetPostRequest;
+import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.request.UpdatePostRequest;
@@ -48,6 +47,8 @@ public class Client implements Wordpress {
     final private String password;
     final private boolean debug;
 
+    final ImmutableMap<String, List<String>> EMPTY_MAP = ImmutableMap.of();
+
     public Client(String baseUrl, String username, String password, boolean debug) {
         this.baseUrl = baseUrl;
         this.username = username;
@@ -58,7 +59,7 @@ public class Client implements Wordpress {
     @Override
     public Post createPost(Map<String, Object> post) throws PostCreateException {
         try {
-            final URI uri = CreatePostRequest.newInstance().usingClient(this).build().toUri();
+            final URI uri = Request.of(Request.POSTS).usingClient(this).build().toUri();
             return doExchange0(HttpMethod.POST, uri, Post.class, post).getBody();
         } catch (HttpClientErrorException e) {
             throw new PostCreateException(e);
@@ -97,7 +98,7 @@ public class Client implements Wordpress {
 
     @Override
     public Post getPost(Integer id) {
-        final URI uri = GetPostRequest.newInstance().usingClient(this).buildAndExpand(id).toUri();
+        final URI uri = Request.of(Request.POST_GET).usingClient(this).buildAndExpand(id).toUri();
         final ResponseEntity<Post> exchange = doExchange(HttpMethod.GET, uri, Post.class, null);
 
         return exchange.getBody();
@@ -129,6 +130,34 @@ public class Client implements Wordpress {
                 .withNext(link(links, next))
                 .withPrevious(link(links, previous))
                 .build();
+    }
+
+
+    @Override
+    public PostMeta createMeta(Integer postId, String key, String value) {
+        final URI uri = Request.of(Request.METAS).usingClient(this).buildAndExpand(postId).toUri();
+        final ResponseEntity<PostMeta> exchange = doExchange0(HttpMethod.POST, uri, PostMeta.class, ImmutableMap.of("key", key, "value", value));
+        return exchange.getBody();
+    }
+
+    @Override
+    public List<PostMeta> getPostMetas(Integer postId) {
+        final URI uri = Request.of(Request.METAS).usingClient(this).buildAndExpand(postId).toUri();
+        final ResponseEntity<PostMeta[]> exchange = doExchange(HttpMethod.GET, uri, PostMeta[].class, null);
+        return Arrays.asList(exchange.getBody());
+    }
+
+    @Override
+    public PostMeta getPostMeta(Integer postId, Integer metaId) {
+        final URI uri = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId).toUri();
+        final ResponseEntity<PostMeta> exchange = doExchange(HttpMethod.GET, uri, PostMeta.class, null);
+        return exchange.getBody();
+    }
+
+    @Override
+    public PostMeta updatePostMeta() {
+        // TODO: implement update PostMeta.
+        return null;
     }
 
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {

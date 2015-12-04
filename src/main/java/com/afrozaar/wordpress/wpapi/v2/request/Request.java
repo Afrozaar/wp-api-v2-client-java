@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class Request {
-    static final String POSTS = "/posts";
-    static final String POST_UPDATE = "/posts/{id}";
-    static final String POST_GET = "/posts/{id}";
+    public static final String POSTS = "/posts";
+    public static final String POST_UPDATE = "/posts/{id}";
+    public static final String POST_GET = "/posts/{id}";
+
+    public static final String METAS = "/posts/{id}/meta";
+    public static final String META = "/posts/{postId}/meta/{metaId}";
 
     final String uri;
     final Map<String, List<String>> params;
@@ -21,6 +24,14 @@ public abstract class Request {
     public Request(String uri, Map<String, List<String>> params) {
         this.params = params;
         this.uri = uri;
+    }
+
+    public static Request of(String uri) {
+        return of(uri, ImmutableMap.of());
+    }
+
+    public static Request of(String uri, Map<String, List<String>> params) {
+        return new Request(uri, params) {};
     }
 
     public static <T> SearchRequest<T> fromLink(String link, String context) {

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
@@ -14,6 +15,7 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 
 /**
  * @author johan
@@ -121,9 +124,25 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void updatePost_mustNotFailWithException() {
+    public void getPostMetas() {
+        final List<PostMeta> postMetas = client.getPostMetas(3746);
 
-        /*Post postForUpdate = PostBuilder.aPost().;
-        final Post post = client.updatePost(postForUpdate);*/
+        LOG.debug("postMetas: {}", postMetas);
+    }
+
+    @Test
+    public void getPostMeta() {
+        final PostMeta postMeta = client.getPostMeta(3746, 11934);
+
+        assertThat(postMeta).isNotNull();
+
+        LOG.debug("postMeta: {}", postMeta);
+    }
+
+    @Test
+    public void createPostMeta() {
+        final PostMeta meta = client.createMeta(3746, RandomStringUtils.randomAscii(5), RandomStringUtils.randomAscii(10));
+
+        LOG.debug("meta: {}", meta);
     }
 }
