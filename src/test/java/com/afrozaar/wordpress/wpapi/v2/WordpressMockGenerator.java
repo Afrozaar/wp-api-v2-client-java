@@ -6,7 +6,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.lang.RandomStringUtils;
 
 import java.util.ArrayList;
@@ -16,7 +15,6 @@ import java.util.stream.IntStream;
 
 public class WordpressMockGenerator implements IWordpressMockGenerator {
     private ObjectMapper objectMapper = new ObjectMapper();
-
     Random random = new Random(System.currentTimeMillis());
 
     private String getRandomTitle() {
@@ -35,6 +33,16 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
         });
 
         return posts;
+    }
+    @Override
+    public String generateResponse(Enum type, int numOfPosts) throws JsonProcessingException {
+        if (type == MockObject.POSTS || type == MockObject.POST){
+            return generatePosts(numOfPosts);
+        }
+        else{
+            return null;
+
+        }
     }
 
     @Override
