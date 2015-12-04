@@ -36,18 +36,17 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
         return posts;
     }
 
-    private List<PostMeta> getMeta(int numOfItems){
+    private List<PostMeta> getMeta(int numOfMetas){
 
         List<PostMeta> metas = new ArrayList<>();
 
-        for (int i = 0; i < numOfItems; i++) {
+        IntStream.range(0,numOfMetas).forEach(id -> {
             PostMeta postMeta = new PostMeta();
-            postMeta.setId((long)i);
-            postMeta.setKey("key "+i);
-            postMeta.setValue("value "+i);
-
+            postMeta.setId((long)id);
+            postMeta.setKey("key "+id);
+            postMeta.setValue("value "+id);
             metas.add(postMeta);
-        }
+        });
 
         return metas;
     };

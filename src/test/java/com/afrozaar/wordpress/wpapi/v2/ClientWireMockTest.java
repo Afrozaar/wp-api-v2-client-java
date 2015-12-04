@@ -169,6 +169,12 @@ public class ClientWireMockTest {
         headers.forEach(responseBuilder::withHeader);
         responseBuilder.withBody(postsJson);
 
+        stubFor(get(urlEqualTo(getUrl(type, url)))
+                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
+                .willReturn(responseBuilder));
+    }
+
+    private String getUrl(Enum type, String url) {
         if (type == MockObject.POSTS) {
             url = "/wp-json/wp/v2/posts";
         } else if (type == MockObject.POST) {
@@ -176,9 +182,7 @@ public class ClientWireMockTest {
         }else if (type == MockObject.META){
             url = "http://freddie-work/wp-json/wp/v2/posts/49/meta";
         }
-        stubFor(get(urlEqualTo(url))
-                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
-                .willReturn(responseBuilder));
+        return url;
     }
 
 }
