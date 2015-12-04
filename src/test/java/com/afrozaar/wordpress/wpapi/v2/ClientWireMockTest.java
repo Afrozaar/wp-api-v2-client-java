@@ -116,25 +116,13 @@ public class ClientWireMockTest {
     @Test
     public void postsTest() throws InterruptedException, IOException {
 
-
         // given
-//        stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
-//                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withBody(contentFor("/wp-json/wp/v2/posts"))
-//                        .withHeader("Content-Type", "application/json")
-//                        .withHeader(Strings.HEADER_TOTAL_PAGES, "3")
-//                        .withHeader("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"")));
-
         Map<String, String> headers = new HashMap<>();
-
         headers.put("Content-Type", "application/json");
         headers.put(Strings.HEADER_TOTAL_PAGES, "3");
         headers.put("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
 
-
-        createStub(3,headers);
+        createStub(3, headers);
 
         String username = "";
         String password = "";
@@ -163,19 +151,34 @@ public class ClientWireMockTest {
         Map<String, String> headers = new HashMap<>();
 
         headers.put("Link", "<http://freddie-work/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
-        headers.put("X-WP-Total","22");
-        headers.put("X-WP-TotalPages","3");
+        headers.put("X-WP-Total", "22");
+        headers.put("X-WP-TotalPages", "3");
 
-        createStub(22,headers);
+        createStubForPost(headers);
     }
 
-    public void createStub(int numOfPosts,Map<String,String> headers) throws JsonProcessingException {
+    public void createStub(int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
         WordpressInstance wordpress = new WordpressInstance();
         byte[] jsonBody = wordpress.getJsonObject(numOfPosts);
 
         ResponseDefinitionBuilder responseBuilder = aResponse();
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            responseBuilder.withHeader(entry.getKey(),entry.getValue());
+            responseBuilder.withHeader(entry.getKey(), entry.getValue());
+        }
+        responseBuilder.withBody(jsonBody);
+
+        stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
+                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
+                .willReturn(responseBuilder));
+    }
+
+    public void createStubForPost(Map<String, String> headers) throws JsonProcessingException {
+        WordpressInstance wordpress = new WordpressInstance();
+        byte[] jsonBody = wordpress.getJsonObject(1);
+
+        ResponseDefinitionBuilder responseBuilder = aResponse();
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            responseBuilder.withHeader(entry.getKey(), entry.getValue());
         }
         responseBuilder.withBody(jsonBody);
 

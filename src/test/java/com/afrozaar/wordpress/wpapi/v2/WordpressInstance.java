@@ -7,24 +7,19 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.RandomStringUtils;
-import org.json.JSONException;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class WordpressInstance implements WordpressInstanceInterface {
     ObjectMapper objectMapper = new ObjectMapper();
 
-    private String randomTitleGenerator(){
-        int i = (int)(Math.random()*5) + 5;
+    private String randomTitleGenerator() {
+        int i = (int) (Math.random() * 5) + 5;
         return RandomStringUtils.randomAlphabetic(i);
     }
-
 
     private Post[] generatePosts(int numOfPosts) {
         Post[] posts = new Post[numOfPosts];
 
-        for (int i = 0; i < numOfPosts; i++){
+        for (int i = 0; i < numOfPosts; i++) {
             Title title = new Title();
             title.setRendered(randomTitleGenerator());
 
@@ -43,6 +38,5 @@ public class WordpressInstance implements WordpressInstanceInterface {
         System.out.println(objectMapper.writeValueAsString(generatePosts(numOfPosts)));
         return objectMapper.writeValueAsString(generatePosts(numOfPosts)).getBytes();
     }
-
 
 }
