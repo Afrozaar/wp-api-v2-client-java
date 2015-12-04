@@ -1,9 +1,11 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import static org.junit.Assert.*;
+import static com.afrozaar.wordpress.wpapi.v2.util.ClientConfig.of;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static com.afrozaar.wordpress.wpapi.v2.util.ClientConfig.of;
+import static org.junit.Assert.fail;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
@@ -27,6 +29,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+
 import org.json.JSONException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -116,25 +119,14 @@ public class ClientWireMockTest {
     @Test
     public void postsTest() throws InterruptedException, IOException {
 
-
         // given
-//        stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
-//                .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
-//                .willReturn(aResponse()
-//                        .withStatus(200)
-//                        .withBody(contentFor("/wp-json/wp/v2/posts"))
-//                        .withHeader("Content-Type", "application/json")
-//                        .withHeader(Strings.HEADER_TOTAL_PAGES, "3")
-//                        .withHeader("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"")));
-
         Map<String, String> headers = new HashMap<>();
 
         headers.put("Content-Type", "application/json");
         headers.put(Strings.HEADER_TOTAL_PAGES, "3");
         headers.put("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
 
-
-        createStub(3,headers);
+        createStub(3, headers);
 
         String username = "";
         String password = "";
@@ -162,22 +154,20 @@ public class ClientWireMockTest {
     public void getResponse() throws JSONException, JsonProcessingException {
         Map<String, String> headers = new HashMap<>();
 
-        headers.put("Link", "<http://freddie-work/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
-        headers.put("X-WP-Total","22");
-        headers.put("X-WP-TotalPages","3");
+        headers.put("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
+        headers.put("X-WP-Total", "22");
+        headers.put("X-WP-TotalPages", "3");
 
-        createStub(22,headers);
+        createStub(22, headers);
     }
 
-    public void createStub(int numOfPosts,Map<String,String> headers) throws JsonProcessingException {
-        WordpressInstance wordpress = new WordpressInstance();
-        byte[] jsonBody = wordpress.getJsonObject(numOfPosts);
+    public void createStub(int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
+        IWordpressMockGenerator wordpress = new WordpressMockGenerator();
+        String postsJson = wordpress.generatePosts(numOfPosts);
 
         ResponseDefinitionBuilder responseBuilder = aResponse();
-        for (Map.Entry<String, String> entry : headers.entrySet()) {
-            responseBuilder.withHeader(entry.getKey(),entry.getValue());
-        }
-        responseBuilder.withBody(jsonBody);
+        headers.forEach(responseBuilder::withHeader);
+        responseBuilder.withBody(postsJson);
 
         stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
                 .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
