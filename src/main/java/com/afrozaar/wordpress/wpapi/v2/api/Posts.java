@@ -5,6 +5,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
+import java.util.Map;
 import java.util.function.Function;
 
 public interface Posts {
@@ -21,7 +22,8 @@ public interface Posts {
      */
     PagedResponse<Post> fetchPosts(SearchRequest<Post> search);
 
-    Post createPost(String title, String excerpt, String content) throws PostCreateException;
+    Post createPost(Map<String, Object> post) throws PostCreateException;
+    Post createPost(Post post) throws PostCreateException;
 
     Post getPost(Integer id);
 
