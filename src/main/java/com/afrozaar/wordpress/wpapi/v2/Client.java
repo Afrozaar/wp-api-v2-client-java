@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Client implements Wordpress {
@@ -55,8 +56,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post createPost(String title, String excerpt, String content) throws PostCreateException {
-        Map<String, String> post = ImmutableMap.of("title", title, "excerpt", excerpt, "content", content);
+    public Post createPost(Map<String, Object> post) throws PostCreateException {
         try {
             final URI uri = CreatePostRequest.newInstance().usingClient(this).build().toUri();
             return doExchange0(HttpMethod.POST, uri, Post.class, post).getBody();
@@ -64,6 +64,36 @@ public class Client implements Wordpress {
             throw new PostCreateException(e);
         }
     }
+
+    @Override
+    public Post createPost(Post post) throws PostCreateException {
+        return createPost(fieldsFrom(post));
+    }
+
+    private Map<String, Object> fieldsFrom(Post post) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+        populateEntry(post::getDate, builder, "date");
+        populateEntry(post::getModifiedGmt, builder, "modified_gmt");
+        populateEntry(post::getSlug, builder, "slug");
+        //populateEntry(post::getCommentStatus, builder, "status");
+        populateEntry(() -> post.getTitle().getRendered(), builder, "title");
+        populateEntry(() -> post.getContent().getRendered(), builder, "content");
+        populateEntry(post::getAuthor, builder, "author");
+        populateEntry(() -> post.getExcerpt().getRendered(), builder, "excerpt");
+        populateEntry(post::getCommentStatus, builder, "comment_status");
+        populateEntry(post::getPingStatus, builder, "ping_status");
+        populateEntry(post::getFormat, builder, "format");
+        populateEntry(post::getSticky, builder, "sticky");
+
+        return builder.build();
+    }
+
+    <T> void populateEntry(Supplier<T> supplier, ImmutableMap.Builder<String, Object> builder, String key) {
+        Optional.ofNullable(supplier.get()).ifPresent(value -> builder.put(key, value));
+    }
+
+
 
     @Override
     public Post getPost(Integer id) {

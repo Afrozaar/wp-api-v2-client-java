@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
@@ -101,8 +105,12 @@ public class ClientLiveTest {
         final String expectedExcerpt = "This is...";
         final String expectedContent = "<p>This is the sandbox</p>\n";
 
+        final Post post = PostBuilder.aPost().withTitle(TitleBuilder.aTitle().withRendered(expectedTitle).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(expectedExcerpt).build())
+                .withContent(ContentBuilder.aContent().withRendered(expectedContent).build())
+                .build();
 
-        final Post createdPost = client.createPost(expectedTitle, expectedExcerpt, expectedContent);
+        final Post createdPost = client.createPost(post);
 
         assertThat(createdPost).isNotNull();
         assertThat(createdPost.getId()).isNotNull();
@@ -110,5 +118,12 @@ public class ClientLiveTest {
         assertThat(createdPost.getContent().getRendered()).isEqualTo(expectedContent);
 
         LOG.debug("created post:\n{}", createdPost);
+    }
+
+    @Test
+    public void updatePost_mustNotFailWithException() {
+
+        /*Post postForUpdate = PostBuilder.aPost().;
+        final Post post = client.updatePost(postForUpdate);*/
     }
 }
