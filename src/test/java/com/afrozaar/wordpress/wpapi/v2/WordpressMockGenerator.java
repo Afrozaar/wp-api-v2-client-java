@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 
@@ -34,20 +35,29 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
 
         return posts;
     }
+
+    private List<PostMeta> getMeta(int numOfItems){
+
+        List<PostMeta> metas = new ArrayList<>();
+
+        for (int i = 0; i < numOfItems; i++) {
+            PostMeta postMeta = new PostMeta();
+            postMeta.setId((long)i);
+            postMeta.setKey("key "+i);
+            postMeta.setValue("value "+i);
+
+            metas.add(postMeta);
+        }
+
+        return metas;
+    };
+
     @Override
-    public String generateResponse(Enum type, int numOfPosts) throws JsonProcessingException {
+    public String generateResponse(Enum type, int numOfItems) throws JsonProcessingException {
         if (type == MockObject.POSTS || type == MockObject.POST){
-            return generatePosts(numOfPosts);
-        }
-        else{
-            return null;
-
+            return objectMapper.writeValueAsString(getPosts(numOfItems));
+        }else{
+            return objectMapper.writeValueAsString(getMeta(numOfItems));
         }
     }
-
-    @Override
-    public String generatePosts(int numOfPosts) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(getPosts(numOfPosts));
-    }
-
 }
