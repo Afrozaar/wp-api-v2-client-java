@@ -1,8 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface WordpressInstanceInterface {
 
-    Post[] generateRandomPosts(int numOfPosts);
+    byte[] getJsonObject (int numOfPosts) throws JsonProcessingException;
 }
