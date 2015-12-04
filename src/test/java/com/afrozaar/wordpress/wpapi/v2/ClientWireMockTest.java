@@ -121,12 +121,11 @@ public class ClientWireMockTest {
 
         // given
         Map<String, String> headers = new HashMap<>();
-
         headers.put("Content-Type", "application/json");
         headers.put(Strings.HEADER_TOTAL_PAGES, "3");
         headers.put("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
 
-        createStub(3, headers);
+        createStub(MockObject.POST, 3, headers);
 
         String username = "";
         String password = "";
@@ -158,18 +157,26 @@ public class ClientWireMockTest {
         headers.put("X-WP-Total", "22");
         headers.put("X-WP-TotalPages", "3");
 
-        createStub(22, headers);
+        createStub(MockObject.POSTS, 22, headers);
     }
 
-    public void createStub(int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
+    public void createStub(Enum type, int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
         IWordpressMockGenerator wordpress = new WordpressMockGenerator();
-        String postsJson = wordpress.generatePosts(numOfPosts);
+        String postsJson = wordpress.generateResponse(type, numOfPosts);
+        String url = "/wp-json/wp/v2/posts";
 
         ResponseDefinitionBuilder responseBuilder = aResponse();
         headers.forEach(responseBuilder::withHeader);
         responseBuilder.withBody(postsJson);
 
-        stubFor(get(urlEqualTo("/wp-json/wp/v2/posts"))
+        if (type == MockObject.POSTS) {
+            url = "/wp-json/wp/v2/posts";
+        } else if (type == MockObject.POST) {
+            url = "/wp-json/wp/v2/comments?post_id=49";
+        }else if (type == MockObject.META){
+            url = "http://freddie-work/wp-json/wp/v2/posts/49/meta";
+        }
+        stubFor(get(urlEqualTo(url))
                 .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
                 .willReturn(responseBuilder));
     }

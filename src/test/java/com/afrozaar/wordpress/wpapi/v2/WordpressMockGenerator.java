@@ -1,12 +1,12 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.lang.RandomStringUtils;
 
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ import java.util.stream.IntStream;
 
 public class WordpressMockGenerator implements IWordpressMockGenerator {
     private ObjectMapper objectMapper = new ObjectMapper();
-
     Random random = new Random(System.currentTimeMillis());
 
     private String getRandomTitle() {
@@ -37,9 +36,28 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
         return posts;
     }
 
-    @Override
-    public String generatePosts(int numOfPosts) throws JsonProcessingException {
-        return objectMapper.writeValueAsString(getPosts(numOfPosts));
-    }
+    private List<PostMeta> getMeta(int numOfItems){
 
+        List<PostMeta> metas = new ArrayList<>();
+
+        for (int i = 0; i < numOfItems; i++) {
+            PostMeta postMeta = new PostMeta();
+            postMeta.setId((long)i);
+            postMeta.setKey("key "+i);
+            postMeta.setValue("value "+i);
+
+            metas.add(postMeta);
+        }
+
+        return metas;
+    };
+
+    @Override
+    public String generateResponse(Enum type, int numOfItems) throws JsonProcessingException {
+        if (type == MockObject.POSTS || type == MockObject.POST){
+            return objectMapper.writeValueAsString(getPosts(numOfItems));
+        }else{
+            return objectMapper.writeValueAsString(getMeta(numOfItems));
+        }
+    }
 }

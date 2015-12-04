@@ -4,5 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public interface IWordpressMockGenerator {
 
-    String generatePosts(int numOfPosts) throws JsonProcessingException;
+    String generateResponse(Enum type, int numOfPosts) throws JsonProcessingException;
+
 }
