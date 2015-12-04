@@ -102,6 +102,12 @@ public class ClientLiveTest {
     }
 
     @Test
+    public void searchForMetaKey() {
+        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", "pKlRn").build());
+        assertThat(response.getList()).isNotEmpty().hasSize(1);
+    }
+
+    @Test
     public void createPostTestWithSufficientData_mustNotFailWithException() throws PostCreateException {
 
         final String expectedTitle = "Hello, World!";
@@ -141,7 +147,7 @@ public class ClientLiveTest {
 
     @Test
     public void createPostMeta() {
-        final PostMeta meta = client.createMeta(3746, RandomStringUtils.randomAscii(5), RandomStringUtils.randomAscii(10));
+        final PostMeta meta = client.createMeta(3746, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAscii(10));
 
         LOG.debug("meta: {}", meta);
     }
