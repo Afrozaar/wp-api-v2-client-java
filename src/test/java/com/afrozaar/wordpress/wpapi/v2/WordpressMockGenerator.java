@@ -36,27 +36,40 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
         return posts;
     }
 
-    private List<PostMeta> getMeta(int numOfMetas){
+    private Post getPost() {
+
+        return PostBuilder.aPost()
+                .withTitle(TitleBuilder.aTitle().withRendered(getRandomTitle()).build())
+                .build();
+
+    }
+
+    private List<PostMeta> getMeta(int numOfMetas) {
 
         List<PostMeta> metas = new ArrayList<>();
 
-        IntStream.range(0,numOfMetas).forEach(id -> {
+        IntStream.range(0, numOfMetas).forEach(id -> {
             PostMeta postMeta = new PostMeta();
-            postMeta.setId((long)id);
-            postMeta.setKey("key "+id);
-            postMeta.setValue("value "+id);
+            postMeta.setId((long) id);
+            postMeta.setKey("key " + id);
+            postMeta.setValue("value " + id);
             metas.add(postMeta);
         });
 
         return metas;
-    };
+    }
 
     @Override
     public String generateResponse(Enum type, int numOfItems) throws JsonProcessingException {
-        if (type == MockObject.POSTS || type == MockObject.POST){
+        if (type == MockObject.POSTS) {
             return objectMapper.writeValueAsString(getPosts(numOfItems));
-        }else{
+        }else if (type == MockObject.POST){
+            return objectMapper.writeValueAsString(getPost());
+        }
+        else if (type == MockObject.META) {
             return objectMapper.writeValueAsString(getMeta(numOfItems));
+        } else {
+            return objectMapper.writeValueAsString(getPosts(numOfItems));
         }
     }
 }
