@@ -34,10 +34,9 @@ public interface Posts {
      */
     Post updatePost(Post post);
 
-    // deletePost(Integer id);
+    Post deletePost(Post post);
 
     SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> uri);
 
     PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> previousOrNext);
-
 }

@@ -15,7 +15,9 @@ public interface Meta {
 
     PostMeta getPostMeta(Integer postId, Integer metaId);
 
-    PostMeta updatePostMeta();
+    PostMeta updatePostMetaValue(Integer postId, Integer metaId, String value);
+    PostMeta updatePostMeta(Integer postId, Integer metaId, String key, String value);
 
-    // deletePostMeta();
+    boolean deletePostMeta(Integer postId, Integer metaId);
+    boolean deletePostMeta(Integer postId, Integer metaId, boolean force);
 }

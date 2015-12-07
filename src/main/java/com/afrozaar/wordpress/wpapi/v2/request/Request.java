@@ -12,8 +12,7 @@ import java.util.Map;
 
 public abstract class Request {
     public static final String POSTS = "/posts";
-    public static final String POST_UPDATE = "/posts/{id}";
-    public static final String POST_GET = "/posts/{id}";
+    public static final String POST = "/posts/{id}";
 
     public static final String METAS = "/posts/{id}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";

@@ -11,6 +11,7 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
 import org.springframework.http.HttpHeaders;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +100,7 @@ public class Client implements Wordpress {
 
     @Override
     public Post getPost(Integer id) {
-        final URI uri = Request.of(Request.POST_GET).usingClient(this).buildAndExpand(id).toUri();
+        final URI uri = Request.of(Request.POST).usingClient(this).buildAndExpand(id).toUri();
         final ResponseEntity<Post> exchange = doExchange(HttpMethod.GET, uri, Post.class, null);
 
         return exchange.getBody();
@@ -109,6 +111,14 @@ public class Client implements Wordpress {
         final URI uri = UpdatePostRequest.forPost(post).usingClient(this).buildAndExpand(post.getId()).toUri();
         final ResponseEntity<Post> exchange = doExchange(HttpMethod.PUT, uri, Post.class, post);
 
+        return exchange.getBody();
+    }
+
+    @Override
+    public Post deletePost(Post post) {
+        final UriComponents uriComponents = Request.of(Request.POST).usingClient(this).buildAndExpand(post.getId());
+        final ResponseEntity<Post> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Post.class, null); // Deletion of a post returns the post's data before removing it.
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
         return exchange.getBody();
     }
 
@@ -155,9 +165,46 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PostMeta updatePostMeta() {
-        // TODO: implement update PostMeta.
-        return null;
+    public PostMeta updatePostMetaValue(Integer postId, Integer metaId, String value) {
+        return updatePostMeta(postId, metaId, null, value);
+    }
+
+    @Override
+    public PostMeta updatePostMeta(Integer postId, Integer metaId, String key, String value) {
+        final URI uri = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId).toUri();
+
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        populateEntry(() -> key, builder, "key");
+        populateEntry(() -> value, builder, "value");
+
+        final ImmutableMap<String, Object> body = builder.build();
+        final ResponseEntity<PostMeta> exchange = doExchange0(HttpMethod.POST, uri, PostMeta.class, body);
+
+        return exchange.getBody();
+    }
+
+    @Override
+    public boolean deletePostMeta(Integer postId, Integer metaId) {
+        final UriComponents uriComponents = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId);
+
+        final ResponseEntity<Map> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Map.class, null);
+
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+
+        return exchange.getStatusCode().is2xxSuccessful();
+    }
+
+    @Override
+    public boolean deletePostMeta(Integer postId, Integer metaId, boolean force) {
+        final UriComponents uriComponents = Request.of(Request.META).usingClient(this)
+                .queryParam("force", force)
+                .buildAndExpand(postId, metaId);
+
+        final ResponseEntity<Map> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Map.class, null);
+
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+
+        return exchange.getStatusCode().is2xxSuccessful();
     }
 
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
@@ -171,6 +218,9 @@ public class Client implements Wordpress {
         final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
         debugHeaders(exchange.getHeaders());
         return exchange;
+    }
+    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body) {
+        return doExchange0(method, uriComponents.toUri(), typeRef, body);
     }
 
     private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {

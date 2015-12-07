@@ -14,6 +14,6 @@ public class UpdatePostRequest extends Request {
     }
 
     public static UpdatePostRequest forPost(Post post) {
-        return new UpdatePostRequest(Request.POST_UPDATE, ImmutableMap.of());
+        return new UpdatePostRequest(Request.POST, ImmutableMap.of());
     }
 }

@@ -151,4 +151,52 @@ public class ClientLiveTest {
 
         LOG.debug("meta: {}", meta);
     }
+
+    @Test
+    public void updatePostMeta() throws PostCreateException {
+        Post post = PostBuilder.aPost()
+                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .build();
+        final Post createdPost = client.createPost(post);
+
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(5);
+        final String key2 = RandomStringUtils.randomAlphabetic(5);
+        final String value2 = RandomStringUtils.randomAlphabetic(5);
+
+        final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
+
+        final PostMeta updatedMeta = client.updatePostMeta(createdPost.getId(), createdMeta.getId().intValue(), key2, value2);
+
+        assertThat(updatedMeta.getId()).isEqualTo(createdMeta.getId());
+        assertThat(updatedMeta.getKey()).isEqualTo(key2);
+        assertThat(updatedMeta.getValue()).isEqualTo(value2);
+        assertThat(updatedMeta.getKey()).isNotEqualTo(createdMeta.getKey());
+        assertThat(updatedMeta.getValue()).isNotEqualTo(createdMeta.getValue());
+
+        final Post deletedPost = client.deletePost(createdPost);
+
+        assertThat(deletedPost.getId()).isEqualTo(post.getId());
+    }
+
+    @Test
+    public void deletePostMeta() throws PostCreateException {
+        Post post = PostBuilder.aPost()
+                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .build();
+        final Post createdPost = client.createPost(post);
+
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(5);
+
+        final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
+
+        final boolean deleted = client.deletePostMeta(createdPost.getId(), createdMeta.getId().intValue(), true);
+
+        assertThat(deleted).isTrue();
+    }
 }
