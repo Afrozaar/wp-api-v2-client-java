@@ -130,6 +130,28 @@ public class ClientLiveTest {
     }
 
     @Test
+    public void updatePostFields() throws PostCreateException {
+        final Post post = newTestPostWithRandomData();
+
+        final Post createdPost = client.createPost(post);
+        final String createdContent = createdPost.getContent().getRendered();
+        final String createdExcerpt = createdPost.getExcerpt().getRendered();
+
+        createdPost.getContent().setRendered(RandomStringUtils.randomAlphabetic(50));
+        createdPost.getExcerpt().setRendered(RandomStringUtils.randomAlphabetic(50));
+
+        final Post updatedPost = client.updatePost(createdPost);
+
+        client.deletePost(updatedPost); // cleanup before testing in case test fails.
+
+        final String updatedContent = updatedPost.getContent().getRendered();
+        final String updatedExcerpt = updatedPost.getExcerpt().getRendered();
+
+        assertThat(updatedContent).isNotEqualTo(createdContent);
+        assertThat(updatedExcerpt).isNotEqualTo(createdExcerpt);
+    }
+
+    @Test
     public void getPostMetas() {
         final List<PostMeta> postMetas = client.getPostMetas(3746);
 
@@ -154,11 +176,7 @@ public class ClientLiveTest {
 
     @Test
     public void updatePostMeta() throws PostCreateException {
-        Post post = PostBuilder.aPost()
-                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .build();
+        Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post);
 
         final String key = RandomStringUtils.randomAlphabetic(5);
@@ -183,11 +201,7 @@ public class ClientLiveTest {
 
     @Test
     public void deletePostMeta() throws PostCreateException {
-        Post post = PostBuilder.aPost()
-                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .build();
+        Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post);
 
         final String key = RandomStringUtils.randomAlphabetic(5);
@@ -198,5 +212,13 @@ public class ClientLiveTest {
         final boolean deleted = client.deletePostMeta(createdPost.getId(), createdMeta.getId().intValue(), true);
 
         assertThat(deleted).isTrue();
+    }
+
+    private Post newTestPostWithRandomData() {
+        return PostBuilder.aPost()
+                    .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                    .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                    .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                    .build();
     }
 }

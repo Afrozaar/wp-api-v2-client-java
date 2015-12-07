@@ -6,7 +6,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
-import com.afrozaar.wordpress.wpapi.v2.request.UpdatePostRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
@@ -18,10 +17,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,7 +39,7 @@ import java.util.stream.Collectors;
 public class Client implements Wordpress {
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 
-    private RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter()));
+    private RestTemplate restTemplate = new RestTemplate();
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
 
@@ -48,8 +47,6 @@ public class Client implements Wordpress {
     final private String username;
     final private String password;
     final private boolean debug;
-
-    final ImmutableMap<String, List<String>> EMPTY_MAP = ImmutableMap.of();
 
     public Client(String baseUrl, String username, String password, boolean debug) {
         this.baseUrl = baseUrl;
@@ -61,8 +58,7 @@ public class Client implements Wordpress {
     @Override
     public Post createPost(Map<String, Object> post) throws PostCreateException {
         try {
-            final URI uri = Request.of(Request.POSTS).usingClient(this).build().toUri();
-            return doExchange0(HttpMethod.POST, uri, Post.class, post).getBody();
+            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post).getBody();
         } catch (HttpClientErrorException e) {
             throw new PostCreateException(e);
         }
@@ -73,51 +69,26 @@ public class Client implements Wordpress {
         return createPost(fieldsFrom(post));
     }
 
-    private Map<String, Object> fieldsFrom(Post post) {
-        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-
-        populateEntry(post::getDate, builder, "date");
-        populateEntry(post::getModifiedGmt, builder, "modified_gmt");
-        populateEntry(post::getSlug, builder, "slug");
-        //populateEntry(post::getCommentStatus, builder, "status");
-        populateEntry(() -> post.getTitle().getRendered(), builder, "title");
-        populateEntry(() -> post.getContent().getRendered(), builder, "content");
-        populateEntry(post::getAuthor, builder, "author");
-        populateEntry(() -> post.getExcerpt().getRendered(), builder, "excerpt");
-        populateEntry(post::getCommentStatus, builder, "comment_status");
-        populateEntry(post::getPingStatus, builder, "ping_status");
-        populateEntry(post::getFormat, builder, "format");
-        populateEntry(post::getSticky, builder, "sticky");
-
-        return builder.build();
-    }
-
-    <T> void populateEntry(Supplier<T> supplier, ImmutableMap.Builder<String, Object> builder, String key) {
-        Optional.ofNullable(supplier.get()).ifPresent(value -> builder.put(key, value));
-    }
-
-
-
     @Override
     public Post getPost(Integer id) {
-        final URI uri = Request.of(Request.POST).usingClient(this).buildAndExpand(id).toUri();
-        final ResponseEntity<Post> exchange = doExchange(HttpMethod.GET, uri, Post.class, null);
+        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null);
 
         return exchange.getBody();
     }
 
     @Override
     public Post updatePost(Post post) {
-        final URI uri = UpdatePostRequest.forPost(post).usingClient(this).buildAndExpand(post.getId()).toUri();
-        final ResponseEntity<Post> exchange = doExchange(HttpMethod.PUT, uri, Post.class, post);
 
+        // update post is not as straight forward :(
+        // the fields need to be checked for being empty (not null) and should not be included
+
+        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.PUT, Post.class, forExpand(post.getId()), ImmutableMap.of(), fieldsFrom(post));
         return exchange.getBody();
     }
 
     @Override
     public Post deletePost(Post post) {
-        final UriComponents uriComponents = Request.of(Request.POST).usingClient(this).buildAndExpand(post.getId());
-        final ResponseEntity<Post> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Post.class, null); // Deletion of a post returns the post's data before removing it.
+        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.DELETE, Post.class, forExpand(post.getId()), null, null);// Deletion of a post returns the post's data before removing it.
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
         return exchange.getBody();
     }
@@ -142,25 +113,22 @@ public class Client implements Wordpress {
                 .build();
     }
 
-
     @Override
     public PostMeta createMeta(Integer postId, String key, String value) {
-        final URI uri = Request.of(Request.METAS).usingClient(this).buildAndExpand(postId).toUri();
-        final ResponseEntity<PostMeta> exchange = doExchange0(HttpMethod.POST, uri, PostMeta.class, ImmutableMap.of("key", key, "value", value));
+        final ImmutableMap<String, String> body = ImmutableMap.of("key", key, "value", value);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body);
         return exchange.getBody();
     }
 
     @Override
     public List<PostMeta> getPostMetas(Integer postId) {
-        final URI uri = Request.of(Request.METAS).usingClient(this).buildAndExpand(postId).toUri();
-        final ResponseEntity<PostMeta[]> exchange = doExchange(HttpMethod.GET, uri, PostMeta[].class, null);
+        final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.METAS, HttpMethod.GET, PostMeta[].class, forExpand(postId), null, null);
         return Arrays.asList(exchange.getBody());
     }
 
     @Override
     public PostMeta getPostMeta(Integer postId, Integer metaId) {
-        final URI uri = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId).toUri();
-        final ResponseEntity<PostMeta> exchange = doExchange(HttpMethod.GET, uri, PostMeta.class, null);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.GET, PostMeta.class, forExpand(postId, metaId), null, null);
         return exchange.getBody();
     }
 
@@ -171,24 +139,18 @@ public class Client implements Wordpress {
 
     @Override
     public PostMeta updatePostMeta(Integer postId, Integer metaId, String key, String value) {
-        final URI uri = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId).toUri();
-
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
         populateEntry(() -> key, builder, "key");
         populateEntry(() -> value, builder, "value");
 
-        final ImmutableMap<String, Object> body = builder.build();
-        final ResponseEntity<PostMeta> exchange = doExchange0(HttpMethod.POST, uri, PostMeta.class, body);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
 
         return exchange.getBody();
     }
 
     @Override
     public boolean deletePostMeta(Integer postId, Integer metaId) {
-        final UriComponents uriComponents = Request.of(Request.META).usingClient(this).buildAndExpand(postId, metaId);
-
-        final ResponseEntity<Map> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Map.class, null);
-
+        final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), null, null);
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
@@ -196,51 +158,10 @@ public class Client implements Wordpress {
 
     @Override
     public boolean deletePostMeta(Integer postId, Integer metaId, boolean force) {
-        final UriComponents uriComponents = Request.of(Request.META).usingClient(this)
-                .queryParam("force", force)
-                .buildAndExpand(postId, metaId);
-
-        final ResponseEntity<Map> exchange = doExchange0(HttpMethod.DELETE, uriComponents, Map.class, null);
-
+        final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), ImmutableMap.of("force", force), null);
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
-    }
-
-    private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
-        return doExchange0(method, uri, typeRef, body);
-    }
-
-    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
-        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
-        debugRequest(entity);
-        final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
-        debugHeaders(exchange.getHeaders());
-        return exchange;
-    }
-    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body) {
-        return doExchange0(method, uriComponents.toUri(), typeRef, body);
-    }
-
-    private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
-        return links.stream()
-                .filter(linkPredicate)
-                .map(Link::getHref)
-                .findFirst();
-    }
-
-    private void debugRequest(RequestEntity<?> entity) {
-        if (debug) {
-            LOG.debug("Request Entity: {}", entity);
-        }
-    }
-
-    private void debugHeaders(HttpHeaders headers) {
-        if (debug) {
-            LOG.debug("Response Headers:");
-            headers.entrySet().stream().forEach(entry -> LOG.debug("{} -> {}", entry.getKey(), entry.getValue()));
-        }
     }
 
     public List<Link> parseLinks(HttpHeaders headers) {
@@ -271,5 +192,76 @@ public class Client implements Wordpress {
     @Override
     public SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> previousOrNext) {
         return Request.fromLink(previousOrNext.apply(response), CONTEXT);
+    }
+
+    private Map<String, Object> fieldsFrom(Post post) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+        populateEntry(post::getDate, builder, "date");
+        populateEntry(post::getModifiedGmt, builder, "modified_gmt");
+        //populateEntry(post::getSlug, builder, "slug");
+        //populateEntry(post::getCommentStatus, builder, "status");
+        populateEntry(() -> post.getTitle().getRendered(), builder, "title");
+        populateEntry(() -> post.getContent().getRendered(), builder, "content");
+        populateEntry(post::getAuthor, builder, "author");
+        populateEntry(() -> post.getExcerpt().getRendered(), builder, "excerpt");
+        populateEntry(post::getCommentStatus, builder, "comment_status");
+        populateEntry(post::getPingStatus, builder, "ping_status");
+        populateEntry(post::getFormat, builder, "format");
+        populateEntry(post::getSticky, builder, "sticky");
+
+        return builder.build();
+    }
+
+    <T> void populateEntry(Supplier<T> supplier, ImmutableMap.Builder<String, Object> builder, String key) {
+        Optional.ofNullable(supplier.get()).ifPresent(value -> builder.put(key, value));
+    }
+
+    private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
+        return doExchange0(method, uri, typeRef, body);
+    }
+
+    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
+        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
+        debugRequest(entity);
+        final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
+        debugHeaders(exchange.getHeaders());
+        return exchange;
+    }
+    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body) {
+        return doExchange0(method, uriComponents.toUri(), typeRef, body);
+    }
+
+    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body) {
+        final UriComponentsBuilder builder = Request.of(context).usingClient(this);
+        if (queryParams != null) {
+            queryParams.forEach(builder::queryParam);
+        }
+        return doExchange0(method, builder.buildAndExpand(buildAndExpand), typeRef, body);
+    }
+
+    private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
+        return links.stream()
+                .filter(linkPredicate)
+                .map(Link::getHref)
+                .findFirst();
+    }
+
+    private void debugRequest(RequestEntity<?> entity) {
+        if (debug) {
+            LOG.debug("Request Entity: {}", entity);
+        }
+    }
+
+    private void debugHeaders(HttpHeaders headers) {
+        if (debug) {
+            LOG.debug("Response Headers:");
+            headers.entrySet().stream().forEach(entry -> LOG.debug("{} -> {}", entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private Object[] forExpand(Object... values) {
+        return values;
     }
 }
