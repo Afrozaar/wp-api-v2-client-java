@@ -202,6 +202,30 @@ public class Client implements Wordpress {
         return null;
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {
+        try {
+            final URI uri = Request.of(context).usingClient(this).buildAndExpand(expandParams).toUri();
+            final ResponseEntity<T[]> exchange = doExchange0(HttpMethod.GET, uri, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"), null);
+            final HttpHeaders headers = exchange.getHeaders();
+            final List<Link> links = parseLinks(headers);
+
+            final List<T> body = Arrays.asList((T[]) exchange.getBody()); // Ugly... but the only way to get the generic stuff working
+
+            return PagedResponse.Builder.<T>aPagedResponse()
+                    .withPages(headers)
+                    .withPosts(body)
+                    .withSelf(uri.toASCIIString())
+                    .withNext(link(links, next))
+                    .withPrevious(link(links, previous))
+                    .build();
+        } catch (ClassNotFoundException e) {
+            LOG.error("Error ", e);
+            return null;
+        }
+    }
+
     public List<Link> parseLinks(HttpHeaders headers) {
         //Link -> [<http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"]
 

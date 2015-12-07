@@ -12,6 +12,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
@@ -244,9 +245,14 @@ public class ClientLiveTest {
 
     @Test
     public void testGetCategoryTerms() {
-        final List<Term> categories = client.getTerms("category");
+        /*final List<Term> categories = client.getTerms("category");
         assertThat(categories).isNotNull().isNotEmpty();
 
-        categories.forEach(term -> LOG.debug("term: @{}/'{}' - {}", term.getId(), term.getSlug(), term.getName()));
+        categories.forEach(term -> LOG.debug("term: @{}/'{}' - {}", term.getId(), term.getSlug(), term.getName()));*/
+
+        String termSlug = "category";
+        final PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, termSlug);
+
+
     }
 }
