@@ -16,6 +16,10 @@ public abstract class Request {
 
     public static final String METAS = "/posts/{id}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
+    public static final String TAXONOMIES = "/taxonomies";
+    public static final String TAXONOMY = "/taxonomies/{slug}";
+    public static final String TERMS = "/terms/{taxonomySlug}";
+    public static final String TERM = "/terms/{taxonomySlug}/{id}";
 
     final String uri;
     final Map<String, List<String>> params;
