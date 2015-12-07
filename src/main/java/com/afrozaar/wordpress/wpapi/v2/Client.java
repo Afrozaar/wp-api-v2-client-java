@@ -4,6 +4,8 @@ import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
+import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
+import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -162,6 +164,42 @@ public class Client implements Wordpress {
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
+    }
+
+    @Override
+    public List<Taxonomy> getTaxonomies() {
+        final ResponseEntity<Taxonomy[]> exchange = doExchange1(Request.TAXONOMIES, HttpMethod.GET, Taxonomy[].class, forExpand(), null, null);
+        return Arrays.asList(exchange.getBody());
+    }
+
+    @Override
+    public Taxonomy getTaxonomy(String slug) {
+        return doExchange1(Request.TAXONOMY, HttpMethod.GET, Taxonomy.class, forExpand(slug), null, null).getBody();
+    }
+
+    @Override
+    public Term createTerm(Term term) {
+        return null;
+    }
+
+    @Override
+    public List<Term> getTerms(String taxonomySlug) {
+        return Arrays.asList(doExchange1(Request.TERMS, HttpMethod.GET, Term[].class, forExpand(taxonomySlug), null, null).getBody());
+    }
+
+    @Override
+    public Term getTerm(Long id, String taxonomySlug) {
+        return doExchange1(Request.TERM, HttpMethod.GET, Term.class, forExpand(taxonomySlug, id), null, null).getBody();
+    }
+
+    @Override
+    public Term updateTerm(Term term) {
+        return null;
+    }
+
+    @Override
+    public Term deleteTerm(Term term) {
+        return null;
     }
 
     public List<Link> parseLinks(HttpHeaders headers) {

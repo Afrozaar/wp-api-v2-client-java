@@ -6,6 +6,8 @@ import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
+import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
+import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
@@ -220,5 +222,31 @@ public class ClientLiveTest {
                     .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                     .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                     .build();
+    }
+
+    @Test
+    public void testGetTaxonomies() {
+        final List<Taxonomy> taxonomies = client.getTaxonomies();
+
+        assertThat(taxonomies).isNotNull().isNotEmpty();
+
+        taxonomies.forEach(taxonomy -> LOG.debug("taxonomy: {} - {}", taxonomy.getSlug(), taxonomy.getName()));
+    }
+
+    @Test
+    public void testGetTaxonomyCategories() {
+        final Taxonomy taxCategory = client.getTaxonomy("category");
+
+        assertThat(taxCategory).isNotNull();
+
+        LOG.debug("taxCategory: {}", taxCategory);
+    }
+
+    @Test
+    public void testGetCategoryTerms() {
+        final List<Term> categories = client.getTerms("category");
+        assertThat(categories).isNotNull().isNotEmpty();
+
+        categories.forEach(term -> LOG.debug("term: @{}/'{}' - {}", term.getId(), term.getSlug(), term.getName()));
     }
 }
