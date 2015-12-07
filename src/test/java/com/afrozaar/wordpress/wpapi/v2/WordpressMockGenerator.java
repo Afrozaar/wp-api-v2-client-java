@@ -39,6 +39,7 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
     private Post getPost() {
 
         return PostBuilder.aPost()
+                .withId(0)
                 .withTitle(TitleBuilder.aTitle().withRendered(getRandomTitle()).build())
                 .build();
 
