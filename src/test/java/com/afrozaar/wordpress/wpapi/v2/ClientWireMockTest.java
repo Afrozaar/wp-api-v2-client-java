@@ -12,6 +12,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.stubFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
@@ -125,19 +126,20 @@ public class ClientWireMockTest {
         headers.put(Strings.HEADER_TOTAL_PAGES, "3");
         headers.put("Link", "<http://localhost:8089/wp-json/wp/v2/posts?page=2>; rel=\"next\"");
 
-        createStub(MockObject.POST, 3, headers);
+        createStub(MockObject.POST, 1, headers);
 
         String username = "";
         String password = "";
 
         // when
         final Wordpress client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
-        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.posts());
-        final Optional<String> next = response.getNext();
+        final Post response = client.getPost(49);
+
+//        final Optional<String> next = response.getNext();
 
         // then
-        assertThat(next).isPresent().isEqualTo(Optional.of("http://localhost:8089/wp-json/wp/v2/posts?page=2"));
-        assertThat(response.getPrevious()).isEmpty();
+//        assertThat(next).isPresent().isEqualTo(Optional.of("http://localhost:8089/wp-json/wp/v2/posts?page=2"));
+//        assertThat(response.getPrevious()).isEmpty();
     }
 
     private byte[] contentFor(String endpoint) throws IOException {
@@ -163,22 +165,24 @@ public class ClientWireMockTest {
     public void createStub(Enum type, int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
         IWordpressMockGenerator wordpress = new WordpressMockGenerator();
         String postsJson = wordpress.generateResponse(type, numOfPosts);
-        String url = "/wp-json/wp/v2/posts";
 
         ResponseDefinitionBuilder responseBuilder = aResponse();
         headers.forEach(responseBuilder::withHeader);
         responseBuilder.withBody(postsJson);
 
-        if (type == MockObject.POSTS) {
-            url = "/wp-json/wp/v2/posts";
-        } else if (type == MockObject.POST) {
-            url = "/wp-json/wp/v2/comments?post_id=49";
-        }else if (type == MockObject.META){
-            url = "http://freddie-work/wp-json/wp/v2/posts/49/meta";
-        }
-        stubFor(get(urlEqualTo(url))
+        stubFor(get(urlEqualTo(getUrl(type)))
                 .withHeader("Authorization", WireMock.matching("^Basic\\ .*"))
                 .willReturn(responseBuilder));
+    }
+
+    private String getUrl(Enum type) {
+        if (type == MockObject.POSTS) {
+            return "/wp-json/wp/v2/posts";
+        } else if (type == MockObject.POST) {
+            return "/wp-json/wp/v2/posts/49";
+        }else {
+            return "/wp-json/wp/v2/posts/49/meta";
+        }
     }
 
 }
