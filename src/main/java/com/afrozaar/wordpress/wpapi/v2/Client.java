@@ -180,16 +180,8 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createTerm(Term term, String taxonomy) {
-
-        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-
-        Optional.ofNullable(term.getDescription()).ifPresent(value -> builder.put("description", value));
-        Optional.ofNullable(term.getName()).ifPresent(value -> builder.put("name", value));
-        Optional.ofNullable(term.getSlug()).ifPresent(value -> builder.put("slug", value));
-        Optional.ofNullable(term.getParentId()).ifPresent(value -> builder.put("parent", value));
-
-        return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, builder.build()).getBody();
+    public Term createTerm(String taxonomy, Term term) {
+        return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, term.asMap()).getBody();
     }
 
     @Override
@@ -218,12 +210,12 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term updateTerm(Term term) {
-        return null;
+    public Term updateTerm(String taxonomy, Term term) {
+        return doExchange1(Request.TERM, HttpMethod.POST, Term.class, forExpand(taxonomy, term.getId()), null, term.asMap()).getBody();
     }
 
     @Override
-    public Term deleteTerm(Term term, String taxonomy) throws TermNotFoundException {
+    public Term deleteTerm(String taxonomy, Term term) throws TermNotFoundException {
         try {
             return doExchange1(Request.TERM, HttpMethod.DELETE, Term.class, forExpand(taxonomy, term.getId()), null, null).getBody();
         } catch (HttpClientErrorException e) {

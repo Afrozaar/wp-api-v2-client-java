@@ -7,14 +7,14 @@ import java.util.List;
 
 public interface Terms {
 
-    Term createTerm(Term term, String taxonomy);
+    Term createTerm(String taxonomy, Term term);
 
     List<Term> getTerms(String taxonomy);
 
     Term getTerm(String taxonomy, Long id) throws TermNotFoundException;
 
-    Term updateTerm(Term term);
+    Term updateTerm(String taxonomy, Term term);
 
-    Term deleteTerm(Term term, String taxonomy) throws TermNotFoundException;
+    Term deleteTerm(String taxonomy, Term term) throws TermNotFoundException;
 
 }

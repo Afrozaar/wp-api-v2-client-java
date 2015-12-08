@@ -310,8 +310,8 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(tag, Taxonomies.tag);
-        client.deleteTerm(createdTag, Taxonomies.tag);
+        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
+        client.deleteTerm(Taxonomies.tag, createdTag);
 
         assertThat(createdTag).isNotNull();
         assertThat(createdTag.getName()).isEqualTo(expectedName);
@@ -328,13 +328,35 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(tag, Taxonomies.tag);
-        final Term deletedTerm = client.deleteTerm(createdTag, Taxonomies.tag);
+        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
+        final Term deletedTerm = client.deleteTerm(Taxonomies.tag, createdTag);
 
         assertThat(deletedTerm).isNotNull();
 
         client.getTerm(Taxonomies.tag, createdTag.getId());
 
         Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
+    }
+
+    @Test
+    public void testUpdateTaxonomyTag() throws TermNotFoundException {
+        Term tag = TermBuilder.aTerm()
+                .withDescription(RandomStringUtils.randomAlphabetic(5))
+                .withName(RandomStringUtils.randomAlphabetic(3))
+                .withTaxonomySlug("post_tag")
+                .build();
+
+        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
+
+        final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
+        final String expectedName = RandomStringUtils.randomAlphabetic(10);
+        createdTag.setDescription(expectedDescription);
+        createdTag.setName(expectedName);
+
+        final Term updatedTerm = client.updateTerm(Taxonomies.tag, createdTag);
+        client.deleteTerm(Taxonomies.tag, updatedTerm);
+
+        assertThat(updatedTerm.getDescription()).isEqualTo(expectedDescription);
+        assertThat(updatedTerm.getName()).isEqualTo(expectedName);
     }
 }

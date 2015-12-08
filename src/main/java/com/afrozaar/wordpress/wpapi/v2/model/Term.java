@@ -1,6 +1,11 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.google.common.collect.ImmutableMap;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class Term {
     @JsonProperty("id")
@@ -82,6 +87,15 @@ public class Term {
 
     public void setTaxonomySlug(String taxonomySlug) {
         this.taxonomySlug = taxonomySlug;
+    }
+
+    public Map<String, Object> asMap() {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        Optional.ofNullable(description).ifPresent(value -> builder.put("description", value));
+        Optional.ofNullable(name).ifPresent(value -> builder.put("name", value));
+        Optional.ofNullable(slug).ifPresent(value -> builder.put("slug", value));
+        Optional.ofNullable(parentId).ifPresent(value -> builder.put("parent", value));
+        return builder.build();
     }
 
     @Override
