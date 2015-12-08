@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
@@ -28,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -178,18 +180,41 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createTerm(Term term) {
-        return null;
+    public Term createTerm(Term term, String taxonomy) {
+
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+        Optional.ofNullable(term.getDescription()).ifPresent(value -> builder.put("description", value));
+        Optional.ofNullable(term.getName()).ifPresent(value -> builder.put("name", value));
+        Optional.ofNullable(term.getSlug()).ifPresent(value -> builder.put("slug", value));
+        Optional.ofNullable(term.getParentId()).ifPresent(value -> builder.put("parent", value));
+
+        return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, builder.build()).getBody();
     }
 
     @Override
-    public List<Term> getTerms(String taxonomySlug) {
-        return Arrays.asList(doExchange1(Request.TERMS, HttpMethod.GET, Term[].class, forExpand(taxonomySlug), null, null).getBody());
+    public List<Term> getTerms(String taxonomy) {
+        List<Term> collected = new ArrayList<>();
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(Request.TERMS, Term.class, taxonomy);
+        collected.addAll(pagedResponse.getList());
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+        return collected;
     }
 
     @Override
-    public Term getTerm(Long id, String taxonomySlug) {
-        return doExchange1(Request.TERM, HttpMethod.GET, Term.class, forExpand(taxonomySlug, id), null, null).getBody();
+    public Term getTerm(String taxonomy, Long id) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.TERM, HttpMethod.GET, Term.class, forExpand(taxonomy, id), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -198,8 +223,16 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term deleteTerm(Term term) {
-        return null;
+    public Term deleteTerm(Term term, String taxonomy) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.TERM, HttpMethod.DELETE, Term.class, forExpand(taxonomy, term.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")

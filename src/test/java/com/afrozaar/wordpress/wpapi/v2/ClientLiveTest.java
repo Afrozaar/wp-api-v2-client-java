@@ -3,7 +3,9 @@ package com.afrozaar.wordpress.wpapi.v2;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
@@ -11,6 +13,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
@@ -21,6 +24,7 @@ import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -238,7 +242,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTaxonomyCategories() {
-        final Taxonomy taxCategory = client.getTaxonomy("category");
+        final Taxonomy taxCategory = client.getTaxonomy(Taxonomies.category);
 
         assertThat(taxCategory).isNotNull();
 
@@ -246,20 +250,91 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testGetCategoryTerms() {
-        String termSlug = "category";
-        List<Term> collectedTerms = Lists.newArrayList();
+    public void testGetCategoryTermsUsingPagedResponse() {
+        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category);
+        assertThat(pagedResponse).isNotNull();
+        assertThat(pagedResponse.getList()).isNotEmpty();
+    }
 
-        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, termSlug);
+    @Test
+    public void testTraversePagedResponse() {
+        final List<Term> collectedTerms = Lists.newArrayList();
+        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category);
         collectedTerms.addAll(pagedResponse.getList());
 
         while (pagedResponse.hasNext()) {
             pagedResponse = client.traverse(pagedResponse, PagedResponse.NEXT);
             collectedTerms.addAll(pagedResponse.getList());
-            final String reduce = pagedResponse.getList().stream().reduce("", (s, term) -> String.format("%s, %s", s, term.getSlug()), (s, s2) -> s + "--" + s2);
-            LOG.debug("Got {} more terms: {}", pagedResponse.getList().size(), reduce);
+            LOG.debug("Got {} more terms", pagedResponse.getList().size());
         }
+        LOG.debug("Collected terms: {}: {}", collectedTerms.size(), collectedTerms);
+    }
 
-        LOG.debug("Collected terms: {}", collectedTerms.size());
+    @Test
+    public void testGetTermsCategories() {
+        final List<Term> categories = client.getTerms(Taxonomies.category);
+        assertThat(categories).isNotEmpty();
+        assertThat(categories.size()).isGreaterThan(10);
+        LOG.debug("total category terms: {}", categories.size());
+    }
+
+    @Test
+    public void testGetTermsTags() {
+        final List<Term> tags = client.getTerms(Taxonomies.tag);
+        assertThat(tags).isNotNull().isNotEmpty();
+        assertThat(tags.size()).isGreaterThan(10);
+        LOG.debug("total tag terms: {}", tags.size());
+    }
+
+    @Test
+    public void testGetTermCategory() throws TermNotFoundException {
+        final List<Term> categories = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category).getList();
+        final Term term = categories.get(0);
+        final Term fetchedTerm = client.getTerm(Taxonomies.category, term.getId());
+
+        assertThat(fetchedTerm).isNotNull();
+        assertThat(fetchedTerm.getId()).isEqualTo(term.getId());
+        assertThat(fetchedTerm.getName()).isEqualTo(term.getName());
+
+        LOG.debug("Fetched Term: {}", fetchedTerm);
+    }
+
+    @Test
+    public void testCreateTaxonomyTag() throws TermNotFoundException {
+
+        String expectedName = RandomStringUtils.randomAlphabetic(3);
+        String expectedDescription = RandomStringUtils.randomAlphabetic(5);
+        Term tag = TermBuilder.aTerm()
+                .withDescription(expectedDescription)
+                .withName(expectedName)
+                .withTaxonomySlug("post_tag")
+                .build();
+
+        final Term createdTag = client.createTerm(tag, Taxonomies.tag);
+        client.deleteTerm(createdTag, Taxonomies.tag);
+
+        assertThat(createdTag).isNotNull();
+        assertThat(createdTag.getName()).isEqualTo(expectedName);
+        assertThat(createdTag.getDescription()).isEqualTo(expectedDescription);
+    }
+
+    @Test(expected = TermNotFoundException.class)
+    public void testDeleteTaxonomyTag() throws TermNotFoundException {
+        String expectedName = RandomStringUtils.randomAlphabetic(3);
+        String expectedDescription = RandomStringUtils.randomAlphabetic(5);
+        Term tag = TermBuilder.aTerm()
+                .withDescription(expectedDescription)
+                .withName(expectedName)
+                .withTaxonomySlug("post_tag")
+                .build();
+
+        final Term createdTag = client.createTerm(tag, Taxonomies.tag);
+        final Term deletedTerm = client.deleteTerm(createdTag, Taxonomies.tag);
+
+        assertThat(deletedTerm).isNotNull();
+
+        client.getTerm(Taxonomies.tag, createdTag.getId());
+
+        Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 }
