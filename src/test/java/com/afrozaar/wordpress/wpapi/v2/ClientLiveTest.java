@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
@@ -170,6 +171,19 @@ public class ClientLiveTest {
 
         assertThat(updatedContent).isNotEqualTo(createdContent);
         assertThat(updatedExcerpt).isNotEqualTo(createdExcerpt);
+    }
+
+    @Test
+    public void getMediaItem(){
+        final Media media = client.getMedia(54);
+
+        LOG.debug("Media: {}", media);
+    }
+    @Test
+    public void getMediaItems(){
+        final List<Media> medias = client.getMedia();
+
+        LOG.debug("Media: {}", medias);
     }
 
     @Test

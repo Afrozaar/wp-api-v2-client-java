@@ -3,6 +3,7 @@ package com.afrozaar.wordpress.wpapi.v2;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
+import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
@@ -99,6 +100,19 @@ public class Client implements Wordpress {
     public Post deletePost(Post post) {
         final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.DELETE, Post.class, forExpand(post.getId()), null, null);// Deletion of a post returns the post's data before removing it.
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
+        return exchange.getBody();
+    }
+
+    @Override
+    public List<Media> getMedia() {
+        final ResponseEntity<Media[]> exchange = doExchange1(Request.MEDIAS, HttpMethod.GET, Media[].class, forExpand(), null, null);
+        return Arrays.asList(exchange.getBody());
+    }
+
+    @Override
+    public Media getMedia(Integer id) {
+        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null);
+
         return exchange.getBody();
     }
 
