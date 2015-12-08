@@ -18,10 +18,9 @@ public class PagedResponseTest {
 
     @Test
     public void pagedResponseTest() {
-
         List<Post> posts = Arrays.asList();
 
-        PagedResponse<Post> postResponse = PagedResponse.Builder.<Post>aPagedResponse()
+        PagedResponse<Post> postResponse = PagedResponse.Builder.aPagedResponse(Post.class)
                 .withSelf("http://example.com/self")
                 .withNext(Optional.of("http://example.com/self?page=1"))
                 .withPosts(posts)

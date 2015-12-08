@@ -1,17 +1,25 @@
 package com.afrozaar.wordpress.wpapi.v2.response;
 
 import com.afrozaar.wordpress.wpapi.v2.Strings;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
 
 import org.springframework.http.HttpHeaders;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class PagedResponse<T> {
+
+    final Class<T> clazz;
+
+    public static final Function<PagedResponse<?>, String> NEXT = response -> response.getNext().get();
+    public static final Function<PagedResponse<?>, String> PREV = response -> response.getPrevious().get();
 
     private static final Logger LOG = LoggerFactory.getLogger(PagedResponse.class);
     // captures the state of a response from wordpress
@@ -21,7 +29,8 @@ public class PagedResponse<T> {
     final int pages;
     final List<T> list;
 
-    public PagedResponse(String self, String next, String previous, int pages, List<T> list) {
+    public PagedResponse(Class<T> clazz, String self, String next, String previous, int pages, List<T> list) {
+        this.clazz = clazz;
         this.self = self;
         this.next = next;
         this.previous = previous;
@@ -61,6 +70,14 @@ public class PagedResponse<T> {
         LOG.trace("response.list.size = {}", this.list.size());
     }
 
+    public URI getUri(Function<PagedResponse<?>, String> direction) {
+        return Request.fromLink(direction.apply(this));
+    }
+
+    public Class<T> getClazz() {
+        return clazz;
+    }
+
     public static class Builder<BT> {
         private String next;
         // captures the state of a response from wordpress
@@ -68,12 +85,14 @@ public class PagedResponse<T> {
         private String previous;
         private List<BT> posts;
         private int pages;
+        private Class<BT> t1;
 
-        private Builder() {
+        private Builder(Class<BT> t1) {
+            this.t1 = t1;
         }
 
-        public static <BT> Builder<BT> aPagedResponse() {
-            return new Builder<>();
+        public static <BT> Builder<BT> aPagedResponse(Class<BT> t) {
+            return new Builder<>(t);
         }
 
         public Builder<BT> withNext(Optional<String> next) {
@@ -101,7 +120,7 @@ public class PagedResponse<T> {
         }
 
         public PagedResponse<BT> build() {
-            return new PagedResponse<>(self, next, previous, pages, posts);
+            return new PagedResponse<>(t1, self, next, previous, pages, posts);
         }
 
         public Builder<BT> withPages(int pages) {

@@ -18,6 +18,8 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
+import com.google.common.collect.Lists;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -245,14 +247,19 @@ public class ClientLiveTest {
 
     @Test
     public void testGetCategoryTerms() {
-        /*final List<Term> categories = client.getTerms("category");
-        assertThat(categories).isNotNull().isNotEmpty();
-
-        categories.forEach(term -> LOG.debug("term: @{}/'{}' - {}", term.getId(), term.getSlug(), term.getName()));*/
-
         String termSlug = "category";
-        final PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, termSlug);
+        List<Term> collectedTerms = Lists.newArrayList();
 
+        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, termSlug);
+        collectedTerms.addAll(pagedResponse.getList());
 
+        while (pagedResponse.hasNext()) {
+            pagedResponse = client.traverse(pagedResponse, PagedResponse.NEXT);
+            collectedTerms.addAll(pagedResponse.getList());
+            final String reduce = pagedResponse.getList().stream().reduce("", (s, term) -> String.format("%s, %s", s, term.getSlug()), (s, s2) -> s + "--" + s2);
+            LOG.debug("Got {} more terms: {}", pagedResponse.getList().size(), reduce);
+        }
+
+        LOG.debug("Collected terms: {}", collectedTerms.size());
     }
 }

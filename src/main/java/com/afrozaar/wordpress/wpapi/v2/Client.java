@@ -106,7 +106,7 @@ public class Client implements Wordpress {
 
         LOG.trace("{} returned {} posts.", uri, posts.size());
 
-        return PagedResponse.Builder.<Post>aPagedResponse()
+        return PagedResponse.Builder.aPagedResponse(Post.class)
                 .withPages(headers)
                 .withPosts(posts)
                 .withSelf(uri.toASCIIString())
@@ -205,15 +205,21 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {
+        final URI uri = Request.of(context).usingClient(this).buildAndExpand(expandParams).toUri();
+        return getPagedResponse(uri, typeRef);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> PagedResponse<T> getPagedResponse(final URI uri, Class<T> typeRef) {
         try {
-            final URI uri = Request.of(context).usingClient(this).buildAndExpand(expandParams).toUri();
             final ResponseEntity<T[]> exchange = doExchange0(HttpMethod.GET, uri, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"), null);
             final HttpHeaders headers = exchange.getHeaders();
             final List<Link> links = parseLinks(headers);
 
             final List<T> body = Arrays.asList((T[]) exchange.getBody()); // Ugly... but the only way to get the generic stuff working
 
-            return PagedResponse.Builder.<T>aPagedResponse()
+            return PagedResponse.Builder.aPagedResponse(typeRef)
                     .withPages(headers)
                     .withPosts(body)
                     .withSelf(uri.toASCIIString())
@@ -221,9 +227,15 @@ public class Client implements Wordpress {
                     .withPrevious(link(links, previous))
                     .build();
         } catch (ClassNotFoundException e) {
-            LOG.error("Error ", e);
-            return null;
+            throw new RuntimeException(e);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> PagedResponse<T> traverse(PagedResponse<T> response, Function<PagedResponse<?>, String> direction) {
+        final URI uri = response.getUri(direction);
+        return getPagedResponse(uri, response.getClazz());
     }
 
     public List<Link> parseLinks(HttpHeaders headers) {
@@ -283,7 +295,7 @@ public class Client implements Wordpress {
         return doExchange0(method, uri, typeRef, body);
     }
 
-    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
+    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
         final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
         debugRequest(entity);
@@ -291,7 +303,8 @@ public class Client implements Wordpress {
         debugHeaders(exchange.getHeaders());
         return exchange;
     }
-    private <T,B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body) {
+
+    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body) {
         return doExchange0(method, uriComponents.toUri(), typeRef, body);
     }
 

@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -59,5 +60,9 @@ public abstract class Request {
         final UriComponentsBuilder builder = init(baseUrl, context);
         params.forEach((key, values) -> builder.queryParam(key, values.toArray()));
         return builder;
+    }
+
+    public static URI fromLink(String apply) {
+        return UriComponentsBuilder.fromHttpUrl(apply).build().toUri();
     }
 }
