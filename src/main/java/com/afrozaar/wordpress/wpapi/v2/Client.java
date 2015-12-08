@@ -104,6 +104,11 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Media createMediaItem() {
+        return null;
+    }
+
+    @Override
     public List<Media> getMedia() {
         final ResponseEntity<Media[]> exchange = doExchange1(Request.MEDIAS, HttpMethod.GET, Media[].class, forExpand(), null, null);
         return Arrays.asList(exchange.getBody());

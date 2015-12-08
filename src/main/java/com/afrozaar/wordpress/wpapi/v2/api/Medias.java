@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface Medias {
 
-//    Media createMediaItem();
+    Media createMediaItem();
 
     List<Media> getMedia();
     Media getMedia(Integer id);
