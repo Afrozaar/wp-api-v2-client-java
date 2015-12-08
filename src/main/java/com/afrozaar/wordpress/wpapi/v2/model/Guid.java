@@ -32,4 +32,10 @@ public class Guid {
         this.rendered = rendered;
     }
 
+    @Override
+    public String toString() {
+        return "Guid{" +
+                "rendered='" + rendered + '\'' +
+                '}';
+    }
 }

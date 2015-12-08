@@ -32,4 +32,10 @@ public class Title {
         this.rendered = rendered;
     }
 
+    @Override
+    public String toString() {
+        return "Title{" +
+                "rendered='" + rendered + '\'' +
+                '}';
+    }
 }
