@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
@@ -297,6 +298,30 @@ public class ClientLiveTest {
         assertThat(fetchedTerm.getName()).isEqualTo(term.getName());
 
         LOG.debug("Fetched Term: {}", fetchedTerm);
+    }
+
+    @Test
+    public void testCreateTaxonomyCategory() throws TermNotFoundException {
+
+        final String expectedName = RandomStringUtils.randomAlphabetic(5);
+        final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
+
+        final Term createdCategory = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(expectedName)
+                .withDescription(expectedDescription).build());
+
+        client.deleteTerm(Taxonomies.category, createdCategory);
+
+        assertThat(createdCategory).isNotNull();
+        assertThat(createdCategory.getName()).isEqualTo(expectedName);
+        assertThat(createdCategory.getDescription()).isEqualTo(expectedDescription);
+
+    }
+
+    @Test(expected = TermNotFoundException.class)
+    public void testGetTaxonomyCategoryNotFound_mustThrowTermNotFoundException() throws TermNotFoundException {
+        final Term term = client.getTerm(Taxonomies.category, 9999L);
+        failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 
     @Test
