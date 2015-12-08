@@ -324,6 +324,8 @@ public class ClientLiveTest {
         failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 
+    // TODO: 2015/12/08 Need to add test for creating hierarchical category terms
+
     @Test
     public void testCreateTaxonomyTag() throws TermNotFoundException {
 
