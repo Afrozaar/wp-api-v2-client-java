@@ -31,7 +31,7 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import com.google.common.collect.Lists;
 
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -42,7 +42,6 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -199,18 +198,24 @@ public class ClientLiveTest {
     @Test
     public void testCreateMedia() throws WpApiClientParsedException {
 
-        Media media = MediaBuilder.aMediaBuilder()
-                .withTitle(TitleBuilder.aTitle()
-                        .withRendered(RandomStringUtils.randomAlphabetic(10))
-                        .build())
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Media media = MediaBuilder.aMedia()
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
+                .withCaption(RandomStringUtils.randomAlphabetic(50))
+                .withAltText("image")
+                .withDescription(RandomStringUtils.randomAscii(20))
+                .withPost(post.getId())
                 .build();
 
         try {
-            Resource resource = new FileSystemResource(new File("/tmp/ss.jpg"));
+            Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
             final Media createdMedia = client.createMediaItem(media, resource);
+            LOG.debug("created media: {}", createdMedia);
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
-
+        } finally {
+            client.deletePost(post);
         }
     }
 

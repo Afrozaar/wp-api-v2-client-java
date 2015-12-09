@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -110,18 +111,17 @@ public class Client implements Wordpress {
 
     @Override
     public Media createMediaItem(Media media, Resource resource) throws WpApiClientParsedException {
-
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
+            populateUpload(() -> resource, (v) -> uploadMap.add("file", v));
             populateUpload(() -> media.getTitle().getRendered(), (v) -> uploadMap.add("title", v));
             populateUpload(media::getPost, (v) -> uploadMap.add("post", v));
             populateUpload(media::getAltText, (v) -> uploadMap.add("alt_text", v));
             populateUpload(media::getCaption, (v) -> uploadMap.add("caption", v));
             populateUpload(media::getDescription, (v) -> uploadMap.add("description", v));
-            uploadMap.add("file", resource);
 
             return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
-        } catch (HttpClientErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw new WpApiClientParsedException(e);
         }
     }
