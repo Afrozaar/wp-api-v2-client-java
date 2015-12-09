@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -113,12 +113,16 @@ public class Client implements Wordpress {
     public Media createMediaItem(Media media, Resource resource) throws WpApiClientParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
-            populateUpload(() -> resource, (v) -> uploadMap.add("file", v));
-            populateUpload(() -> media.getTitle().getRendered(), (v) -> uploadMap.add("title", v));
-            populateUpload(media::getPost, (v) -> uploadMap.add("post", v));
-            populateUpload(media::getAltText, (v) -> uploadMap.add("alt_text", v));
-            populateUpload(media::getCaption, (v) -> uploadMap.add("caption", v));
-            populateUpload(media::getDescription, (v) -> uploadMap.add("description", v));
+            BiConsumer<String, Object> p = (index, value) ->
+                    Optional.ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
+
+            p.accept("title", media.getTitle().getRendered());
+            p.accept("post", media.getPost());
+            p.accept("alt_text", media.getAltText());
+            p.accept("caption", media.getCaption());
+            p.accept("description", media.getDescription());
+
+            uploadMap.add("file", resource);
 
             return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
@@ -126,17 +130,13 @@ public class Client implements Wordpress {
         }
     }
 
-    private void populateUpload(Supplier<Object> mediaField, Consumer<Object> consumer) {
-        Optional.ofNullable(mediaField.get()).ifPresent(consumer);
-    }
-
     @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
         collected.addAll(pagedResponse.getList());
-        while(pagedResponse.hasNext()){
-            pagedResponse = this.traverse(pagedResponse,PagedResponse.NEXT);
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
             collected.addAll(pagedResponse.getList());
         }
 
@@ -149,8 +149,6 @@ public class Client implements Wordpress {
 
         return exchange.getBody();
     }
-
-
 
     @Override
     public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
