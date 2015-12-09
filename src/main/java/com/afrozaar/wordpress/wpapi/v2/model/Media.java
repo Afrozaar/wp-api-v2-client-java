@@ -43,7 +43,7 @@ public class Media {
     @JsonProperty("media_type")
     private String mediaType;
     @JsonProperty("post")
-    private Integer post;
+    private Long post;
     @JsonProperty("source_url")
     private String sourceUrl;
 
@@ -95,11 +95,11 @@ public class Media {
         this.mediaType = mediaType;
     }
 
-    public Integer getPost() {
+    public Long getPost() {
         return post;
     }
 
-    public void setPost(Integer post) {
+    public void setPost(Long post) {
         this.post = post;
     }
 
