@@ -31,6 +31,10 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import com.google.common.collect.Lists;
 
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.web.client.HttpServerErrorException;
+
 import org.apache.commons.lang.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
@@ -38,6 +42,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -200,7 +205,13 @@ public class ClientLiveTest {
                         .build())
                 .build();
 
-        final Media createdMedia = client.createMediaItem(media);
+        try {
+            Resource resource = new FileSystemResource(new File("/tmp/ss.jpg"));
+            final Media createdMedia = client.createMediaItem(media, resource);
+        } catch (HttpServerErrorException e) {
+            LOG.error("Error: {}", e.getResponseBodyAsString(), e);
+
+        }
     }
 
     @Test

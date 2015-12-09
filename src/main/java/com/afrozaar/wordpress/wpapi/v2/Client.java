@@ -19,10 +19,13 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -38,6 +41,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -105,18 +109,25 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media createMediaItem(Media media) throws WpApiClientParsedException {
-        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-
-//        Optional.ofNullable(media.getId()).ifPresent(value -> builder.put("id", value));
-        Optional.ofNullable(media.getTitle()).ifPresent(value -> builder.put("title", value));
-//        Optional.ofNullable(media.getDate()).ifPresent(value -> builder.put("date", value));
+    public Media createMediaItem(Media media, Resource resource) throws WpApiClientParsedException {
 
         try {
-            return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, builder.build()).getBody();
+            final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
+            populateUpload(() -> media.getTitle().getRendered(), (v) -> uploadMap.add("title", v));
+            populateUpload(media::getPost, (v) -> uploadMap.add("post", v));
+            populateUpload(media::getAltText, (v) -> uploadMap.add("alt_text", v));
+            populateUpload(media::getCaption, (v) -> uploadMap.add("caption", v));
+            populateUpload(media::getDescription, (v) -> uploadMap.add("description", v));
+            uploadMap.add("file", resource);
+
+            return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
         } catch (HttpClientErrorException e) {
             throw new WpApiClientParsedException(e);
         }
+    }
+
+    private void populateUpload(Supplier<Object> mediaField, Consumer<Object> consumer) {
+        Optional.ofNullable(mediaField.get()).ifPresent(consumer);
     }
 
     @Override
