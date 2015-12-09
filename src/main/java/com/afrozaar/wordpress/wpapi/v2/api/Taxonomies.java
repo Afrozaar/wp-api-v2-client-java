@@ -6,8 +6,8 @@ import java.util.List;
 
 public interface Taxonomies {
 
-    String tag = "tag";
-    String category = "category";
+    String TAG = "tag";
+    String CATEGORY = "category";
 
     List<Taxonomy> getTaxonomies();
 

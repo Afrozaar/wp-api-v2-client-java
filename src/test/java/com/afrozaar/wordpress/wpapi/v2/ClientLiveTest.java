@@ -1,10 +1,12 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
+import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.TAG;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
-import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
@@ -243,7 +245,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTaxonomyCategories() {
-        final Taxonomy taxCategory = client.getTaxonomy(Taxonomies.category);
+        final Taxonomy taxCategory = client.getTaxonomy(CATEGORY);
 
         assertThat(taxCategory).isNotNull();
 
@@ -252,7 +254,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetCategoryTermsUsingPagedResponse() {
-        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category);
+        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY);
         assertThat(pagedResponse).isNotNull();
         assertThat(pagedResponse.getList()).isNotEmpty();
     }
@@ -260,7 +262,7 @@ public class ClientLiveTest {
     @Test
     public void testTraversePagedResponse() {
         final List<Term> collectedTerms = Lists.newArrayList();
-        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category);
+        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY);
         collectedTerms.addAll(pagedResponse.getList());
 
         while (pagedResponse.hasNext()) {
@@ -273,7 +275,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTermsCategories() {
-        final List<Term> categories = client.getTerms(Taxonomies.category);
+        final List<Term> categories = client.getTerms(CATEGORY);
         assertThat(categories).isNotEmpty();
         assertThat(categories.size()).isGreaterThan(10);
         LOG.debug("total category terms: {}", categories.size());
@@ -281,7 +283,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTermsTags() {
-        final List<Term> tags = client.getTerms(Taxonomies.tag);
+        final List<Term> tags = client.getTerms(TAG);
         assertThat(tags).isNotNull().isNotEmpty();
         assertThat(tags.size()).isGreaterThan(10);
         LOG.debug("total tag terms: {}", tags.size());
@@ -289,9 +291,9 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTermCategory() throws TermNotFoundException {
-        final List<Term> categories = client.getPagedResponse(Request.TERMS, Term.class, Taxonomies.category).getList();
+        final List<Term> categories = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY).getList();
         final Term term = categories.get(0);
-        final Term fetchedTerm = client.getTerm(Taxonomies.category, term.getId());
+        final Term fetchedTerm = client.getTerm(CATEGORY, term.getId());
 
         assertThat(fetchedTerm).isNotNull();
         assertThat(fetchedTerm.getId()).isEqualTo(term.getId());
@@ -306,11 +308,11 @@ public class ClientLiveTest {
         final String expectedName = RandomStringUtils.randomAlphabetic(5);
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
 
-        final Term createdCategory = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term createdCategory = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(expectedName)
                 .withDescription(expectedDescription).build());
 
-        client.deleteTerm(Taxonomies.category, createdCategory);
+        client.deleteTerm(CATEGORY, createdCategory);
 
         assertThat(createdCategory).isNotNull();
         assertThat(createdCategory.getName()).isEqualTo(expectedName);
@@ -320,39 +322,39 @@ public class ClientLiveTest {
 
     @Test(expected = TermNotFoundException.class)
     public void testGetTaxonomyCategoryNotFound_mustThrowTermNotFoundException() throws TermNotFoundException {
-        final Term term = client.getTerm(Taxonomies.category, 9999L);
+        final Term term = client.getTerm(CATEGORY, 9999L);
         failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 
     @Test
     public void testCreateTaxonomyCategoryHierarchical() throws TermNotFoundException {
-        final Term rootTerm = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term rootTerm = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
 
         LOG.debug("rootTerm: {}", rootTerm);
 
-        final Term child1 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child1 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child2 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child2 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child3 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child3 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child4 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child4 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child41 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child41 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
-        final Term child42 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+        final Term child42 = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
@@ -366,7 +368,7 @@ public class ClientLiveTest {
         assertThat(rootTerm.getParentId()).isEqualTo(0L); // new root term will always have 0 as parent.
 
         // cleanup
-        client.deleteTerms(Taxonomies.category, child41, child42, child4, child3, child2, child1, rootTerm);
+        client.deleteTerms(CATEGORY, child41, child42, child4, child3, child2, child1, rootTerm);
     }
 
     @Test
@@ -380,8 +382,8 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
-        client.deleteTerm(Taxonomies.tag, createdTag);
+        final Term createdTag = client.createTerm(TAG, tag);
+        client.deleteTerm(TAG, createdTag);
 
         assertThat(createdTag).isNotNull();
         assertThat(createdTag.getName()).isEqualTo(expectedName);
@@ -398,12 +400,12 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
-        final Term deletedTerm = client.deleteTerm(Taxonomies.tag, createdTag);
+        final Term createdTag = client.createTerm(TAG, tag);
+        final Term deletedTerm = client.deleteTerm(TAG, createdTag);
 
         assertThat(deletedTerm).isNotNull();
 
-        client.getTerm(Taxonomies.tag, createdTag.getId());
+        client.getTerm(TAG, createdTag.getId());
 
         Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
@@ -416,15 +418,15 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(Taxonomies.tag, tag);
+        final Term createdTag = client.createTerm(TAG, tag);
 
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
         final String expectedName = RandomStringUtils.randomAlphabetic(10);
         createdTag.setDescription(expectedDescription);
         createdTag.setName(expectedName);
 
-        final Term updatedTerm = client.updateTerm(Taxonomies.tag, createdTag);
-        client.deleteTerm(Taxonomies.tag, updatedTerm);
+        final Term updatedTerm = client.updateTerm(TAG, createdTag);
+        client.deleteTerm(TAG, updatedTerm);
 
         assertThat(updatedTerm.getDescription()).isEqualTo(expectedDescription);
         assertThat(updatedTerm.getName()).isEqualTo(expectedName);
