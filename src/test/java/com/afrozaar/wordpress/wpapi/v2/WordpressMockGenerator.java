@@ -13,7 +13,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 public class WordpressMockGenerator implements IWordpressMockGenerator {
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -26,7 +26,7 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
     private List<Post> getPosts(int numOfPosts) {
         List<Post> posts = new ArrayList<>();
 
-        IntStream.range(0, numOfPosts).forEach(id -> {
+        LongStream.range(0, numOfPosts).forEach(id -> {
             Post post = PostBuilder.aPost()
                     .withId(id)
                     .withTitle(TitleBuilder.aTitle().withRendered(getRandomTitle()).build())
@@ -40,7 +40,7 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
     private Post getPost() {
 
         return PostBuilder.aPost()
-                .withId(0)
+                .withId(0L)
                 .withTitle(TitleBuilder.aTitle().withRendered(getRandomTitle()).build())
                 .build();
 
@@ -50,9 +50,9 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
 
         List<PostMeta> metas = new ArrayList<>();
 
-        IntStream.range(0, numOfMetas).forEach(id -> {
+        LongStream.range(0, numOfMetas).forEach(id -> {
             PostMeta postMeta = new PostMeta();
-            postMeta.setId((long) id);
+            postMeta.setId(id);
             postMeta.setKey("key " + id);
             postMeta.setValue("value " + id);
             metas.add(postMeta);

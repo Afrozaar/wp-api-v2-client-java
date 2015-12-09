@@ -129,7 +129,7 @@ public class ClientWireMockTest {
 
         // when
         final Wordpress client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
-        final Post response = client.getPost(49);
+        final Post response = client.getPost(49L);
 
 //        final Optional<String> next = response.getNext();
 

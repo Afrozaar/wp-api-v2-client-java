@@ -10,8 +10,8 @@ public class PostMetaTest {
     public void testUpdateMeta() {
         Meta meta = new Client("http://localhost", "","",true);
 
-        Integer postId = 1;
-        Integer metaId = 1;
+        Long postId = 1L;
+        Long metaId = 1L;
         String key = "foo";
         String value = "bar";
         meta.updatePostMeta(postId, metaId, key, value);

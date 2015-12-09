@@ -24,7 +24,7 @@ public class UpdatePostRequestTest {
 
         // given
         final Post post = PostBuilder.aPost()
-                .withId(new Random().nextInt())
+                .withId(new Random().nextLong())
                 .withContent(ContentBuilder.aContent()
                         .withRendered("foo bar").build())
                 .build();
