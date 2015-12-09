@@ -16,56 +16,33 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "raw",
-    "rendered"
+    "href"
 })
-public class Title {
+public class HttpsApiWOrgAttachment {
 
-    @JsonProperty("raw")
-    private String raw;
-    @JsonProperty("rendered")
-    private String rendered;
+    @JsonProperty("href")
+    private String href;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 
      * @return
-     *     The raw
+     *     The href
      */
-    @JsonProperty("raw")
-    public String getRaw() {
-        return raw;
+    @JsonProperty("href")
+    public String getHref() {
+        return href;
     }
 
     /**
      * 
-     * @param raw
-     *     The raw
+     * @param href
+     *     The href
      */
-    @JsonProperty("raw")
-    public void setRaw(String raw) {
-        this.raw = raw;
-    }
-
-    /**
-     * 
-     * @return
-     *     The rendered
-     */
-    @JsonProperty("rendered")
-    public String getRendered() {
-        return rendered;
-    }
-
-    /**
-     * 
-     * @param rendered
-     *     The rendered
-     */
-    @JsonProperty("rendered")
-    public void setRendered(String rendered) {
-        this.rendered = rendered;
+    @JsonProperty("href")
+    public void setHref(String href) {
+        this.href = href;
     }
 
     @JsonAnyGetter

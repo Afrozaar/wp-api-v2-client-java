@@ -16,56 +16,56 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "raw",
-    "rendered"
+    "href",
+    "embeddable"
 })
-public class Title {
+public class HttpsApiWOrgMetum {
 
-    @JsonProperty("raw")
-    private String raw;
-    @JsonProperty("rendered")
-    private String rendered;
+    @JsonProperty("href")
+    private String href;
+    @JsonProperty("embeddable")
+    private Boolean embeddable;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
      * 
      * @return
-     *     The raw
+     *     The href
      */
-    @JsonProperty("raw")
-    public String getRaw() {
-        return raw;
+    @JsonProperty("href")
+    public String getHref() {
+        return href;
     }
 
     /**
      * 
-     * @param raw
-     *     The raw
+     * @param href
+     *     The href
      */
-    @JsonProperty("raw")
-    public void setRaw(String raw) {
-        this.raw = raw;
+    @JsonProperty("href")
+    public void setHref(String href) {
+        this.href = href;
     }
 
     /**
      * 
      * @return
-     *     The rendered
+     *     The embeddable
      */
-    @JsonProperty("rendered")
-    public String getRendered() {
-        return rendered;
+    @JsonProperty("embeddable")
+    public Boolean getEmbeddable() {
+        return embeddable;
     }
 
     /**
      * 
-     * @param rendered
-     *     The rendered
+     * @param embeddable
+     *     The embeddable
      */
-    @JsonProperty("rendered")
-    public void setRendered(String rendered) {
-        this.rendered = rendered;
+    @JsonProperty("embeddable")
+    public void setEmbeddable(Boolean embeddable) {
+        this.embeddable = embeddable;
     }
 
     @JsonAnyGetter

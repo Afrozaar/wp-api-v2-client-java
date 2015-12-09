@@ -16,17 +16,40 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
+    "href",
     "embeddable",
-    "href"
+    "taxonomy"
 })
-public class Reply {
+public class HttpsApiWOrgTerm {
 
-    @JsonProperty("embeddable")
-    private Boolean embeddable;
     @JsonProperty("href")
     private String href;
+    @JsonProperty("embeddable")
+    private Boolean embeddable;
+    @JsonProperty("taxonomy")
+    private String taxonomy;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+
+    /**
+     * 
+     * @return
+     *     The href
+     */
+    @JsonProperty("href")
+    public String getHref() {
+        return href;
+    }
+
+    /**
+     * 
+     * @param href
+     *     The href
+     */
+    @JsonProperty("href")
+    public void setHref(String href) {
+        this.href = href;
+    }
 
     /**
      * 
@@ -51,21 +74,21 @@ public class Reply {
     /**
      * 
      * @return
-     *     The href
+     *     The taxonomy
      */
-    @JsonProperty("href")
-    public String getHref() {
-        return href;
+    @JsonProperty("taxonomy")
+    public String getTaxonomy() {
+        return taxonomy;
     }
 
     /**
      * 
-     * @param href
-     *     The href
+     * @param taxonomy
+     *     The taxonomy
      */
-    @JsonProperty("href")
-    public void setHref(String href) {
-        this.href = href;
+    @JsonProperty("taxonomy")
+    public void setTaxonomy(String taxonomy) {
+        this.taxonomy = taxonomy;
     }
 
     @JsonAnyGetter
