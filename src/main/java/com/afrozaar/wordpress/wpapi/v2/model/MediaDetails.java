@@ -2,6 +2,8 @@ package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 public class MediaDetails {
     @JsonProperty("width")
     private Integer width;
@@ -12,7 +14,7 @@ public class MediaDetails {
     @JsonProperty("sizes")
     private Sizes sizes;
     @JsonProperty("image_meta")
-    private ImageMeta imageMeta;
+    private Map<String, Object> imageMeta;
 
     public Integer getWidth() {
         return width;
@@ -46,11 +48,11 @@ public class MediaDetails {
         this.sizes = sizes;
     }
 
-    public ImageMeta getImageMeta() {
+    public Map<String, Object> getImageMeta() {
         return imageMeta;
     }
 
-    public void setImageMeta(ImageMeta imageMeta) {
+    public void setImageMeta(Map<String, Object> imageMeta) {
         this.imageMeta = imageMeta;
     }
 

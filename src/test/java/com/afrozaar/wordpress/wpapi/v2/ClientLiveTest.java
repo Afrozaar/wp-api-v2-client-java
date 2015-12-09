@@ -8,15 +8,14 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiClientParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
-import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
-import com.afrozaar.wordpress.wpapi.v2.model.Title;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder;
@@ -186,6 +185,8 @@ public class ClientLiveTest {
     @Test
     public void getMediaItems() {
         final List<Media> medias = client.getMedia();
+
+        assertThat(medias).isNotNull().isNotEmpty();
 
         LOG.debug("Media: {}", medias);
     }
