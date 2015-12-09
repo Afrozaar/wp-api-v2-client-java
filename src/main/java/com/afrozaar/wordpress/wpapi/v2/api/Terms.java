@@ -16,5 +16,6 @@ public interface Terms {
     Term updateTerm(String taxonomy, Term term);
 
     Term deleteTerm(String taxonomy, Term term) throws TermNotFoundException;
+    List<Term> deleteTerms(String taxonomy, Term... terms);
 
 }

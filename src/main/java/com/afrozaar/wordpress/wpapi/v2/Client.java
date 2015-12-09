@@ -227,6 +227,21 @@ public class Client implements Wordpress {
         }
     }
 
+    @Override
+    public List<Term> deleteTerms(String taxonomy, Term... terms) {
+        List<Term> deletedTerms = new ArrayList<>(terms.length);
+
+        for (Term term : terms) {
+            try {
+                deletedTerms.add(deleteTerm(taxonomy, term));
+            } catch (TermNotFoundException e) {
+                LOG.error("Error ", e);
+            }
+        }
+
+        return deletedTerms;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {

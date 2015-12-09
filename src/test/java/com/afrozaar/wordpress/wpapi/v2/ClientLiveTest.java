@@ -226,10 +226,10 @@ public class ClientLiveTest {
 
     private Post newTestPostWithRandomData() {
         return PostBuilder.aPost()
-                    .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                    .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                    .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                    .build();
+                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .build();
     }
 
     @Test
@@ -324,7 +324,50 @@ public class ClientLiveTest {
         failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 
-    // TODO: 2015/12/08 Need to add test for creating hierarchical category terms
+    @Test
+    public void testCreateTaxonomyCategoryHierarchical() throws TermNotFoundException {
+        final Term rootTerm = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
+
+        LOG.debug("rootTerm: {}", rootTerm);
+
+        final Term child1 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(rootTerm.getId()).build());
+        final Term child2 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(rootTerm.getId()).build());
+        final Term child3 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(rootTerm.getId()).build());
+        final Term child4 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(rootTerm.getId()).build());
+        final Term child41 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(child4.getId()).build());
+        final Term child42 = client.createTerm(Taxonomies.category, TermBuilder.aTerm()
+                .withName(RandomStringUtils.randomAlphabetic(5))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withParentId(child4.getId()).build());
+
+        assertThat(child42.getParentId()).isEqualTo(child4.getId());
+        assertThat(child41.getParentId()).isEqualTo(child4.getId());
+        assertThat(child4.getParentId()).isEqualTo(rootTerm.getId());
+        assertThat(child3.getParentId()).isEqualTo(rootTerm.getId());
+        assertThat(child2.getParentId()).isEqualTo(rootTerm.getId());
+        assertThat(child1.getParentId()).isEqualTo(rootTerm.getId());
+        assertThat(rootTerm.getParentId()).isEqualTo(0L); // new root term will always have 0 as parent.
+
+        // cleanup
+        client.deleteTerms(Taxonomies.category, child41, child42, child4, child3, child2, child1, rootTerm);
+    }
 
     @Test
     public void testCreateTaxonomyTag() throws TermNotFoundException {
