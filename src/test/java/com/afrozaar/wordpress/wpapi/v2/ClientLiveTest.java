@@ -11,6 +11,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
+import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
@@ -23,6 +24,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
+import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import com.google.common.collect.Lists;
 
@@ -79,13 +81,14 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testGetPost() {
+    public void testGetPost() throws PostCreateException {
+        final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final Post post = client.getPost(3629);
+        final Post post = client.getPost(createdPost.getId());
+
+        client.deletePost(createdPost); // cleanup
 
         assertThat(post).isNotNull();
-
-        LOG.debug("post = {}", post);
     }
 
     @Test
@@ -114,8 +117,14 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void searchForMetaKey() {
-        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", "pKlRn").build());
+    public void searchForMetaKey() throws PostCreateException {
+
+        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
+
+        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", postWithMeta.v.getKey()).build());
+
+        client.deletePost(postWithMeta.k);
+
         assertThat(response.getList()).isNotEmpty().hasSize(1);
     }
 
@@ -131,7 +140,7 @@ public class ClientLiveTest {
                 .withContent(ContentBuilder.aContent().withRendered(expectedContent).build())
                 .build();
 
-        final Post createdPost = client.createPost(post);
+        final Post createdPost = client.createPost(post, PostStatus.publish);
 
         assertThat(createdPost).isNotNull();
         assertThat(createdPost.getId()).isNotNull();
@@ -145,7 +154,7 @@ public class ClientLiveTest {
     public void updatePostFields() throws PostCreateException {
         final Post post = newTestPostWithRandomData();
 
-        final Post createdPost = client.createPost(post);
+        final Post createdPost = client.createPost(post, PostStatus.publish);
         final String createdContent = createdPost.getContent().getRendered();
         final String createdExcerpt = createdPost.getExcerpt().getRendered();
 
@@ -164,15 +173,26 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getPostMetas() {
-        final List<PostMeta> postMetas = client.getPostMetas(3746);
+    public void getPostMetas() throws PostCreateException {
+        // given
+        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        LOG.debug("postMetas: {}", postMetas);
+        //when
+        final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.k.getId());
+
+        client.deletePost(postWithMeta.k); // cleanup
+
+        // then
+        assertThat(postMetas).isNotNull();
+        assertThat(postMetas).isNotEmpty();
     }
 
     @Test
-    public void getPostMeta() {
-        final PostMeta postMeta = client.getPostMeta(3746, 11934);
+    public void getPostMeta() throws PostCreateException {
+
+        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
+
+        final PostMeta postMeta = client.getPostMeta(postWithMeta.k.getId(), postWithMeta.v.getId());
 
         assertThat(postMeta).isNotNull();
 
@@ -180,16 +200,25 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void createPostMeta() {
-        final PostMeta meta = client.createMeta(3746, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAscii(10));
+    public void createPostMeta() throws PostCreateException {
+        final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        LOG.debug("meta: {}", meta);
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(5);
+
+        final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
+
+        client.deletePost(createdPost); //cleanup
+
+        assertThat(createdMeta).isNotNull();
+        assertThat(createdMeta.getKey()).isEqualTo(key);
+        assertThat(createdMeta.getValue()).isEqualTo(value);
     }
 
     @Test
     public void updatePostMeta() throws PostCreateException {
         Post post = newTestPostWithRandomData();
-        final Post createdPost = client.createPost(post);
+        final Post createdPost = client.createPost(post, PostStatus.publish);
 
         final String key = RandomStringUtils.randomAlphabetic(5);
         final String value = RandomStringUtils.randomAlphabetic(5);
@@ -198,7 +227,7 @@ public class ClientLiveTest {
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
-        final PostMeta updatedMeta = client.updatePostMeta(createdPost.getId(), createdMeta.getId().intValue(), key2, value2);
+        final PostMeta updatedMeta = client.updatePostMeta(createdPost.getId(), createdMeta.getId(), key2, value2);
 
         assertThat(updatedMeta.getId()).isEqualTo(createdMeta.getId());
         assertThat(updatedMeta.getKey()).isEqualTo(key2);
@@ -214,7 +243,7 @@ public class ClientLiveTest {
     @Test
     public void testUpdatePostMetaValue() throws PostCreateException {
         Post post = newTestPostWithRandomData();
-        final Post createdPost = client.createPost(post);
+        final Post createdPost = client.createPost(post, PostStatus.publish);
 
         final String key = RandomStringUtils.randomAlphabetic(5);
         final String value = RandomStringUtils.randomAlphabetic(5);
@@ -222,7 +251,7 @@ public class ClientLiveTest {
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
-        final PostMeta updatedMeta = client.updatePostMetaValue(createdPost.getId(), createdMeta.getId().intValue(), value2);
+        final PostMeta updatedMeta = client.updatePostMetaValue(createdPost.getId(), createdMeta.getId(), value2);
 
         assertThat(updatedMeta.getId()).isEqualTo(createdMeta.getId());
         assertThat(updatedMeta.getKey()).isEqualTo(key);
@@ -237,14 +266,14 @@ public class ClientLiveTest {
     @Test
     public void deletePostMeta() throws PostCreateException {
         Post post = newTestPostWithRandomData();
-        final Post createdPost = client.createPost(post);
+        final Post createdPost = client.createPost(post, PostStatus.publish);
 
         final String key = RandomStringUtils.randomAlphabetic(5);
         final String value = RandomStringUtils.randomAlphabetic(5);
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
-        final boolean deleted = client.deletePostMeta(createdPost.getId(), createdMeta.getId().intValue(), true);
+        final boolean deleted = client.deletePostMeta(createdPost.getId(), createdMeta.getId(), true);
 
         assertThat(deleted).isTrue();
     }
@@ -255,6 +284,12 @@ public class ClientLiveTest {
                 .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                 .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                 .build();
+    }
+
+    private Two<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+        final PostMeta meta = client.createMeta(post.getId(), RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
+        return Two.of(post, meta);
     }
 
     @Test

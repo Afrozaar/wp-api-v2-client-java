@@ -5,6 +5,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
+import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
@@ -60,7 +61,11 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post createPost(Map<String, Object> post) throws PostCreateException {
+    public Post createPost(final Map<String, Object> postFields, PostStatus status) throws PostCreateException {
+        final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>()
+                .putAll(postFields)
+                .put("status", status.value)
+                .build();
         try {
             return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post).getBody();
         } catch (HttpClientErrorException e) {
@@ -69,12 +74,12 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post createPost(Post post) throws PostCreateException {
-        return createPost(fieldsFrom(post));
+    public Post createPost(Post post, PostStatus status) throws PostCreateException {
+        return createPost(fieldsFrom(post), status);
     }
 
     @Override
-    public Post getPost(Integer id) {
+    public Post getPost(Long id) {
         final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null);
 
         return exchange.getBody();
@@ -118,31 +123,31 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PostMeta createMeta(Integer postId, String key, String value) {
+    public PostMeta createMeta(Long postId, String key, String value) {
         final ImmutableMap<String, String> body = ImmutableMap.of("key", key, "value", value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body);
         return exchange.getBody();
     }
 
     @Override
-    public List<PostMeta> getPostMetas(Integer postId) {
+    public List<PostMeta> getPostMetas(Long postId) {
         final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.METAS, HttpMethod.GET, PostMeta[].class, forExpand(postId), null, null);
         return Arrays.asList(exchange.getBody());
     }
 
     @Override
-    public PostMeta getPostMeta(Integer postId, Integer metaId) {
+    public PostMeta getPostMeta(Long postId, Long metaId) {
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.GET, PostMeta.class, forExpand(postId, metaId), null, null);
         return exchange.getBody();
     }
 
     @Override
-    public PostMeta updatePostMetaValue(Integer postId, Integer metaId, String value) {
+    public PostMeta updatePostMetaValue(Long postId, Long metaId, String value) {
         return updatePostMeta(postId, metaId, null, value);
     }
 
     @Override
-    public PostMeta updatePostMeta(Integer postId, Integer metaId, String key, String value) {
+    public PostMeta updatePostMeta(Long postId, Long metaId, String key, String value) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
         populateEntry(() -> key, builder, "key");
         populateEntry(() -> value, builder, "value");
@@ -153,7 +158,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public boolean deletePostMeta(Integer postId, Integer metaId) {
+    public boolean deletePostMeta(Long postId, Long metaId) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), null, null);
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
@@ -161,7 +166,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public boolean deletePostMeta(Integer postId, Integer metaId, boolean force) {
+    public boolean deletePostMeta(Long postId, Long metaId, boolean force) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), ImmutableMap.of("force", force), null);
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 

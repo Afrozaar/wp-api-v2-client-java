@@ -10,14 +10,14 @@ import com.afrozaar.wordpress.wpapi.v2.model.Title;
  * @author johan
  */
 public class PostBuilder {
-    private Integer author;
-    private Integer id;
+    private Long author;
+    private Long id;
     private Title title;
     private com.afrozaar.wordpress.wpapi.v2.model.Links Links;
     private String slug;
     private String link;
     private Content content;
-    private Integer featuredImage;
+    private Long featuredImage;
     private String format;
     private Boolean sticky;
     private String commentStatus;
@@ -35,12 +35,12 @@ public class PostBuilder {
         return new PostBuilder();
     }
 
-    public PostBuilder withAuthor(Integer author) {
+    public PostBuilder withAuthor(Long author) {
         this.author = author;
         return this;
     }
 
-    public PostBuilder withId(Integer id) {
+    public PostBuilder withId(Long id) {
         this.id = id;
         return this;
     }
@@ -70,7 +70,7 @@ public class PostBuilder {
         return this;
     }
 
-    public PostBuilder withFeaturedImage(Integer featuredImage) {
+    public PostBuilder withFeaturedImage(Long featuredImage) {
         this.featuredImage = featuredImage;
         return this;
     }

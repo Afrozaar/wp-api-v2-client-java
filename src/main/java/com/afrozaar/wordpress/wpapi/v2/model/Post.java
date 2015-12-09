@@ -30,7 +30,7 @@ import javax.annotation.Generated;
 public class Post {
 
     @JsonProperty("id")
-    private Integer id;
+    private Long id;
     @JsonProperty("title")
     private Title title;
     @JsonProperty("_links")
@@ -42,7 +42,7 @@ public class Post {
     @JsonProperty("content")
     private Content content;
     @JsonProperty("featured_image")
-    private Integer featuredImage;
+    private Long featuredImage;
     @JsonProperty("format")
     private String format;
     @JsonProperty("sticky")
@@ -52,7 +52,7 @@ public class Post {
     @JsonProperty("guid")
     private Guid guid;
     @JsonProperty("author")
-    private Integer author;
+    private Long author;
     @JsonProperty("excerpt")
     private Excerpt excerpt;
     @JsonProperty("date")
@@ -68,7 +68,7 @@ public class Post {
      * @return The id
      */
     @JsonProperty("id")
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
@@ -76,7 +76,7 @@ public class Post {
      * @param id The id
      */
     @JsonProperty("id")
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -164,7 +164,7 @@ public class Post {
      * @return The featuredImage
      */
     @JsonProperty("featured_image")
-    public Integer getFeaturedImage() {
+    public Long getFeaturedImage() {
         return featuredImage;
     }
 
@@ -172,7 +172,7 @@ public class Post {
      * @param featuredImage The featured_image
      */
     @JsonProperty("featured_image")
-    public void setFeaturedImage(Integer featuredImage) {
+    public void setFeaturedImage(Long featuredImage) {
         this.featuredImage = featuredImage;
     }
 
@@ -244,7 +244,7 @@ public class Post {
      * @return The author
      */
     @JsonProperty("author")
-    public Integer getAuthor() {
+    public Long getAuthor() {
         return author;
     }
 
@@ -252,7 +252,7 @@ public class Post {
      * @param author The author
      */
     @JsonProperty("author")
-    public void setAuthor(Integer author) {
+    public void setAuthor(Long author) {
         this.author = author;
     }
 

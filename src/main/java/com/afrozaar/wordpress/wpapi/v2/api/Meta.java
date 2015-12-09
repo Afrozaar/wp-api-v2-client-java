@@ -9,15 +9,15 @@ import java.util.List;
  */
 public interface Meta {
 
-    PostMeta createMeta(Integer postId, String key, String value);
+    PostMeta createMeta(Long postId, String key, String value);
 
-    List<PostMeta> getPostMetas(Integer postId);
+    List<PostMeta> getPostMetas(Long postId);
 
-    PostMeta getPostMeta(Integer postId, Integer metaId);
+    PostMeta getPostMeta(Long postId, Long metaId);
 
-    PostMeta updatePostMetaValue(Integer postId, Integer metaId, String value);
-    PostMeta updatePostMeta(Integer postId, Integer metaId, String key, String value);
+    PostMeta updatePostMetaValue(Long postId, Long metaId, String value);
+    PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
 
-    boolean deletePostMeta(Integer postId, Integer metaId);
-    boolean deletePostMeta(Integer postId, Integer metaId, boolean force);
+    boolean deletePostMeta(Long postId, Long metaId);
+    boolean deletePostMeta(Long postId, Long metaId, boolean force);
 }
