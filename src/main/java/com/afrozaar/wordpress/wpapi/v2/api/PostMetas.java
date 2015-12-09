@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * @author johan
  */
-public interface Meta {
+public interface PostMetas {
 
     PostMeta createMeta(Long postId, String key, String value);
 
