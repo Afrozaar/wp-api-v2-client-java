@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.WpApiClientParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
@@ -15,8 +16,10 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
+import com.afrozaar.wordpress.wpapi.v2.model.Title;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
@@ -174,16 +177,29 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getMediaItem(){
+    public void getMediaItem() {
         final Media media = client.getMedia(54);
 
         LOG.debug("Media: {}", media);
     }
+
     @Test
-    public void getMediaItems(){
+    public void getMediaItems() {
         final List<Media> medias = client.getMedia();
 
         LOG.debug("Media: {}", medias);
+    }
+
+    @Test
+    public void testCreateMedia() throws WpApiClientParsedException {
+
+        Media media = MediaBuilder.aMediaBuilder()
+                .withTitle(TitleBuilder.aTitle()
+                        .withRendered(RandomStringUtils.randomAlphabetic(10))
+                        .build())
+                .build();
+
+        final Media createdMedia = client.createMediaItem(media);
     }
 
     @Test

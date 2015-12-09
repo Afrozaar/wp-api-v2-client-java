@@ -2,6 +2,7 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.WpApiClientParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,14 +106,31 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media createMediaItem() {
-        return null;
+    public Media createMediaItem(Media media) throws WpApiClientParsedException {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+//        Optional.ofNullable(media.getId()).ifPresent(value -> builder.put("id", value));
+        Optional.ofNullable(media.getTitle()).ifPresent(value -> builder.put("title", value));
+//        Optional.ofNullable(media.getDate()).ifPresent(value -> builder.put("date", value));
+
+        try {
+            return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, builder.build()).getBody();
+        } catch (HttpClientErrorException e) {
+            throw new WpApiClientParsedException(e);
+        }
     }
 
     @Override
     public List<Media> getMedia() {
-        final ResponseEntity<Media[]> exchange = doExchange1(Request.MEDIAS, HttpMethod.GET, Media[].class, forExpand(), null, null);
-        return Arrays.asList(exchange.getBody());
+        List<Media> collected = new ArrayList<>();
+        PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
+        collected.addAll(pagedResponse.getList());
+        while(pagedResponse.hasNext()){
+            pagedResponse = this.traverse(pagedResponse,PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+
+        return collected;
     }
 
     @Override
@@ -120,6 +139,8 @@ public class Client implements Wordpress {
 
         return exchange.getBody();
     }
+
+
 
     @Override
     public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
