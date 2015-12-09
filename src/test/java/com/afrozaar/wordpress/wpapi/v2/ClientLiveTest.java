@@ -212,6 +212,29 @@ public class ClientLiveTest {
     }
 
     @Test
+    public void testUpdatePostMetaValue() throws PostCreateException {
+        Post post = newTestPostWithRandomData();
+        final Post createdPost = client.createPost(post);
+
+        final String key = RandomStringUtils.randomAlphabetic(5);
+        final String value = RandomStringUtils.randomAlphabetic(5);
+        final String value2 = RandomStringUtils.randomAlphabetic(5);
+
+        final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
+
+        final PostMeta updatedMeta = client.updatePostMetaValue(createdPost.getId(), createdMeta.getId().intValue(), value2);
+
+        assertThat(updatedMeta.getId()).isEqualTo(createdMeta.getId());
+        assertThat(updatedMeta.getKey()).isEqualTo(key);
+        assertThat(updatedMeta.getValue()).isEqualTo(value2);
+        assertThat(updatedMeta.getValue()).isNotEqualTo(createdMeta.getValue());
+
+        final Post deletedPost = client.deletePost(createdPost);
+
+        assertThat(deletedPost.getId()).isEqualTo(post.getId());
+    }
+
+    @Test
     public void deletePostMeta() throws PostCreateException {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post);
