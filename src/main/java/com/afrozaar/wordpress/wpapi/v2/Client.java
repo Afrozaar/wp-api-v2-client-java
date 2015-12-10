@@ -48,7 +48,6 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class Client implements Wordpress {
@@ -151,12 +150,17 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media updateMedia(Long id, String key, String value) {
+    public Media updateMedia(Media media) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-        BiConsumer<String, Object> biConsumer = (key1, value1) -> Optional.ofNullable(value1).ifPresent(v -> builder.put(key1, v));
+        BiConsumer<String, Object> p = (key, value) -> Optional.ofNullable(value).ifPresent(v -> builder.put(key, v));
 
-        biConsumer.accept(key, value);
-        ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(id), null, builder.build());
+        p.accept("title", media.getTitle().getRendered());
+        p.accept("post", media.getPost());
+        p.accept("alt_text", media.getAltText());
+        p.accept("caption", media.getCaption());
+        p.accept("description", media.getDescription());
+
+        ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(media.getId()), null, builder.build());
 
         return exchange.getBody();
     }

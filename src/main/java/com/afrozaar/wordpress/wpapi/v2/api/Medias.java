@@ -14,7 +14,7 @@ public interface Medias {
     List<Media> getMedia();
     Media getMedia(Long id);
 
-    Media updateMedia(Long id, String key, String value);
+    Media updateMedia(Media media);
 
     boolean deleteMediaItem(Media media);
     boolean deleteMediaItem(Media media, boolean force);

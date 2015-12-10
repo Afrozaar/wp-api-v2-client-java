@@ -34,7 +34,6 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 import com.google.common.collect.Lists;
 
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -46,10 +45,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * @author johan
@@ -239,8 +238,20 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testUpdateMedia() {
-        Media updatedMedia = client.updateMedia(116L, "caption", "blah");
+    public void testUpdateMedia() throws WpApiParsedException {
+
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        final Media media = client.createMediaItem(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
+
+        media.setDescription("JUnit Description");
+
+        Media updatedMedia = client.updateMedia(media);
+
+        assertThat(updatedMedia.getDescription()).isEqualTo(media.getDescription());
+
+        client.deleteMediaItem(updatedMedia, true);
+        client.deletePost(post);
     }
 
     @Test
@@ -639,5 +650,28 @@ public class ClientLiveTest {
         final Term term = client.getPostTerm(post, Taxonomies.TAG, postTerm);
 
         failBecauseExceptionWasNotThrown(WpApiParsedException.class);
+    }
+
+    @Test
+    public void testPagedPostTagTerms() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        final int limit = 50;
+
+        IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
+            try {
+                client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+            } catch (WpApiParsedException e) {
+                LOG.error("Error ", e);
+            }
+        });
+
+        final List<Term> postTags = client.getPostTerms(post, Taxonomies.TAG);
+
+        // cleanup
+        postTags.forEach(term -> client.deletePostTerm(post, TAG, term, true));
+        client.deletePost(post);
+
+        assertThat(postTags).isNotNull().hasSize(limit);
     }
 }
