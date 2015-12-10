@@ -133,12 +133,6 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public boolean deleteMediaItem(Media media) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(Integer.valueOf(media.getId().intValue())), null, null);
-        return exchange.getStatusCode().is2xxSuccessful();
-    }
-
-    @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
@@ -154,6 +148,30 @@ public class Client implements Wordpress {
     public Media getMedia(Long id) {
         final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null);
         return exchange.getBody();
+    }
+
+    @Override
+    public Media updateMedia(Long id, String key, String value) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+        populateEntry(() -> key, builder, key);
+        populateEntry(() -> value, builder, value);
+
+        ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(id), null, builder.build());
+
+        return exchange.getBody();
+    }
+
+    @Override
+    public boolean deleteMediaItem(Media media, boolean force) {
+        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), ImmutableMap.of("force", force), null);
+        return exchange.getStatusCode().is2xxSuccessful();
+    }
+
+    @Override
+    public boolean deleteMediaItem(Media media) {
+        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), null, null);
+        return exchange.getStatusCode().is2xxSuccessful();
     }
 
     @Override

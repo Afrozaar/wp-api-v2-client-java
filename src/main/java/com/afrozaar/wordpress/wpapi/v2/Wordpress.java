@@ -6,6 +6,7 @@ import com.afrozaar.wordpress.wpapi.v2.api.PostTerms;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.api.Terms;
+import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
 import java.net.URI;

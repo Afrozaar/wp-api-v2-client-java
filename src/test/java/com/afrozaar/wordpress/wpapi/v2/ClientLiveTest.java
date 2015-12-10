@@ -199,11 +199,9 @@ public class ClientLiveTest {
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-//            client.deletePost(post);
+            client.deletePost(post);
         }
     }
-
-
 
     @Test
     public void getMediaItem() throws WpApiParsedException {
@@ -231,9 +229,18 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testDeleteMedia(){
-        Media media = client.getMedia(113);
-        client.deleteMediaItem(media);
+    public void testDeleteMedia() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Media media = client.createMediaItem(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
+
+        Media media2 = client.getMedia(media.getId());
+        client.deleteMediaItem(media2, true);
+    }
+
+    @Test
+    public void testUpdateMedia(){
+        Media updatedMedia = client.updateMedia(116L,"caption","blah");
     }
 
     @Test
