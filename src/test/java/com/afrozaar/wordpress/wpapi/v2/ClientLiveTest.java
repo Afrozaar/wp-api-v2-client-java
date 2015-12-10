@@ -608,14 +608,19 @@ public class ClientLiveTest {
         assertThat(postTags).isNotNull().isNotEmpty().hasSize(5);
     }
 
-    @Test
+    @Test(expected = WpApiParsedException.class)
     public void testDeletePostTagTerm() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         final Term postTerm = client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
 
         client.deletePost(post);
-        client.deletePostTerm(post, Taxonomies.TAG, postTerm, true);
+        final Term deletedTerm = client.deletePostTerm(post, Taxonomies.TAG, postTerm, true);
 
         assertThat(postTerm).isNotNull();
+        assertThat(deletedTerm).isNotNull();
+
+        final Term term = client.getPostTerm(post, Taxonomies.TAG, postTerm);
+
+        failBecauseExceptionWasNotThrown(WpApiParsedException.class);
     }
 }

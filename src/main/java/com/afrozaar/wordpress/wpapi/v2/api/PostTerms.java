@@ -14,4 +14,6 @@ public interface PostTerms {
 
     Term deletePostTerm(Post post, String taxonomy, Term term);
     Term deletePostTerm(Post post, String taxonomy, Term term, boolean force);
+
+    Term getPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException;
 }

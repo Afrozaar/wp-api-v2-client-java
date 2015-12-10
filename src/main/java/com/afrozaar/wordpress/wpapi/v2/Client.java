@@ -1,5 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -28,6 +29,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -327,6 +329,15 @@ public class Client implements Wordpress {
     @Override
     public Term deletePostTerm(Post post, String taxonomy, Term term, boolean force) {
         return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), ImmutableMap.of("force", force), null).getBody();
+    }
+
+    @Override
+    public Term getPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
+        try {
+            return doExchange1(Request.POST_TERM, HttpMethod.GET, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
+        } catch (HttpStatusCodeException e) {
+            throw new WpApiParsedException(ParsedRestException.of(e));
+        }
     }
 
     @SuppressWarnings("unchecked")
