@@ -239,8 +239,8 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testUpdateMedia(){
-        Media updatedMedia = client.updateMedia(116L,"caption","blah");
+    public void testUpdateMedia() {
+        Media updatedMedia = client.updateMedia(116L, "caption", "blah");
     }
 
     @Test
@@ -354,7 +354,7 @@ public class ClientLiveTest {
                 .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
                 .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                 .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withFeaturedImage(113L)
+                //                .withFeaturedImage(113L)
                 .build();
     }
 

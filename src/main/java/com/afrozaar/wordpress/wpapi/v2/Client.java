@@ -153,10 +153,9 @@ public class Client implements Wordpress {
     @Override
     public Media updateMedia(Long id, String key, String value) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        BiConsumer<String, Object> biConsumer = (key1, value1) -> Optional.ofNullable(value1).ifPresent(v -> builder.put(key1, v));
 
-        populateEntry(() -> key, builder, key);
-        populateEntry(() -> value, builder, value);
-
+        biConsumer.accept(key, value);
         ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(id), null, builder.build());
 
         return exchange.getBody();
@@ -221,9 +220,9 @@ public class Client implements Wordpress {
     @Override
     public PostMeta updatePostMeta(Long postId, Long metaId, String key, String value) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-        populateEntry(() -> key, builder, "key");
-        populateEntry(() -> value, builder, "value");
+        BiConsumer<String, Object> biConsumer = (key1, value1) -> Optional.ofNullable(value1).ifPresent(v -> builder.put(key1, v));
 
+        biConsumer.accept(key, value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
 
         return exchange.getBody();
@@ -431,25 +430,23 @@ public class Client implements Wordpress {
     private Map<String, Object> fieldsFrom(Post post) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
 
-        populateEntry(post::getDate, builder, "date");
-        populateEntry(post::getModifiedGmt, builder, "modified_gmt");
-        //populateEntry(post::getSlug, builder, "slug");
-        //populateEntry(post::getCommentStatus, builder, "status");
-        populateEntry(() -> post.getTitle().getRendered(), builder, "title");
-        populateEntry(() -> post.getContent().getRendered(), builder, "content");
-        populateEntry(post::getAuthor, builder, "author");
-        populateEntry(() -> post.getExcerpt().getRendered(), builder, "excerpt");
-        populateEntry(post::getCommentStatus, builder, "comment_status");
-        populateEntry(post::getPingStatus, builder, "ping_status");
-        populateEntry(post::getFormat, builder, "format");
-        populateEntry(post::getSticky, builder, "sticky");
-        populateEntry(post::getFeaturedImage, builder, "featured_image");
+        BiConsumer<String, Object> biConsumer = (key, value) -> Optional.ofNullable(value).ifPresent(v -> builder.put(key, v));
+
+        biConsumer.accept("date", post.getDate());
+        biConsumer.accept("modified_gmt", post.getModified());
+        //        biConsumer.accept("slug", post.getSlug());
+        //        biConsumer.accept("status",post.getStatus());
+        biConsumer.accept("title", post.getTitle().getRendered());
+        biConsumer.accept("content", post.getContent().getRendered());
+        biConsumer.accept("author", post.getAuthor());
+        biConsumer.accept("excerpt", post.getExcerpt().getRendered());
+        biConsumer.accept("comment_status", post.getCommentStatus());
+        biConsumer.accept("ping_status", post.getPingStatus());
+        biConsumer.accept("format", post.getFormat());
+        biConsumer.accept("sticky", post.getSticky());
+        biConsumer.accept("featured_image", post.getFeaturedImage());
 
         return builder.build();
-    }
-
-    <T> void populateEntry(Supplier<T> supplier, ImmutableMap.Builder<String, Object> builder, String key) {
-        Optional.ofNullable(supplier.get()).ifPresent(value -> builder.put(key, value));
     }
 
     private <T> ResponseEntity<T> doExchange(HttpMethod method, URI uri, Class<T> typeRef, T body) {
