@@ -41,6 +41,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -113,8 +114,7 @@ public class Client implements Wordpress {
     public Media createMediaItem(Media media, Resource resource) throws WpApiParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
-            BiConsumer<String, Object> p = (index, value) ->
-                    Optional.ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
+            BiConsumer<String, Object> p = (index, value) -> Optional.ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
 
             p.accept("title", media.getTitle().getRendered());
             p.accept("post", media.getPost());
@@ -299,6 +299,23 @@ public class Client implements Wordpress {
         }
 
         return deletedTerms;
+    }
+
+    @Override
+    public Term createPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
+        final Term termToUse = Objects.nonNull(term.getId()) ? term : createTerm(taxonomy, term);
+        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), taxonomy, termToUse.getId()), null, null).getBody();
+    }
+
+    @Override
+    public Term updatePostTerm(Post post, String taxonomy, Term term) {
+        throw new UnsupportedOperationException("not yet implemented");
+    }
+
+    @Override
+    public List<Term> getPostTerms(Post post, String taxonomy) {
+        // TODO: 2015/12/10 For tagging we might need to do paged requests for example if a post has a large number of tags.
+        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), taxonomy), null, null).getBody());
     }
 
     @SuppressWarnings("unchecked")

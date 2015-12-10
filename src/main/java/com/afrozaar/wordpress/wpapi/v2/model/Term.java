@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 public class Term {
     @JsonProperty("id")
@@ -90,11 +91,12 @@ public class Term {
     }
 
     public Map<String, Object> asMap() {
-        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-        Optional.ofNullable(description).ifPresent(value -> builder.put("description", value));
-        Optional.ofNullable(name).ifPresent(value -> builder.put("name", value));
-        Optional.ofNullable(slug).ifPresent(value -> builder.put("slug", value));
-        Optional.ofNullable(parentId).ifPresent(value -> builder.put("parent", value));
+        final ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        BiConsumer<String, Object> c = (index, value) -> Optional.ofNullable(value).ifPresent(val -> builder.put(index, val));
+        c.accept("description", description);
+        c.accept("name", name);
+        c.accept("slug", slug);
+        c.accept("parent", parentId);
         return builder.build();
     }
 

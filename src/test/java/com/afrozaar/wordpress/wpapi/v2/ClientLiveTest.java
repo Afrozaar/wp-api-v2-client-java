@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
+import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -34,6 +35,7 @@ import com.google.common.collect.Lists;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import org.apache.commons.lang.RandomStringUtils;
@@ -569,5 +571,40 @@ public class ClientLiveTest {
 
         assertThat(updatedTerm.getDescription()).isEqualTo(expectedDescription);
         assertThat(updatedTerm.getName()).isEqualTo(expectedName);
+    }
+
+    @Test
+    public void testCreatePostTagTerms() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Term term = TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
+
+        final Term postTerm;
+        try {
+            postTerm = client.createPostTerm(post, Taxonomies.TAG, term);
+        } catch (HttpClientErrorException e) {
+            throw WpApiParsedException.of(ParsedRestException.of(e));
+        }
+
+        assertThat(postTerm).isNotNull();
+
+        LOG.debug("created post tag: {}", postTerm);
+    }
+
+    @Test
+    public void testGetPostTagTerms() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+
+        final List<Term> postTags = client.getPostTerms(post, Taxonomies.TAG);
+
+        client.deletePost(post); // cleanup
+
+        assertThat(postTags).isNotNull().isNotEmpty().hasSize(5);
     }
 }
