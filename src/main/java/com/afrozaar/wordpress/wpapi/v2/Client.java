@@ -318,6 +318,17 @@ public class Client implements Wordpress {
         return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), taxonomy), null, null).getBody());
     }
 
+    @Override
+    public Term deletePostTerm(Post post, String taxonomy, Term term) {
+        // This returns 501 Not Implemented from server. Use variant with force parameter.
+        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
+    }
+
+    @Override
+    public Term deletePostTerm(Post post, String taxonomy, Term term, boolean force) {
+        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), ImmutableMap.of("force", force), null).getBody();
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {
