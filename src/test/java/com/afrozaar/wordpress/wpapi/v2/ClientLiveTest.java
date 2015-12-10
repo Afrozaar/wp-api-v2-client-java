@@ -129,9 +129,9 @@ public class ClientLiveTest {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", postWithMeta.v.getKey()).build());
+        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
 
-        client.deletePost(postWithMeta.k);
+        client.deletePost(postWithMeta.a);
 
         assertThat(response.getList()).isNotEmpty().hasSize(1);
     }
@@ -181,8 +181,37 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getMediaItem() {
-        final Media media = client.getMedia(54);
+    public void testCreateMedia() throws WpApiParsedException {
+
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Media media = newRandomMedia(post);
+
+        try {
+            Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
+            final Media createdMedia = client.createMediaItem(media, resource);
+            LOG.debug("created media: {}", createdMedia);
+        } catch (HttpServerErrorException e) {
+            LOG.error("Error: {}", e.getResponseBodyAsString(), e);
+        } finally {
+            client.deletePost(post);
+        }
+    }
+
+
+
+    @Test
+    public void getMediaItem() throws WpApiParsedException {
+
+        final Two<Post, Media> postWithMedia = newTestPostWithMedia();
+
+        final Media media = client.getMedia(postWithMedia.b.getId());
+
+        client.deletePost(postWithMedia.a);
+
+        // TODO: 2015/12/10 use when it becomes available: client.deleteMedia(postWithMedia.b);
+
+        assertThat(media).isNotNull();
 
         LOG.debug("Media: {}", media);
     }
@@ -197,38 +226,14 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testCreateMedia() throws WpApiParsedException {
-
-        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-
-        Media media = MediaBuilder.aMedia()
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
-                .withCaption(RandomStringUtils.randomAlphabetic(50))
-                .withAltText("image")
-                .withDescription(RandomStringUtils.randomAscii(20))
-                .withPost(post.getId())
-                .build();
-
-        try {
-            Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
-            final Media createdMedia = client.createMediaItem(media, resource);
-            LOG.debug("created media: {}", createdMedia);
-        } catch (HttpServerErrorException e) {
-            LOG.error("Error: {}", e.getResponseBodyAsString(), e);
-        } finally {
-            client.deletePost(post);
-        }
-    }
-
-    @Test
     public void getPostMetas() throws PostCreateException {
         // given
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
         //when
-        final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.k.getId());
+        final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.a.getId());
 
-        client.deletePost(postWithMeta.k); // cleanup
+        client.deletePost(postWithMeta.a); // cleanup
 
         // then
         assertThat(postMetas).isNotNull();
@@ -240,7 +245,7 @@ public class ClientLiveTest {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PostMeta postMeta = client.getPostMeta(postWithMeta.k.getId(), postWithMeta.v.getId());
+        final PostMeta postMeta = client.getPostMeta(postWithMeta.a.getId(), postWithMeta.b.getId());
 
         assertThat(postMeta).isNotNull();
 
@@ -338,6 +343,25 @@ public class ClientLiveTest {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         final PostMeta meta = client.createMeta(post.getId(), RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
         return Two.of(post, meta);
+    }
+
+    private Media newRandomMedia(Post post) {
+        return MediaBuilder.aMedia()
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
+                .withCaption(RandomStringUtils.randomAlphabetic(50))
+                .withAltText("image")
+                .withDescription(RandomStringUtils.randomAscii(20))
+                .withPost(post.getId())
+                .build();
+    }
+
+    private Two<Post, Media> newTestPostWithMedia() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
+        final Media mediaItem = client.createMediaItem(newRandomMedia(post), resource);
+
+        return Two.of(post, mediaItem);
     }
 
     @Test

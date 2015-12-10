@@ -144,7 +144,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media getMedia(Integer id) {
+    public Media getMedia(Long id) {
         final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null);
 
         return exchange.getBody();
@@ -396,7 +396,7 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.k, authTuple.v).body(body);
+        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).body(body);
         debugRequest(entity);
         final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
         debugHeaders(exchange.getHeaders());

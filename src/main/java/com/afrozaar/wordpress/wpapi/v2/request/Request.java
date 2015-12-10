@@ -14,16 +14,17 @@ import java.util.Map;
 public abstract class Request {
     public static final String POSTS = "/posts";
     public static final String POST = "/posts/{id}";
+    public static final String POST_TERMS = "/posts/{postId}/terms/{taxonomy}";
+    public static final String POST_TERM = "/posts/{postId}/terms/{taxonomy}/{termId}";
 
-    public static final String METAS = "/posts/{id}/meta";
+    public static final String METAS = "/posts/{postId}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
     public static final String TAXONOMIES = "/taxonomies";
     public static final String TAXONOMY = "/taxonomies/{slug}";
     public static final String TERMS = "/terms/{taxonomySlug}";
-    public static final String TERM = "/terms/{taxonomySlug}/{id}";
-
+    public static final String TERM = "/terms/{taxonomySlug}/{termId}";
     public static final String MEDIAS = "/media";
-    public static final String MEDIA = "/media/{id}";
+    public static final String MEDIA = "/media/{mediaId}";
 
     final String uri;
     final Map<String, List<String>> params;

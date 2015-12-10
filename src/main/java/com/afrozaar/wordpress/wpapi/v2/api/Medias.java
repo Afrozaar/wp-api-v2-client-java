@@ -12,7 +12,7 @@ public interface Medias {
     Media createMediaItem(Media media, Resource resource) throws WpApiParsedException;
 
     List<Media> getMedia();
-    Media getMedia(Integer id);
+    Media getMedia(Long id);
 
 //    Media updateMediaItem();
 //

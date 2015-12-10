@@ -11,7 +11,7 @@ public class AuthUtil {
     public static HttpHeaders createHeaders(String username, String password) {
         HttpHeaders httpHeaders = new HttpHeaders();
         final Two<String, String> authHeader = authTuple(username, password);
-        httpHeaders.set(authHeader.k, authHeader.v);
+        httpHeaders.set(authHeader.a, authHeader.b);
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         return httpHeaders;

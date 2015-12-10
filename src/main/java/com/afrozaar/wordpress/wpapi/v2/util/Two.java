@@ -1,15 +1,15 @@
 package com.afrozaar.wordpress.wpapi.v2.util;
 
-public class Two<K, V> {
-    public final K k;
-    public final V v;
+public class Two<A, B> {
+    public final A a;
+    public final B b;
 
-    public Two(K k, V v) {
-        this.k = k;
-        this.v = v;
+    public Two(A a, B b) {
+        this.a = a;
+        this.b = b;
     }
 
-    public static <K, V> Two<K, V> of(K k, V v) {
-        return new Two<>(k, v);
+    public static <A, B> Two<A, B> of(A a, B b) {
+        return new Two<>(a, b);
     }
 }
