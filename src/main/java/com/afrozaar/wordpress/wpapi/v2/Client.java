@@ -112,7 +112,27 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media createMediaItem(Media media, Resource resource) throws WpApiParsedException {
+    public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
+        final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
+        final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
+
+        final HttpHeaders headers = exchange.getHeaders();
+        final List<Link> links = parseLinks(headers);
+        final List<Post> posts = Arrays.asList(exchange.getBody());
+
+        LOG.trace("{} returned {} posts.", uri, posts.size());
+
+        return PagedResponse.Builder.aPagedResponse(Post.class)
+                .withPages(headers)
+                .withPosts(posts)
+                .withSelf(uri.toASCIIString())
+                .withNext(link(links, next))
+                .withPrevious(link(links, previous))
+                .build();
+    }
+
+    @Override
+    public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
             BiConsumer<String, Object> p = (index, value) -> Optional.ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
@@ -166,35 +186,15 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public boolean deleteMediaItem(Media media, boolean force) {
+    public boolean deleteMedia(Media media, boolean force) {
         final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), ImmutableMap.of("force", force), null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
     @Override
-    public boolean deleteMediaItem(Media media) {
+    public boolean deleteMedia(Media media) {
         final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), null, null);
         return exchange.getStatusCode().is2xxSuccessful();
-    }
-
-    @Override
-    public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
-        final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
-        final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
-
-        final HttpHeaders headers = exchange.getHeaders();
-        final List<Link> links = parseLinks(headers);
-        final List<Post> posts = Arrays.asList(exchange.getBody());
-
-        LOG.trace("{} returned {} posts.", uri, posts.size());
-
-        return PagedResponse.Builder.aPagedResponse(Post.class)
-                .withPages(headers)
-                .withPosts(posts)
-                .withSelf(uri.toASCIIString())
-                .withNext(link(links, next))
-                .withPrevious(link(links, previous))
-                .build();
     }
 
     @Override

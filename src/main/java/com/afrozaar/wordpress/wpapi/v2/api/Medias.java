@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface Medias {
 
-    Media createMediaItem(Media media, Resource resource) throws WpApiParsedException;
+    Media createMedia(Media media, Resource resource) throws WpApiParsedException;
 
     List<Media> getMedia();
     Media getMedia(Long id);
 
     Media updateMedia(Media media);
 
-    boolean deleteMediaItem(Media media);
-    boolean deleteMediaItem(Media media, boolean force);
+    boolean deleteMedia(Media media);
+    boolean deleteMedia(Media media, boolean force);
 }

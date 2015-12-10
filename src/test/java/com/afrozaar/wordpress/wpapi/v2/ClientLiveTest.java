@@ -192,7 +192,7 @@ public class ClientLiveTest {
 
         try {
             Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
-            final Media createdMedia = client.createMediaItem(media, resource);
+            final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
 
         } catch (HttpServerErrorException e) {
@@ -231,10 +231,10 @@ public class ClientLiveTest {
     public void testDeleteMedia() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        Media media = client.createMediaItem(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
+        Media media = client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
 
         Media media2 = client.getMedia(media.getId());
-        client.deleteMediaItem(media2, true);
+        client.deleteMedia(media2, true);
     }
 
     @Test
@@ -242,7 +242,7 @@ public class ClientLiveTest {
 
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final Media media = client.createMediaItem(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
+        final Media media = client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
 
         media.setDescription("JUnit Description");
 
@@ -250,7 +250,7 @@ public class ClientLiveTest {
 
         assertThat(updatedMedia.getDescription()).isEqualTo(media.getDescription());
 
-        client.deleteMediaItem(updatedMedia, true);
+        client.deleteMedia(updatedMedia, true);
         client.deletePost(post);
     }
 
@@ -389,7 +389,7 @@ public class ClientLiveTest {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
         Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
-        final Media mediaItem = client.createMediaItem(newRandomMedia(post), resource);
+        final Media mediaItem = client.createMedia(newRandomMedia(post), resource);
 
         return Two.of(post, mediaItem);
     }
