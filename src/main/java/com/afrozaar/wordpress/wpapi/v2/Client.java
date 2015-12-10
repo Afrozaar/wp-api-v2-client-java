@@ -226,7 +226,8 @@ public class Client implements Wordpress {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
         BiConsumer<String, Object> biConsumer = (key1, value1) -> Optional.ofNullable(value1).ifPresent(v -> builder.put(key1, v));
 
-        biConsumer.accept(key, value);
+        biConsumer.accept("key", key);
+        biConsumer.accept("value", value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
 
         return exchange.getBody();
