@@ -194,11 +194,13 @@ public class ClientLiveTest {
             Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
+            post.setFeaturedImage(media.getId());
+            client.updatePost(post);
 
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-            client.deletePost(post);
+//            client.deletePost(post);
         }
     }
 

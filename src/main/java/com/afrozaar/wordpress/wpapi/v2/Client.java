@@ -152,6 +152,15 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post setFeaturedImage(Media media) {
+        Post post = this.getPost(media.getPost());
+        if (media.getMediaType().equals("image")) {
+            post.setFeaturedImage(media.getId());
+        }
+        return doExchange1(Request.POST, HttpMethod.POST, Post.class, forExpand(post.getId()), null, null).getBody();
+    }
+
+    @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
