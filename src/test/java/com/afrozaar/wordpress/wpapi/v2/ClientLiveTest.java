@@ -7,9 +7,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.WpApiClientParsedException;
+import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
@@ -196,7 +197,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testCreateMedia() throws WpApiClientParsedException {
+    public void testCreateMedia() throws WpApiParsedException {
 
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
@@ -408,7 +409,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testCreateTaxonomyCategory() throws TermNotFoundException {
+    public void testCreateTaxonomyCategory() throws WpApiParsedException {
 
         final String expectedName = RandomStringUtils.randomAlphabetic(5);
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
@@ -425,6 +426,16 @@ public class ClientLiveTest {
 
     }
 
+    @Test
+    public void testCreateSameTaxonomyTagManyTimes() throws WpApiParsedException {
+
+        final Term build = TermBuilder.aTerm().withName("J-Unit").build();
+
+        client.createTerm(Taxonomies.TAG, build);
+        client.createTerm(Taxonomies.TAG, build);
+        client.createTerm(Taxonomies.TAG, build);
+    }
+
     @Test(expected = TermNotFoundException.class)
     public void testGetTaxonomyCategoryNotFound_mustThrowTermNotFoundException() throws TermNotFoundException {
         final Term term = client.getTerm(CATEGORY, 9999L);
@@ -432,7 +443,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testCreateTaxonomyCategoryHierarchical() throws TermNotFoundException {
+    public void testCreateTaxonomyCategoryHierarchical() throws WpApiParsedException {
         final Term rootTerm = client.createTerm(CATEGORY, TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
@@ -477,7 +488,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testCreateTaxonomyTag() throws TermNotFoundException {
+    public void testCreateTaxonomyTag() throws WpApiParsedException {
 
         String expectedName = RandomStringUtils.randomAlphabetic(3);
         String expectedDescription = RandomStringUtils.randomAlphabetic(5);
@@ -496,7 +507,7 @@ public class ClientLiveTest {
     }
 
     @Test(expected = TermNotFoundException.class)
-    public void testDeleteTaxonomyTag() throws TermNotFoundException {
+    public void testDeleteTaxonomyTag() throws WpApiParsedException {
         String expectedName = RandomStringUtils.randomAlphabetic(3);
         String expectedDescription = RandomStringUtils.randomAlphabetic(5);
         Term tag = TermBuilder.aTerm()
@@ -516,7 +527,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testUpdateTaxonomyTag() throws TermNotFoundException {
+    public void testUpdateTaxonomyTag() throws WpApiParsedException {
         Term tag = TermBuilder.aTerm()
                 .withDescription(RandomStringUtils.randomAlphabetic(5))
                 .withName(RandomStringUtils.randomAlphabetic(3))

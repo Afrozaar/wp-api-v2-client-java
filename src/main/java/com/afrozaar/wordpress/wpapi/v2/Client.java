@@ -2,7 +2,7 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.WpApiClientParsedException;
+import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
@@ -110,7 +110,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Media createMediaItem(Media media, Resource resource) throws WpApiClientParsedException {
+    public Media createMediaItem(Media media, Resource resource) throws WpApiParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
             BiConsumer<String, Object> p = (index, value) ->
@@ -126,7 +126,7 @@ public class Client implements Wordpress {
 
             return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
-            throw new WpApiClientParsedException(e);
+            throw WpApiParsedException.of(e);
         }
     }
 
@@ -233,8 +233,14 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createTerm(String taxonomy, Term term) {
-        return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, term.asMap()).getBody();
+    public Term createTerm(String taxonomy, Term term) throws WpApiParsedException {
+        try {
+            return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, term.asMap()).getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            final WpApiParsedException exception = WpApiParsedException.of(e);
+            LOG.error("Could not create {} term '{}'. {} ", taxonomy, term.getName(), exception.getMessage(), exception);
+            throw exception;
+        }
     }
 
     @Override
