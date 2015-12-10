@@ -426,12 +426,11 @@ public class ClientLiveTest {
 
     }
 
-    @Test
+    @Test(expected = WpApiParsedException.class)
     public void testCreateSameTaxonomyTagManyTimes() throws WpApiParsedException {
 
         final Term build = TermBuilder.aTerm().withName("J-Unit").build();
 
-        client.createTerm(Taxonomies.TAG, build);
         client.createTerm(Taxonomies.TAG, build);
         client.createTerm(Taxonomies.TAG, build);
     }
