@@ -133,6 +133,12 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public boolean deleteMediaItem(Media media) {
+        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(Integer.valueOf(media.getId().intValue())), null, null);
+        return exchange.getStatusCode().is2xxSuccessful();
+    }
+
+    @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
@@ -141,14 +147,12 @@ public class Client implements Wordpress {
             pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
             collected.addAll(pagedResponse.getList());
         }
-
         return collected;
     }
 
     @Override
     public Media getMedia(Long id) {
         final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null);
-
         return exchange.getBody();
     }
 
@@ -421,6 +425,7 @@ public class Client implements Wordpress {
         populateEntry(post::getPingStatus, builder, "ping_status");
         populateEntry(post::getFormat, builder, "format");
         populateEntry(post::getSticky, builder, "sticky");
+        populateEntry(post::getFeaturedImage, builder, "featured_image");
 
         return builder.build();
     }

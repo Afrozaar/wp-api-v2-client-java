@@ -34,6 +34,7 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 import com.google.common.collect.Lists;
 
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -45,6 +46,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
@@ -193,10 +195,11 @@ public class ClientLiveTest {
             Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
             final Media createdMedia = client.createMediaItem(media, resource);
             LOG.debug("created media: {}", createdMedia);
+
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-            client.deletePost(post);
+//            client.deletePost(post);
         }
     }
 
@@ -225,6 +228,12 @@ public class ClientLiveTest {
         assertThat(medias).isNotNull().isNotEmpty();
 
         LOG.debug("Media: {}", medias);
+    }
+
+    @Test
+    public void testDeleteMedia(){
+        Media media = client.getMedia(113);
+        client.deleteMediaItem(media);
     }
 
     @Test
@@ -338,6 +347,7 @@ public class ClientLiveTest {
                 .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
                 .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                 .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withFeaturedImage(113L)
                 .build();
     }
 

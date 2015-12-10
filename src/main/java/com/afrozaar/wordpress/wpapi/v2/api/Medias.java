@@ -16,5 +16,5 @@ public interface Medias {
 
 //    Media updateMediaItem();
 //
-//    boolean deleteMediaItem();
+    boolean deleteMediaItem(Media media);
 }
