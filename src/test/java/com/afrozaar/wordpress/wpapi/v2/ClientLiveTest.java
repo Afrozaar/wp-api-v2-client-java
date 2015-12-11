@@ -44,6 +44,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,19 @@ public class ClientLiveTest {
         client.deletePost(postWithMeta.a);
 
         assertThat(response.getList()).isNotEmpty().hasSize(1);
+    }
+
+    @Test
+    @Ignore // this is for documentation purpose only
+    public void searchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
+
+        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest()
+                .withParam("filter[meta_key]", "baobab_indexed")
+                .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
+                .build());
+
+        // this request using curl/httpie:
+        // http --auth 'username:wordpress!' http://myhost/wp-json/wp/v2/posts?filter[meta_key]=baobab_indexed&filter[meta_compare]=NOT%20EXISTS
     }
 
     @Test
