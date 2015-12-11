@@ -13,7 +13,9 @@ public class SearchRequest<T> extends Request {
     }
 
     public static <T> SearchRequest<T> posts() {
-        return Builder.<T>aSearchRequest().build();
+        return Builder.<T>aSearchRequest()
+                .withUri(Request.POSTS)
+                .build();
     }
 
     public static class Builder<BT> {
