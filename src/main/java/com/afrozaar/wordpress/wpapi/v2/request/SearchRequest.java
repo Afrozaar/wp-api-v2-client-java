@@ -8,25 +8,28 @@ import java.util.Map;
 
 public class SearchRequest<T> extends Request {
 
-    public SearchRequest(String uri, Map<String, List<String>> params) {
+    private final Class<T> clazz;
+
+    public SearchRequest(String uri, Map<String, List<String>> params, Class<T> clazz) {
         super(uri, params);
+        this.clazz = clazz;
     }
 
-    public static <T> SearchRequest<T> posts() {
-        return Builder.<T>aSearchRequest()
-                .withUri(Request.POSTS)
-                .build();
+    public Class<T> getClazz() {
+        return clazz;
     }
 
     public static class Builder<BT> {
         ImmutableMap.Builder<String, List<String>> paramBuilder = new ImmutableMap.Builder<>();
         String uri = Request.POSTS;
+        final Class<BT> clazz;
 
-        private Builder() {
+        private Builder(Class<BT> clazz) {
+            this.clazz = clazz;
         }
 
-        public static <BT> Builder<BT> aSearchRequest() {
-            return new Builder<>();
+        public static <BT> Builder<BT> aSearchRequest(Class<BT> clazz) {
+            return new Builder<>(clazz);
         }
 
         public Builder<BT> withParam(String key, String... values) {
@@ -45,11 +48,11 @@ public class SearchRequest<T> extends Request {
         }
 
         public Builder<BT> but() {
-            return Builder.<BT>aSearchRequest().withParams(paramBuilder.build()).withUri(uri);
+            return Builder.aSearchRequest(clazz).withParams(paramBuilder.build()).withUri(uri);
         }
 
         public SearchRequest<BT> build() {
-            return new SearchRequest<>(uri, paramBuilder.build());
+            return new SearchRequest<>(uri, paramBuilder.build(), clazz);
         }
     }
 }

@@ -3,21 +3,12 @@ package com.afrozaar.wordpress.wpapi.v2.api;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
-import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
 import java.util.Map;
 
 public interface Posts {
-
-    /**
-     * <pre>
-     * GET /posts
-     * GET /posts?page=1
-     * GET /posts?page=2&meta_key=foo&meta_value=bar
-     * </pre>
-     */
-    PagedResponse<Post> searchPosts(SearchRequest<Post> search);
 
     /**
      * @param post   {@code Map<String, Object>}
@@ -51,4 +42,13 @@ public interface Posts {
     Post updatePost(Post post);
 
     Post deletePost(Post post);
+
+    /**
+     * Search request just returning the first page of posts.
+     */
+    static SearchRequest<Post> list() {
+        return SearchRequest.Builder.aSearchRequest(Post.class)
+                .withUri(Request.POSTS)
+                .build();
+    }
 }

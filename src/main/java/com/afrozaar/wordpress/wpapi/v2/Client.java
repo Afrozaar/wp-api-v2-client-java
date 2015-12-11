@@ -114,23 +114,9 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PagedResponse<Post> searchPosts(SearchRequest<Post> search) {
-        final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
-        final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
-
-        final HttpHeaders headers = exchange.getHeaders();
-        final List<Link> links = parseLinks(headers);
-        final List<Post> posts = Arrays.asList(exchange.getBody());
-
-        LOG.trace("{} returned {} posts.", uri, posts.size());
-
-        return PagedResponse.Builder.aPagedResponse(Post.class)
-                .withPages(headers)
-                .withPosts(posts)
-                .withSelf(uri.toASCIIString())
-                .withNext(link(links, next))
-                .withPrevious(link(links, previous))
-                .build();
+    public <T> PagedResponse<T> search(SearchRequest<T> search) {
+        final URI uri = search.usingClient(this).build().toUri();
+        return getPagedResponse(uri, search.getClazz());
     }
 
     @Override

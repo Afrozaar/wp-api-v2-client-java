@@ -4,7 +4,6 @@ import com.afrozaar.wordpress.wpapi.v2.Client;
 
 import com.google.common.collect.ImmutableMap;
 
-import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -43,16 +42,6 @@ public abstract class Request {
     public static Request of(String uri, Map<String, List<String>> params) {
         return new Request(uri, params) {
         };
-    }
-
-    public static <T> SearchRequest<T> fromLink(String link, String context) {
-        final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(link);
-        final UriComponents build = builder.build();
-        final ImmutableMap.Builder<String, List<String>> parBuilder = new ImmutableMap.Builder<>();
-
-        build.getQueryParams().entrySet().stream().forEach(entry -> parBuilder.put(entry.getKey(), entry.getValue()));
-
-        return new SearchRequest<>(build.getPath().replace(context, ""), parBuilder.build());
     }
 
     protected UriComponentsBuilder init(String baseUrl, String context) {

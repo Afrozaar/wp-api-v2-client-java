@@ -7,6 +7,7 @@ import com.afrozaar.wordpress.wpapi.v2.api.PostTerms;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.api.Terms;
+import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
 import java.net.URI;
@@ -20,4 +21,6 @@ public interface Wordpress extends Posts, PostMetas, PostTerms, Taxonomies, Term
     <T> PagedResponse<T> getPagedResponse(URI uri, Class<T> typeRef);
 
     <T> PagedResponse<T> traverse(PagedResponse<T> response, Function<PagedResponse<?>, String> direction);
+
+    <T> PagedResponse<T> search(SearchRequest<T> search);
 }
