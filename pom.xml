@@ -4,7 +4,7 @@
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-RC1</version>
     <name>wp-api-v2-client-java</name>
     <url>https://bitbucket.org/afrozaar/wp-api-v2-client-java</url>
 
