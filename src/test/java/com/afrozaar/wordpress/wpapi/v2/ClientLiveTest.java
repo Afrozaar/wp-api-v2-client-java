@@ -202,11 +202,7 @@ public class ClientLiveTest {
 
     @Test
     public void testCreateMedia() throws WpApiParsedException {
-
-        Post post1 = newTestPostWithRandomData();
-
-        final Post post = client.createPost(post1, PostStatus.publish);
-
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         Media media = newRandomMedia(post);
 
         try {
@@ -214,12 +210,11 @@ public class ClientLiveTest {
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
             post.setFeaturedImage(createdMedia.getId());
-            client.updatePost(post);
-
+            client.updatePostField(post.getId(),"featured_image", createdMedia.getId());
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-            //            client.deletePost(post);
+            //client.deletePost(post);
         }
     }
 

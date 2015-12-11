@@ -41,6 +41,8 @@ public interface Posts {
      */
     Post updatePost(Post post);
 
+    Post updatePostField(Long postId, String field, Object value);
+
     Post deletePost(Post post);
 
     /**

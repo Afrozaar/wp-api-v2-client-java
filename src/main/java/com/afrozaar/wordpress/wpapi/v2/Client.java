@@ -98,12 +98,13 @@ public class Client implements Wordpress {
 
     @Override
     public Post updatePost(Post post) {
-
-        // update post is not as straight forward :(
-        // the fields need to be checked for being empty (not null) and should not be included
-
         final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.PUT, Post.class, forExpand(post.getId()), ImmutableMap.of(), fieldsFrom(post));
         return exchange.getBody();
+    }
+
+    @Override
+    public Post updatePostField(Long postId, String field, Object value) {
+        return doExchange1(Request.POST, HttpMethod.PUT, Post.class, forExpand(postId), null, ImmutableMap.of(field, value)).getBody();
     }
 
     @Override
@@ -133,8 +134,6 @@ public class Client implements Wordpress {
 
             uploadMap.add("file", resource);
 
-            setFeaturedImageOnPost(media);
-
             return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw WpApiParsedException.of(e);
@@ -142,12 +141,9 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post setFeaturedImageOnPost(Media media) {
-        Post post = this.getPost(media.getPost());
-        if ("image".equals(media.getMediaType())) {
-            post.setFeaturedImage(media.getId());
-        }
-        return updatePost(post);
+    public Post setPostFeaturedImage(Long postId, Media media) {
+        Preconditions.checkArgument("image".equals(media.getMediaType()), "Can not set non-image media type as a featured image on a post.");
+        return updatePostField(postId, "featured_image", media.getId());
     }
 
     @Override
