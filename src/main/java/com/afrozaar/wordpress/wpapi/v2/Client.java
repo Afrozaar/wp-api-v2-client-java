@@ -156,10 +156,10 @@ public class Client implements Wordpress {
     @Override
     public Post setFeaturedImage(Media media) {
         Post post = this.getPost(media.getPost());
-        if (media.getMediaType().equals("image")) {
+        if ("image".equals(media.getMediaType())) {
             post.setFeaturedImage(media.getId());
         }
-        return doExchange1(Request.POST, HttpMethod.POST, Post.class, forExpand(post.getId()), null, null).getBody();
+        return updatePost(post);
     }
 
     @Override
@@ -176,8 +176,7 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null);
-        return exchange.getBody();
+        return doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null).getBody();
     }
 
     @Override
