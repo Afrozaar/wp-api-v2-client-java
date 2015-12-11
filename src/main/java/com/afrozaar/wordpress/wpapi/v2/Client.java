@@ -6,6 +6,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
+import com.afrozaar.wordpress.wpapi.v2.model.Page;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
@@ -373,6 +374,32 @@ public class Client implements Wordpress {
         } catch (HttpStatusCodeException e) {
             throw new WpApiParsedException(ParsedRestException.of(e));
         }
+    }
+
+    @Override
+    public Page createPage(Page page, PostStatus status) {
+        final Map<String, Object> map = page.asMap();
+        final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>()
+                .putAll(map)
+                .put("status", status.value)
+                .build();
+
+        return doExchange1(Request.PAGES, HttpMethod.POST, Page.class, forExpand(), null, pageFields).getBody();
+    }
+
+    @Override
+    public Page getPage(Long pageId) {
+        return null;
+    }
+
+    @Override
+    public Page updatePage(Page page) {
+        return null;
+    }
+
+    @Override
+    public Page deletePage(Page page) {
+        return null;
     }
 
     @SuppressWarnings("unchecked")

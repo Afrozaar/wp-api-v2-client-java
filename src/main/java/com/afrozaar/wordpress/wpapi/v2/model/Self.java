@@ -1,4 +1,3 @@
-
 package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,7 +15,7 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "href"
+        "href"
 })
 public class Self {
 
@@ -26,9 +25,7 @@ public class Self {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The href
+     * @return The href
      */
     @JsonProperty("href")
     public String getHref() {
@@ -36,9 +33,7 @@ public class Self {
     }
 
     /**
-     * 
-     * @param href
-     *     The href
+     * @param href The href
      */
     @JsonProperty("href")
     public void setHref(String href) {

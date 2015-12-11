@@ -1,4 +1,3 @@
-
 package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,8 +15,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "raw",
-    "rendered"
+        "raw",
+        "rendered"
 })
 public class Excerpt {
 
@@ -29,9 +28,7 @@ public class Excerpt {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The raw
+     * @return The raw
      */
     @JsonProperty("raw")
     public String getRaw() {
@@ -39,9 +36,7 @@ public class Excerpt {
     }
 
     /**
-     * 
-     * @param raw
-     *     The raw
+     * @param raw The raw
      */
     @JsonProperty("raw")
     public void setRaw(String raw) {
@@ -49,9 +44,7 @@ public class Excerpt {
     }
 
     /**
-     * 
-     * @return
-     *     The rendered
+     * @return The rendered
      */
     @JsonProperty("rendered")
     public String getRendered() {
@@ -59,9 +52,7 @@ public class Excerpt {
     }
 
     /**
-     * 
-     * @param rendered
-     *     The rendered
+     * @param rendered The rendered
      */
     @JsonProperty("rendered")
     public void setRendered(String rendered) {

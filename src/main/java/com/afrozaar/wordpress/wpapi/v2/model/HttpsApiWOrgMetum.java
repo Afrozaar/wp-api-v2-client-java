@@ -1,4 +1,3 @@
-
 package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,42 +15,20 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "href",
-    "embeddable"
+        "embeddable",
+        "href"
 })
 public class HttpsApiWOrgMetum {
 
-    @JsonProperty("href")
-    private String href;
     @JsonProperty("embeddable")
     private Boolean embeddable;
+    @JsonProperty("href")
+    private String href;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The href
-     */
-    @JsonProperty("href")
-    public String getHref() {
-        return href;
-    }
-
-    /**
-     * 
-     * @param href
-     *     The href
-     */
-    @JsonProperty("href")
-    public void setHref(String href) {
-        this.href = href;
-    }
-
-    /**
-     * 
-     * @return
-     *     The embeddable
+     * @return The embeddable
      */
     @JsonProperty("embeddable")
     public Boolean getEmbeddable() {
@@ -59,13 +36,27 @@ public class HttpsApiWOrgMetum {
     }
 
     /**
-     * 
-     * @param embeddable
-     *     The embeddable
+     * @param embeddable The embeddable
      */
     @JsonProperty("embeddable")
     public void setEmbeddable(Boolean embeddable) {
         this.embeddable = embeddable;
+    }
+
+    /**
+     * @return The href
+     */
+    @JsonProperty("href")
+    public String getHref() {
+        return href;
+    }
+
+    /**
+     * @param href The href
+     */
+    @JsonProperty("href")
+    public void setHref(String href) {
+        this.href = href;
     }
 
     @JsonAnyGetter

@@ -13,6 +13,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
+import com.afrozaar.wordpress.wpapi.v2.model.Page;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
@@ -21,6 +22,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PageBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
@@ -675,5 +677,18 @@ public class ClientLiveTest {
         client.deletePost(post);
 
         assertThat(postTags).isNotNull().hasSize(limit);
+    }
+
+    @Test
+    public void testCreatePage() {
+        Page page = PageBuilder.aPage()
+                .withTitle(TitleBuilder.aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
+                .withContent(ContentBuilder.aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
+                .build();
+        final Page createdPage = client.createPage(page, PostStatus.publish);
+
+        assertThat(createdPage).isNotNull();
+
     }
 }

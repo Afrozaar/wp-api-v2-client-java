@@ -186,6 +186,7 @@ public class Media {
     public int getAuthor() {
         return author;
     }
+
     public void setAuthor(int author) {
         this.author = author;
     }

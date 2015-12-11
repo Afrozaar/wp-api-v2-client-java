@@ -1,4 +1,3 @@
-
 package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,9 +15,9 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "href",
-    "embeddable",
-    "taxonomy"
+        "href",
+        "embeddable",
+        "taxonomy"
 })
 public class HttpsApiWOrgTerm {
 
@@ -32,9 +31,7 @@ public class HttpsApiWOrgTerm {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The href
+     * @return The href
      */
     @JsonProperty("href")
     public String getHref() {
@@ -42,9 +39,7 @@ public class HttpsApiWOrgTerm {
     }
 
     /**
-     * 
-     * @param href
-     *     The href
+     * @param href The href
      */
     @JsonProperty("href")
     public void setHref(String href) {
@@ -52,9 +47,7 @@ public class HttpsApiWOrgTerm {
     }
 
     /**
-     * 
-     * @return
-     *     The embeddable
+     * @return The embeddable
      */
     @JsonProperty("embeddable")
     public Boolean getEmbeddable() {
@@ -62,9 +55,7 @@ public class HttpsApiWOrgTerm {
     }
 
     /**
-     * 
-     * @param embeddable
-     *     The embeddable
+     * @param embeddable The embeddable
      */
     @JsonProperty("embeddable")
     public void setEmbeddable(Boolean embeddable) {
@@ -72,9 +63,7 @@ public class HttpsApiWOrgTerm {
     }
 
     /**
-     * 
-     * @return
-     *     The taxonomy
+     * @return The taxonomy
      */
     @JsonProperty("taxonomy")
     public String getTaxonomy() {
@@ -82,9 +71,7 @@ public class HttpsApiWOrgTerm {
     }
 
     /**
-     * 
-     * @param taxonomy
-     *     The taxonomy
+     * @param taxonomy The taxonomy
      */
     @JsonProperty("taxonomy")
     public void setTaxonomy(String taxonomy) {

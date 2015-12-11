@@ -1,4 +1,3 @@
-
 package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -16,27 +15,27 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "author",
-    "content",
-    "status",
-    "_links",
-    "modified",
-    "guid",
-    "featured_image",
-    "sticky",
-    "password",
-    "format",
-    "link",
-    "ping_status",
-    "excerpt",
-    "modified_gmt",
-    "id",
-    "title",
-    "comment_status",
-    "type",
-    "slug",
-    "date",
-    "date_gmt"
+        "author",
+        "content",
+        "status",
+        "_links",
+        "modified",
+        "guid",
+        "featured_image",
+        "sticky",
+        "password",
+        "format",
+        "link",
+        "ping_status",
+        "excerpt",
+        "modified_gmt",
+        "id",
+        "title",
+        "comment_status",
+        "type",
+        "slug",
+        "date",
+        "date_gmt"
 })
 public class Post {
 
@@ -86,9 +85,7 @@ public class Post {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     * 
-     * @return
-     *     The author
+     * @return The author
      */
     @JsonProperty("author")
     public Long getAuthor() {
@@ -96,9 +93,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param author
-     *     The author
+     * @param author The author
      */
     @JsonProperty("author")
     public void setAuthor(Long author) {
@@ -106,9 +101,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The content
+     * @return The content
      */
     @JsonProperty("content")
     public Content getContent() {
@@ -116,9 +109,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param content
-     *     The content
+     * @param content The content
      */
     @JsonProperty("content")
     public void setContent(Content content) {
@@ -126,9 +117,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The status
+     * @return The status
      */
     @JsonProperty("status")
     public String getStatus() {
@@ -136,9 +125,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param status
-     *     The status
+     * @param status The status
      */
     @JsonProperty("status")
     public void setStatus(String status) {
@@ -146,9 +133,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The Links
+     * @return The Links
      */
     @JsonProperty("_links")
     public com.afrozaar.wordpress.wpapi.v2.model.Links getLinks() {
@@ -156,9 +141,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param Links
-     *     The _links
+     * @param Links The _links
      */
     @JsonProperty("_links")
     public void setLinks(com.afrozaar.wordpress.wpapi.v2.model.Links Links) {
@@ -166,9 +149,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The modified
+     * @return The modified
      */
     @JsonProperty("modified")
     public String getModified() {
@@ -176,9 +157,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param modified
-     *     The modified
+     * @param modified The modified
      */
     @JsonProperty("modified")
     public void setModified(String modified) {
@@ -186,9 +165,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The guid
+     * @return The guid
      */
     @JsonProperty("guid")
     public Guid getGuid() {
@@ -196,9 +173,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param guid
-     *     The guid
+     * @param guid The guid
      */
     @JsonProperty("guid")
     public void setGuid(Guid guid) {
@@ -206,9 +181,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The featuredImage
+     * @return The featuredImage
      */
     @JsonProperty("featured_image")
     public Long getFeaturedImage() {
@@ -216,9 +189,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param featuredImage
-     *     The featured_image
+     * @param featuredImage The featured_image
      */
     @JsonProperty("featured_image")
     public void setFeaturedImage(Long featuredImage) {
@@ -226,9 +197,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The sticky
+     * @return The sticky
      */
     @JsonProperty("sticky")
     public Boolean getSticky() {
@@ -236,9 +205,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param sticky
-     *     The sticky
+     * @param sticky The sticky
      */
     @JsonProperty("sticky")
     public void setSticky(Boolean sticky) {
@@ -246,9 +213,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The password
+     * @return The password
      */
     @JsonProperty("password")
     public String getPassword() {
@@ -256,9 +221,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param password
-     *     The password
+     * @param password The password
      */
     @JsonProperty("password")
     public void setPassword(String password) {
@@ -266,9 +229,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The format
+     * @return The format
      */
     @JsonProperty("format")
     public String getFormat() {
@@ -276,9 +237,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param format
-     *     The format
+     * @param format The format
      */
     @JsonProperty("format")
     public void setFormat(String format) {
@@ -286,9 +245,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The link
+     * @return The link
      */
     @JsonProperty("link")
     public String getLink() {
@@ -296,9 +253,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param link
-     *     The link
+     * @param link The link
      */
     @JsonProperty("link")
     public void setLink(String link) {
@@ -306,9 +261,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The pingStatus
+     * @return The pingStatus
      */
     @JsonProperty("ping_status")
     public String getPingStatus() {
@@ -316,9 +269,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param pingStatus
-     *     The ping_status
+     * @param pingStatus The ping_status
      */
     @JsonProperty("ping_status")
     public void setPingStatus(String pingStatus) {
@@ -326,9 +277,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The excerpt
+     * @return The excerpt
      */
     @JsonProperty("excerpt")
     public Excerpt getExcerpt() {
@@ -336,9 +285,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param excerpt
-     *     The excerpt
+     * @param excerpt The excerpt
      */
     @JsonProperty("excerpt")
     public void setExcerpt(Excerpt excerpt) {
@@ -346,9 +293,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The modifiedGmt
+     * @return The modifiedGmt
      */
     @JsonProperty("modified_gmt")
     public String getModifiedGmt() {
@@ -356,9 +301,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param modifiedGmt
-     *     The modified_gmt
+     * @param modifiedGmt The modified_gmt
      */
     @JsonProperty("modified_gmt")
     public void setModifiedGmt(String modifiedGmt) {
@@ -366,9 +309,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The id
+     * @return The id
      */
     @JsonProperty("id")
     public Long getId() {
@@ -376,9 +317,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param id
-     *     The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Long id) {
@@ -386,9 +325,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The title
+     * @return The title
      */
     @JsonProperty("title")
     public Title getTitle() {
@@ -396,9 +333,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param title
-     *     The title
+     * @param title The title
      */
     @JsonProperty("title")
     public void setTitle(Title title) {
@@ -406,9 +341,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The commentStatus
+     * @return The commentStatus
      */
     @JsonProperty("comment_status")
     public String getCommentStatus() {
@@ -416,9 +349,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param commentStatus
-     *     The comment_status
+     * @param commentStatus The comment_status
      */
     @JsonProperty("comment_status")
     public void setCommentStatus(String commentStatus) {
@@ -426,9 +357,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The type
+     * @return The type
      */
     @JsonProperty("type")
     public String getType() {
@@ -436,9 +365,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param type
-     *     The type
+     * @param type The type
      */
     @JsonProperty("type")
     public void setType(String type) {
@@ -446,9 +373,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The slug
+     * @return The slug
      */
     @JsonProperty("slug")
     public String getSlug() {
@@ -456,9 +381,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param slug
-     *     The slug
+     * @param slug The slug
      */
     @JsonProperty("slug")
     public void setSlug(String slug) {
@@ -466,9 +389,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The date
+     * @return The date
      */
     @JsonProperty("date")
     public String getDate() {
@@ -476,9 +397,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param date
-     *     The date
+     * @param date The date
      */
     @JsonProperty("date")
     public void setDate(String date) {
@@ -486,9 +405,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @return
-     *     The dateGmt
+     * @return The dateGmt
      */
     @JsonProperty("date_gmt")
     public String getDateGmt() {
@@ -496,9 +413,7 @@ public class Post {
     }
 
     /**
-     * 
-     * @param dateGmt
-     *     The date_gmt
+     * @param dateGmt The date_gmt
      */
     @JsonProperty("date_gmt")
     public void setDateGmt(String dateGmt) {

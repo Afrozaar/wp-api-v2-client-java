@@ -25,6 +25,8 @@ public abstract class Request {
     public static final String TERM = "/terms/{taxonomySlug}/{termId}";
     public static final String MEDIAS = "/media";
     public static final String MEDIA = "/media/{mediaId}";
+    public static final String PAGES = "/pages";
+    public static final String PAGE = "/pages/{pageId}";
 
     final String uri;
     final Map<String, List<String>> params;
