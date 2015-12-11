@@ -79,8 +79,7 @@ The client is flexible enough to build search requests of a particular type, if 
 * Also See [Advanced/Restricted Filtering](#Advanced/Restricted%20Filtering) for configuring restricted options 
 
 ## More Usage Examples
-* For more examples, see [`/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java`]
-(https://bitbucket.org/afrozaar/wp-api-v2-client-java/src/3af73cf5eb8177ecce04f61320f70d971ea478ac/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java?at=develop)
+* For more examples, see [`/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java`](https://bitbucket.org/afrozaar/wp-api-v2-client-java/src/3af73cf5eb8177ecce04f61320f70d971ea478ac/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java?at=develop)
 which has all the tests for a live installation and thus has examples of how to use the client.
 
 # Advanced/Restricted Filtering
@@ -136,4 +135,3 @@ The WireMock tests are sanity tests that must be rigid with known data and expec
 ## Testing TODO's
 
 * Run tests in a dockerized Wordpress install
-
