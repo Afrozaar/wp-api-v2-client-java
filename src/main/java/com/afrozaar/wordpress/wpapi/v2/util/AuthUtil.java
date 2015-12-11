@@ -10,13 +10,16 @@ public class AuthUtil {
 
     public static HttpHeaders createHeaders(String username, String password) {
         HttpHeaders httpHeaders = new HttpHeaders();
-        final byte[] encodedAuth = Base64.getEncoder().encode((username + ":" + password).getBytes());
-        //byte[] encodedAuth = Base64.encode((username + ":" + password).getBytes(Charset.forName("US-ASCII")));
-        final String authHeader = "Basic " + new String(encodedAuth);
-        httpHeaders.set("Authorization", authHeader);
+        final Two<String, String> authHeader = authTuple(username, password);
+        httpHeaders.set(authHeader.a, authHeader.b);
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         return httpHeaders;
+    }
+
+    public static Two<String, String> authTuple(String username, String password) {
+        final byte[] encodedAuth = Base64.getEncoder().encode((username + ":" + password).getBytes());
+        return Two.of("Authorization", "Basic " + new String(encodedAuth));
     }
 
     public static HttpEntity<String> basicAuth(String username, String password) {

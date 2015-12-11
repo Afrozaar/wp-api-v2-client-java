@@ -1,12 +1,26 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.api.Medias;
+import com.afrozaar.wordpress.wpapi.v2.api.Pages;
+import com.afrozaar.wordpress.wpapi.v2.api.PostMetas;
+import com.afrozaar.wordpress.wpapi.v2.api.PostTerms;
+import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
+import com.afrozaar.wordpress.wpapi.v2.api.Terms;
+import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
-public interface Wordpress {
+import java.net.URI;
+import java.util.function.Function;
+
+public interface Wordpress extends Posts, PostMetas, PostTerms, Taxonomies, Terms, Medias, Pages {
     String CONTEXT = "/wp-json/wp/v2";
 
-    PagedResponse<Post> fetchPosts();
+    <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams);
 
-    PagedResponse<Post> fetchPosts(SearchRequest search);
+    <T> PagedResponse<T> getPagedResponse(URI uri, Class<T> typeRef);
 
+    <T> PagedResponse<T> traverse(PagedResponse<T> response, Function<PagedResponse<?>, String> direction);
+
+    <T> PagedResponse<T> search(SearchRequest<T> search);
 }
