@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
+import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
@@ -202,7 +203,7 @@ public class ClientLiveTest {
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-//            client.deletePost(post);
+            //            client.deletePost(post);
         }
     }
 
@@ -362,40 +363,6 @@ public class ClientLiveTest {
         final boolean deleted = client.deletePostMeta(createdPost.getId(), createdMeta.getId(), true);
 
         assertThat(deleted).isTrue();
-    }
-
-    private Post newTestPostWithRandomData() {
-        return PostBuilder.aPost()
-                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                //                .withFeaturedImage(113L)
-                .build();
-    }
-
-    private Two<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
-        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-        final PostMeta meta = client.createMeta(post.getId(), RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
-        return Two.of(post, meta);
-    }
-
-    private Media newRandomMedia(Post post) {
-        return MediaBuilder.aMedia()
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
-                .withCaption(RandomStringUtils.randomAlphabetic(50))
-                .withAltText("image")
-                .withDescription(RandomStringUtils.randomAscii(20))
-                .withPost(post.getId())
-                .build();
-    }
-
-    private Two<Post, Media> newTestPostWithMedia() throws WpApiParsedException {
-        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-
-        Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
-        final Media mediaItem = client.createMedia(newRandomMedia(post), resource);
-
-        return Two.of(post, mediaItem);
     }
 
     @Test
@@ -681,14 +648,98 @@ public class ClientLiveTest {
 
     @Test
     public void testCreatePage() {
-        Page page = PageBuilder.aPage()
-                .withTitle(TitleBuilder.aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
-                .withContent(ContentBuilder.aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
-                .build();
+        Page page = newPageWithRandomData();
+        final Page createdPage = client.createPage(page, PostStatus.publish);
+
+        assertThat(createdPage).isNotNull();
+    }
+
+    @Test
+    public void testDeletePageTrashOnly() {
+        Page page = newPageWithRandomData();
+        final Page createdPage = client.createPage(page, PostStatus.publish);
+        assertThat(createdPage).isNotNull();
+        final Page deletedPage = client.deletePage(createdPage);
+        assertThat(deletedPage).isNotNull();
+
+        final Page trashedPage = client.getPage(createdPage.getId(), "edit");
+        assertThat(trashedPage).isNotNull();
+        LOG.debug("Trashed page: {}", trashedPage);
+        assertThat(trashedPage.getStatus()).isEqualTo("trash");
+
+    }
+
+    @Test(expected = PageNotFoundException.class)
+    public void testDeletePage() throws PageNotFoundException {
+        Page page = newPageWithRandomData();
         final Page createdPage = client.createPage(page, PostStatus.publish);
 
         assertThat(createdPage).isNotNull();
 
+        final Page deletedPage = client.deletePage(createdPage, true);
+
+        assertThat(deletedPage).isNotNull();
+
+        final Page pageNotFound = client.getPage(createdPage.getId());
+
+        failBecauseExceptionWasNotThrown(PageNotFoundException.class);
+    }
+
+    @Test
+    public void testUpdatePage() {
+        final Page page = newPageWithRandomData();
+        final Page createdPage = client.createPage(page, PostStatus.publish);
+
+        createdPage.getContent().setRaw(RandomStringUtils.randomAlphabetic(60));
+
+        final Page updatedPage = client.updatePage(createdPage);
+
+        client.deletePage(updatedPage, true); // cleanup
+
+        assertThat(updatedPage.getContent().getRendered()).isNotEqualTo(createdPage.getContent().getRendered());
+    }
+
+
+
+    private Page newPageWithRandomData() {
+        return PageBuilder.aPage()
+                .withTitle(TitleBuilder.aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
+                .withContent(ContentBuilder.aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
+                .build();
+    }
+
+    private Post newTestPostWithRandomData() {
+        return PostBuilder.aPost()
+                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                //                .withFeaturedImage(113L)
+                .build();
+    }
+
+    private Two<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+        final PostMeta meta = client.createMeta(post.getId(), RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
+        return Two.of(post, meta);
+    }
+
+    private Media newRandomMedia(Post post) {
+        return MediaBuilder.aMedia()
+                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
+                .withCaption(RandomStringUtils.randomAlphabetic(50))
+                .withAltText("image")
+                .withDescription(RandomStringUtils.randomAscii(20))
+                .withPost(post.getId())
+                .build();
+    }
+
+    private Two<Post, Media> newTestPostWithMedia() throws WpApiParsedException {
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
+        final Media mediaItem = client.createMedia(newRandomMedia(post), resource);
+
+        return Two.of(post, mediaItem);
     }
 }

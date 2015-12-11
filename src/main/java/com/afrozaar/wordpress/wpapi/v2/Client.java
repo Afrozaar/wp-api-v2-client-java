@@ -1,5 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
@@ -388,18 +389,32 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Page getPage(Long pageId) {
-        return null;
+    public Page getPage(Long pageId) throws PageNotFoundException {
+        try {
+            return getPage(pageId, "view");
+        } catch (HttpClientErrorException e) {
+            throw new PageNotFoundException(e);
+        }
+    }
+
+    @Override
+    public Page getPage(Long pageId, String context) {
+        return doExchange1(Request.PAGE, HttpMethod.GET, Page.class, forExpand(pageId), ImmutableMap.of("context", context), null).getBody();
     }
 
     @Override
     public Page updatePage(Page page) {
-        return null;
+        return doExchange1(Request.PAGE, HttpMethod.POST, Page.class, forExpand(page.getId()), null, page.asMap()).getBody();
     }
 
     @Override
     public Page deletePage(Page page) {
-        return null;
+        return doExchange1(Request.PAGE, HttpMethod.DELETE, Page.class, forExpand(page.getId()), null, null).getBody();
+    }
+
+    @Override
+    public Page deletePage(Page page, boolean force) {
+        return doExchange1(Request.PAGE, HttpMethod.DELETE, Page.class, forExpand(page.getId()), ImmutableMap.of("force", force), null).getBody();
     }
 
     @SuppressWarnings("unchecked")
