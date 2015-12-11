@@ -148,6 +148,7 @@ public class ClientLiveTest {
     public void searchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
 
         final PagedResponse<Post> response = client.search(SearchRequest.Builder.aSearchRequest(Post.class)
+                .withUri(Request.POSTS)
                 .withParam("filter[meta_key]", "baobab_indexed")
                 .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
                 .build());

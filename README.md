@@ -56,12 +56,23 @@ See
 
 ### Search Posts not having a particular Meta Key
 #### Sample Code
-    final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest()
-                .withParam("filter[meta_key]", "baobab_indexed")
-                .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
-                .build());
+    final PagedResponse<Post> response = client.search(SearchRequest.Builder.aSearchRequest(Post.class)
+            .withUri(Request.POSTS)
+            .withParam("filter[meta_key]", "baobab_indexed")
+            .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
+            .build());                
+                
 #### Equivalent Curl/httpie Request
     $ http --auth 'username:password' http://myhost/wp-json/wp/v2/posts?filter[meta_key]=baobab_indexed&filter[meta_compare]=NOT%20EXISTS
+    
+#### Search types
+
+The client is flexible enough to build search requests of a particular type, if that type supports filtering.
+
+    final PagedResponse<Media> tagResults = client.search(SearchRequest.Builder.aSearchRequest(Media.class)
+        .withUri("/media")
+        .withParam("filter[s]", "searchTerm")
+        .build());
 
 #### Available Filters
 * See [WordPress Codex](https://codex.wordpress.org/Class_Reference/WP_Query) for more filter options
