@@ -41,7 +41,8 @@ public abstract class Request {
     }
 
     public static Request of(String uri, Map<String, List<String>> params) {
-        return new Request(uri, params) {};
+        return new Request(uri, params) {
+        };
     }
 
     public static <T> SearchRequest<T> fromLink(String link, String context) {

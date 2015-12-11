@@ -6,7 +6,6 @@ import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
-import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
@@ -76,7 +75,7 @@ public class ClientLiveTest {
     public void posts() {
         final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
 
-        final PagedResponse<Post> postPagedResponse = client.fetchPosts(SearchRequest.posts());
+        final PagedResponse<Post> postPagedResponse = client.searchPosts(SearchRequest.posts());
 
         postPagedResponse.debug();
 
@@ -84,12 +83,12 @@ public class ClientLiveTest {
         assertThat(postPagedResponse.getPrevious().isPresent()).isFalse();
         assertThat(postPagedResponse.getSelf()).isEqualTo(EXPECTED);
 
-        PagedResponse<Post> response = client.get(postPagedResponse, Posts.next);
+        PagedResponse<Post> response = client.traverse(postPagedResponse, PagedResponse.NEXT);
 
         response.debug();
 
         while (response.hasNext()) {
-            response = client.get(response, Posts.next);
+            response = client.traverse(response, PagedResponse.NEXT);
             response.debug();
         }
 
@@ -113,7 +112,7 @@ public class ClientLiveTest {
         SearchRequest<Post> search = SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[author]", "999").build();
 
         // when
-        final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
+        final PagedResponse<Post> postPagedResponse = client.searchPosts(search);
 
         // then
         assertThat(postPagedResponse.getList()).isEmpty();
@@ -125,7 +124,7 @@ public class ClientLiveTest {
         SearchRequest<Post> search = SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[author]", "1").build();
 
         // when
-        final PagedResponse<Post> postPagedResponse = client.fetchPosts(search);
+        final PagedResponse<Post> postPagedResponse = client.searchPosts(search);
 
         // then
         assertThat(postPagedResponse.getList()).isNotEmpty();
@@ -136,7 +135,7 @@ public class ClientLiveTest {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
+        final PagedResponse<Post> response = client.searchPosts(SearchRequest.Builder.<Post>aSearchRequest().withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
 
         client.deletePost(postWithMeta.a);
 
@@ -147,7 +146,7 @@ public class ClientLiveTest {
     @Ignore // this is for documentation purpose only
     public void searchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
 
-        final PagedResponse<Post> response = client.fetchPosts(SearchRequest.Builder.<Post>aSearchRequest()
+        final PagedResponse<Post> response = client.searchPosts(SearchRequest.Builder.<Post>aSearchRequest()
                 .withParam("filter[meta_key]", "baobab_indexed")
                 .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
                 .build());
@@ -712,8 +711,6 @@ public class ClientLiveTest {
 
         assertThat(updatedPage.getContent().getRendered()).isNotEqualTo(createdPage.getContent().getRendered());
     }
-
-
 
     private Page newPageWithRandomData() {
         return PageBuilder.aPage()

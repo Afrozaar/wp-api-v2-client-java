@@ -114,7 +114,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public PagedResponse<Post> fetchPosts(SearchRequest<Post> search) {
+    public PagedResponse<Post> searchPosts(SearchRequest<Post> search) {
         final URI uri = search.forHost(baseUrl, CONTEXT).build().toUri();
         final ResponseEntity<Post[]> exchange = doExchange(HttpMethod.GET, uri, Post[].class, null);
 
@@ -469,17 +469,6 @@ public class Client implements Wordpress {
         } else {
             return Collections.emptyList();
         }
-
-    }
-
-    @Override
-    public PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> previousOrNext) {
-        return fetchPosts(fromPagedResponse(postPagedResponse, previousOrNext));
-    }
-
-    @Override
-    public SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> previousOrNext) {
-        return Request.fromLink(previousOrNext.apply(response), CONTEXT);
     }
 
     private Map<String, Object> fieldsFrom(Post post) {

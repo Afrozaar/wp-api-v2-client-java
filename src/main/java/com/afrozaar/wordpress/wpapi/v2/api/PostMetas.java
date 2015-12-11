@@ -16,8 +16,10 @@ public interface PostMetas {
     PostMeta getPostMeta(Long postId, Long metaId);
 
     PostMeta updatePostMetaValue(Long postId, Long metaId, String value);
+
     PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
 
     boolean deletePostMeta(Long postId, Long metaId);
+
     boolean deletePostMeta(Long postId, Long metaId, boolean force);
 }

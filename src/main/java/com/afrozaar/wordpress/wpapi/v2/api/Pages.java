@@ -9,6 +9,7 @@ public interface Pages {
     Page createPage(Page page, PostStatus postStatus);
 
     Page getPage(Long pageId) throws PageNotFoundException;
+
     Page getPage(Long pageId, String context);
 
     //List<Page> getPages();
@@ -16,6 +17,7 @@ public interface Pages {
     Page updatePage(Page page);
 
     Page deletePage(Page page);
+
     Page deletePage(Page page, boolean force);
 
 }

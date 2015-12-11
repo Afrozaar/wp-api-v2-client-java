@@ -8,7 +8,7 @@ public class PostMetaTest {
 
     @Test
     public void testUpdateMeta() {
-        PostMetas meta = new Client("http://localhost", "","",true);
+        PostMetas meta = new Client("http://localhost", "", "", true);
 
         Long postId = 1L;
         Long metaId = 1L;

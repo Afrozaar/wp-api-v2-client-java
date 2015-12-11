@@ -65,10 +65,9 @@ public class WordpressMockGenerator implements IWordpressMockGenerator {
     public String generateResponse(Enum type, int numOfItems) throws JsonProcessingException {
         if (type == MockObject.POSTS) {
             return objectMapper.writeValueAsString(getPosts(numOfItems));
-        }else if (type == MockObject.POST){
+        } else if (type == MockObject.POST) {
             return objectMapper.writeValueAsString(getPost());
-        }
-        else if (type == MockObject.META) {
+        } else if (type == MockObject.META) {
             return objectMapper.writeValueAsString(getMeta(numOfItems));
         } else {
             return objectMapper.writeValueAsString(getPosts(numOfItems));

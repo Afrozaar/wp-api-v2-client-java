@@ -16,6 +16,8 @@ public interface Wordpress extends Posts, PostMetas, PostTerms, Taxonomies, Term
     String CONTEXT = "/wp-json/wp/v2";
 
     <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams);
+
     <T> PagedResponse<T> getPagedResponse(URI uri, Class<T> typeRef);
+
     <T> PagedResponse<T> traverse(PagedResponse<T> response, Function<PagedResponse<?>, String> direction);
 }

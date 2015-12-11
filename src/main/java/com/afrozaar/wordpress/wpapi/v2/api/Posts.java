@@ -7,12 +7,8 @@ import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 
 import java.util.Map;
-import java.util.function.Function;
 
 public interface Posts {
-
-    Function<PagedResponse<Post>, String> next = response -> response.getNext().get();
-    Function<PagedResponse<Post>, String> prev = response -> response.getPrevious().get();
 
     /**
      * <pre>
@@ -21,10 +17,10 @@ public interface Posts {
      * GET /posts?page=2&meta_key=foo&meta_value=bar
      * </pre>
      */
-    PagedResponse<Post> fetchPosts(SearchRequest<Post> search);
+    PagedResponse<Post> searchPosts(SearchRequest<Post> search);
 
     /**
-     * @param post {@code Map<String, Object>}
+     * @param post   {@code Map<String, Object>}
      * @param status
      * @return Created {@link Post}
      * @throws PostCreateException
@@ -55,8 +51,4 @@ public interface Posts {
     Post updatePost(Post post);
 
     Post deletePost(Post post);
-
-    SearchRequest<Post> fromPagedResponse(PagedResponse<Post> response, Function<PagedResponse<Post>, String> uri);
-
-    PagedResponse<Post> get(PagedResponse<Post> postPagedResponse, Function<PagedResponse<Post>, String> previousOrNext);
 }

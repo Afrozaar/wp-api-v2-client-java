@@ -131,11 +131,11 @@ public class ClientWireMockTest {
         final Wordpress client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
         final Post response = client.getPost(49L);
 
-//        final Optional<String> next = response.getNext();
+        //        final Optional<String> next = response.getNext();
 
         // then
-//        assertThat(next).isPresent().isEqualTo(Optional.of("http://localhost:8089/wp-json/wp/v2/posts?page=2"));
-//        assertThat(response.getPrevious()).isEmpty();
+        //        assertThat(next).isPresent().isEqualTo(Optional.of("http://localhost:8089/wp-json/wp/v2/posts?page=2"));
+        //        assertThat(response.getPrevious()).isEmpty();
     }
 
     private byte[] contentFor(String endpoint) throws IOException {
@@ -176,7 +176,7 @@ public class ClientWireMockTest {
             return "/wp-json/wp/v2/posts";
         } else if (type == MockObject.POST) {
             return "/wp-json/wp/v2/posts/49";
-        }else {
+        } else {
             return "/wp-json/wp/v2/posts/49/meta";
         }
     }
