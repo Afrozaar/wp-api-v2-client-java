@@ -22,5 +22,5 @@ public interface Medias {
 
     boolean deleteMedia(Media media, boolean force);
 
-    Post setFeaturedImage(Media media);
+    Post setFeaturedImageOnPost(Media media);
 }

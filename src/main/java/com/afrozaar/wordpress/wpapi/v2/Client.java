@@ -147,6 +147,8 @@ public class Client implements Wordpress {
 
             uploadMap.add("file", resource);
 
+            setFeaturedImageOnPost(media);
+
             return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw WpApiParsedException.of(e);
@@ -154,7 +156,7 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post setFeaturedImage(Media media) {
+    public Post setFeaturedImageOnPost(Media media) {
         Post post = this.getPost(media.getPost());
         if ("image".equals(media.getMediaType())) {
             post.setFeaturedImage(media.getId());

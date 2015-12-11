@@ -202,7 +202,9 @@ public class ClientLiveTest {
     @Test
     public void testCreateMedia() throws WpApiParsedException {
 
-        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+        Post post1 = newTestPostWithRandomData();
+
+        final Post post = client.createPost(post1, PostStatus.publish);
 
         Media media = newRandomMedia(post);
 
@@ -210,7 +212,7 @@ public class ClientLiveTest {
             Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
-            post.setFeaturedImage(media.getId());
+            post.setFeaturedImage(createdMedia.getId());
             client.updatePost(post);
 
         } catch (HttpServerErrorException e) {
@@ -248,11 +250,13 @@ public class ClientLiveTest {
     @Test
     public void testDeleteMedia() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-
         Media media = client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
-
         Media media2 = client.getMedia(media.getId());
-        client.deleteMedia(media2, true);
+
+        //Check the response code is 2xx successful when deleted.
+        assertThat(client.deleteMedia(media2, true)).isTrue();
+
+        //TODO: Double check that the article does not exists anymore
     }
 
     @Test
