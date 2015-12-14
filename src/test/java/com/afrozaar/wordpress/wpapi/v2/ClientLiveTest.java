@@ -215,7 +215,7 @@ public class ClientLiveTest {
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
-            //client.deletePost(post);
+            client.deletePost(post);
         }
     }
 
@@ -252,8 +252,9 @@ public class ClientLiveTest {
 
         //Check the response code is 2xx successful when deleted.
         assertThat(client.deleteMedia(media2, true)).isTrue();
+        client.deletePost(post);
 
-        //TODO: Double check that the article does not exists anymore
+        //TODO: Double check that the article does not exist anymore
     }
 
     @Test
