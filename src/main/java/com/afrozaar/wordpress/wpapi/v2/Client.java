@@ -458,7 +458,11 @@ public class Client implements Wordpress {
     private Map<String, Object> fieldsFrom(Post post) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
 
-        BiConsumer<String, Object> biConsumer = (key, value) -> Optional.ofNullable(value).ifPresent(v -> builder.put(key, v));
+        BiConsumer<String, Object> biConsumer = (key, value) -> {
+            if (value != null) {
+                builder.put(key, value);
+            }
+        };
 
         biConsumer.accept("date", post.getDate());
         biConsumer.accept("modified_gmt", post.getModified());
