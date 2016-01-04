@@ -37,9 +37,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -244,10 +246,24 @@ public class Client implements Wordpress {
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Taxonomy> getTaxonomies() {
-        final ResponseEntity<Taxonomy[]> exchange = doExchange1(Request.TAXONOMIES, HttpMethod.GET, Taxonomy[].class, forExpand(), null, null);
-        return Arrays.asList(exchange.getBody());
+        final ResponseEntity<Map> exchange = doExchange1(Request.TAXONOMIES, HttpMethod.GET, Map.class, forExpand(), null, null);
+
+        final Map body = exchange.getBody();
+        List<Taxonomy> toReturn = new ArrayList<>();
+        body.forEach((key, obj) -> {
+            try {
+                Taxonomy target = new Taxonomy();
+                Map source = (Map) obj;
+                BeanUtils.populate(target, source);
+                toReturn.add(target);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                LOG.error("Error ", e);
+            }
+        });
+        return toReturn;
     }
 
     @Override
