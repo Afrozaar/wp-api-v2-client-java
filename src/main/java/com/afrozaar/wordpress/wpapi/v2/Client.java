@@ -13,6 +13,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
+import com.afrozaar.wordpress.wpapi.v2.model.User;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -398,6 +399,65 @@ public class Client implements Wordpress {
     @Override
     public Page deletePage(Page page, boolean force) {
         return doExchange1(Request.PAGE, HttpMethod.DELETE, Page.class, forExpand(page.getId()), ImmutableMap.of("force", force), null).getBody();
+    }
+
+    @Override
+    public List<User> getUsers() {
+        List<User> collected = new ArrayList<>();
+        PagedResponse<User> usersResponse = this.getPagedResponse(Request.USERS, User.class);
+        collected.addAll(usersResponse.getList());
+        while (usersResponse.hasNext()) {
+            usersResponse = traverse(usersResponse, PagedResponse.NEXT);
+            collected.addAll(usersResponse.getList());
+        }
+        return collected;
+    }
+
+    @Override
+    public User createUser(User user, String username, String password) {
+
+        Function<User, MultiValueMap> userMap = input -> {
+            //Map<String, String> map = new HashMap<>();
+
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+            //capabilities
+            map.add("description", input.getDescription());
+            map.add("email", input.getEmail()); //Required: true
+            map.add("first_name", input.getFirstName());
+            map.add("last_name", input.getLastName());
+            map.add("name", input.getName());
+            map.add("nickname", input.getNickname());
+            input.getRoles().forEach(role -> map.add("role", role));
+            map.add("slug", input.getSlug());
+            map.add("username", username); // Required: true
+            map.add("password", password); // Required: true
+
+            return map;
+        };
+        final MultiValueMap apply = userMap.apply(user);
+
+        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, apply).getBody();
+    }
+
+    @Override
+    public User getUser(long userId) {
+        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), null, null).getBody();
+    }
+
+    @Override
+    public User getUser(long userId, String context) {
+        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), ImmutableMap.of("context", context), null).getBody();
+    }
+
+    @Override
+    public User deleteUser(User user) {
+        return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of("force", true), null).getBody();
+    }
+
+    @Override
+    public User updateUser(User user) {
+        throw new UnsupportedOperationException("Not Yet Implemented");
     }
 
     @SuppressWarnings("unchecked")

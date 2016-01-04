@@ -6,6 +6,7 @@ import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.TAG;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
@@ -20,6 +21,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
+import com.afrozaar.wordpress.wpapi.v2.model.User;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder;
@@ -27,6 +29,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.PageBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -51,7 +54,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 /**
@@ -712,6 +717,70 @@ public class ClientLiveTest {
         client.deletePage(updatedPage, true); // cleanup
 
         assertThat(updatedPage.getContent().getRendered()).isNotEqualTo(createdPage.getContent().getRendered());
+    }
+
+    @Test
+    public void testGetUsers() {
+        List<User> users = client.getUsers();
+
+        assertThat(users).isNotEmpty();
+
+        LOG.debug("Got {} users.", users.size());
+
+        final Optional<User> found = users.stream().filter(user -> 1 == user.getId()).findFirst();
+        assertThat(found).isPresent();
+        assertThat(found.get().getRoles()).contains("administrator");
+    }
+
+    @Test
+    public void testCreateUser() {
+        User userRequest = UserBuilder.aUser()
+                .withFirstName(RandomStringUtils.randomAlphabetic(4))
+                .withLastName(RandomStringUtils.randomAlphabetic(7))
+                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withEmail(String.format("%s@%s.test", RandomStringUtils.randomAlphabetic(4), RandomStringUtils.randomAlphabetic(3)))
+                .withRoles(Arrays.asList("administrator"))
+                .build();
+        final User createdUser = client.createUser(userRequest, RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphanumeric(3));
+
+        LOG.debug("createdUser: {}", createdUser);
+
+        assertThat(userRequest.getEmail()).isEqualTo(createdUser.getEmail());
+        assertThat(userRequest.getDescription()).isEqualTo(createdUser.getDescription());
+        assertThat(userRequest.getLastName()).isEqualTo(createdUser.getLastName());
+        assertThat(createdUser.getId()).isNotNull();
+    }
+
+    @Test
+    public void testGetUser() {
+        User user = client.getUser(1L, Contexts.VIEW);
+        assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
+        assertThat(user.getName()).isEqualTo("docker");
+    }
+
+    @Test
+    @Ignore // currently having an Internal Server Error:
+    // <b>Fatal error</b>:  Call to undefined function wp_delete_user() in <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
+    public void testDeleteUser() {
+
+        User user = UserBuilder.aUser()
+                .withName(RandomStringUtils.randomAlphabetic(4))
+                .withLastName(RandomStringUtils.randomAlphabetic(5))
+                .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))
+                .build();
+        String username = RandomStringUtils.randomAlphabetic(4);
+        String password = RandomStringUtils.randomAlphanumeric(5);
+        final User createdUser = client.createUser(user, username, password);
+
+        client.getUsers().stream()
+                .filter(u -> u.getId() != 1L)
+                .forEach(u -> client.deleteUser(u));
+    }
+
+    @Ignore
+    @Test
+    public void testUpdateUser() {
+        // TODO: create a test to update a user.
     }
 
     private Page newPageWithRandomData() {

@@ -26,6 +26,8 @@ public abstract class Request {
     public static final String MEDIA = "/media/{mediaId}";
     public static final String PAGES = "/pages";
     public static final String PAGE = "/pages/{pageId}";
+    public static final String USERS = "/users";
+    public static final String USER = "/users/{userId}";
 
     final String uri;
     final Map<String, List<String>> params;
