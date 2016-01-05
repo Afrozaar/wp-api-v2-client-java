@@ -4,7 +4,7 @@
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0-RC1</version>
+    <version>1.0.0-beta9-RC1</version>
     <name>wp-api-v2-client-java</name>
     <url>https://bitbucket.org/afrozaar/wp-api-v2-client-java</url>
 
@@ -80,6 +80,11 @@
             <artifactId>wiremock</artifactId>
             <version>1.55</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils-core</artifactId>
+            <version>1.8.3</version>
         </dependency>
 
 

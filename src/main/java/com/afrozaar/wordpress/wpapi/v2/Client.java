@@ -1,7 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -13,6 +13,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
+import com.afrozaar.wordpress.wpapi.v2.model.User;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -31,14 +32,15 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,26 +245,29 @@ public class Client implements Wordpress {
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<Taxonomy> getTaxonomies() {
-        final ResponseEntity<Taxonomy[]> exchange = doExchange1(Request.TAXONOMIES, HttpMethod.GET, Taxonomy[].class, forExpand(), null, null);
-        return Arrays.asList(exchange.getBody());
+        final ResponseEntity<Map> exchange = doExchange1(Request.TAXONOMIES, HttpMethod.GET, Map.class, forExpand(), null, null);
+
+        final Map body = exchange.getBody();
+        List<Taxonomy> toReturn = new ArrayList<>();
+        body.forEach((key, obj) -> {
+            try {
+                Taxonomy target = new Taxonomy();
+                Map source = (Map) obj;
+                BeanUtils.populate(target, source);
+                toReturn.add(target);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                LOG.error("Error ", e);
+            }
+        });
+        return toReturn;
     }
 
     @Override
     public Taxonomy getTaxonomy(String slug) {
         return doExchange1(Request.TAXONOMY, HttpMethod.GET, Taxonomy.class, forExpand(slug), null, null).getBody();
-    }
-
-    @Override
-    public Term createTerm(String taxonomy, Term term) throws WpApiParsedException {
-        try {
-            return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, term.asMap()).getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            final WpApiParsedException exception = WpApiParsedException.of(e);
-            LOG.error("Could not create {} term '{}'. {} ", taxonomy, term.getName(), exception.getMessage(), exception);
-            throw exception;
-        }
     }
 
     @Override
@@ -324,40 +329,148 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
-        final Term termToUse = Objects.nonNull(term.getId()) ? term : createTerm(taxonomy, term);
-        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), taxonomy, termToUse.getId()), null, null).getBody();
-    }
-
-    @Override
-    public Term updatePostTerm(Post post, String taxonomy, Term term) {
-        throw new UnsupportedOperationException("not yet implemented");
-    }
-
-    @Override
-    public List<Term> getPostTerms(Post post, String taxonomy) {
-        // TODO: 2015/12/10 For tagging we might need to do paged requests for example if a post has a large number of tags.
-        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), taxonomy), null, null).getBody());
-    }
-
-    @Override
-    public Term deletePostTerm(Post post, String taxonomy, Term term) {
-        // This returns 501 Not Implemented from server. Use variant with force parameter.
-        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
-    }
-
-    @Override
-    public Term deletePostTerm(Post post, String taxonomy, Term term, boolean force) {
-        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), ImmutableMap.of("force", force), null).getBody();
-    }
-
-    @Override
-    public Term getPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
+    public Term createTag(Term tagTerm) throws WpApiParsedException {
         try {
-            return doExchange1(Request.POST_TERM, HttpMethod.GET, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
-        } catch (HttpStatusCodeException e) {
-            throw new WpApiParsedException(ParsedRestException.of(e));
+            return doExchange1(Request.TAGS, HttpMethod.POST, Term.class, forExpand(), tagTerm.asMap(), null).getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            final WpApiParsedException exception = WpApiParsedException.of(e);
+            LOG.error("Could not create tag '{}'. {} ", tagTerm.getName(), exception.getMessage(), exception);
+            throw exception;
         }
+    }
+
+    @Override
+    public List<Term> getTags() {
+        return getAllTermsForEndpoint(Request.TAGS);
+    }
+
+    @Override
+    public Term getTag(Long id) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.TAG, HttpMethod.GET, Term.class, forExpand(id), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term deleteTag(Term tagTerm) throws TermNotFoundException {
+        try {
+            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), null, null).getBody();
+
+            Term toReturn = new Term();
+            BeanUtils.populate(toReturn, (Map) response.get("data"));
+            return toReturn;
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            LOG.error("Error ", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Term createPostTag(Post post, Term tag) throws WpApiParsedException {
+        final Term termToUse = Objects.nonNull(tag.getId()) ? tag : createTag(tag);
+        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), Taxonomies.TAGS, termToUse.getId()), null, termToUse.asMap()).getBody();
+    }
+
+    @Override
+    public List<Term> getPostTags(Post post) {
+        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), Taxonomies.TAGS), null, null).getBody());
+    }
+
+    @Override
+    public Term deletePostTag(Post post, Term tagTerm, boolean force) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), Taxonomies.TAGS, tagTerm.getId()), ImmutableMap.of("force", force), null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term getPostTag(Post post, Term tagTerm) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.POST_TERM, HttpMethod.GET, Term.class, forExpand(post.getId(), TAGS, tagTerm.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term updateTag(Term tag) {
+        return doExchange1(Request.TAG, HttpMethod.POST, Term.class, forExpand(tag.getId()), null, tag.asMap()).getBody();
+    }
+
+    @Override
+    public Term getCategory(Long id) {
+        return doExchange1(Request.CATEGORY, HttpMethod.GET, Term.class, forExpand(id), null, null).getBody();
+    }
+
+    @Override
+    public List<Term> getCategories() {
+        return getAllTermsForEndpoint(Request.CATEGORIES);
+    }
+
+    private List<Term> getAllTermsForEndpoint(final String endpoint) {
+        List<Term> collected = new ArrayList<>();
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class);
+        collected.addAll(pagedResponse.getList());
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+        return collected;
+    }
+
+    @Override
+    public Term createCategory(Term categoryTerm) {
+        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap()).getBody();
+    }
+
+    @Override
+    public Term deleteCategory(Term categoryTerm) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.CATEGORY, HttpMethod.DELETE, Term.class, forExpand(categoryTerm.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public List<Term> deleteCategories(Term... terms) {
+        List<Term> deletedTerms = new ArrayList<>(terms.length);
+
+        for (Term term : terms) {
+            try {
+                deletedTerms.add(deleteCategory(term));
+            } catch (TermNotFoundException e) {
+                LOG.error("Error ", e);
+            }
+        }
+
+        return deletedTerms;
     }
 
     @Override
@@ -398,6 +511,65 @@ public class Client implements Wordpress {
     @Override
     public Page deletePage(Page page, boolean force) {
         return doExchange1(Request.PAGE, HttpMethod.DELETE, Page.class, forExpand(page.getId()), ImmutableMap.of("force", force), null).getBody();
+    }
+
+    @Override
+    public List<User> getUsers() {
+        List<User> collected = new ArrayList<>();
+        PagedResponse<User> usersResponse = this.getPagedResponse(Request.USERS, User.class);
+        collected.addAll(usersResponse.getList());
+        while (usersResponse.hasNext()) {
+            usersResponse = traverse(usersResponse, PagedResponse.NEXT);
+            collected.addAll(usersResponse.getList());
+        }
+        return collected;
+    }
+
+    @Override
+    public User createUser(User user, String username, String password) {
+
+        Function<User, MultiValueMap> userMap = input -> {
+            //Map<String, String> map = new HashMap<>();
+
+            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+            //capabilities
+            map.add("description", input.getDescription());
+            map.add("email", input.getEmail()); //Required: true
+            map.add("first_name", input.getFirstName());
+            map.add("last_name", input.getLastName());
+            map.add("name", input.getName());
+            map.add("nickname", input.getNickname());
+            input.getRoles().forEach(role -> map.add("role", role));
+            map.add("slug", input.getSlug());
+            map.add("username", username); // Required: true
+            map.add("password", password); // Required: true
+
+            return map;
+        };
+        final MultiValueMap apply = userMap.apply(user);
+
+        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, apply).getBody();
+    }
+
+    @Override
+    public User getUser(long userId) {
+        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), null, null).getBody();
+    }
+
+    @Override
+    public User getUser(long userId, String context) {
+        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), ImmutableMap.of("context", context), null).getBody();
+    }
+
+    @Override
+    public User deleteUser(User user) {
+        return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of("force", true), null).getBody();
+    }
+
+    @Override
+    public User updateUser(User user) {
+        throw new UnsupportedOperationException("Not Yet Implemented");
     }
 
     @SuppressWarnings("unchecked")
@@ -458,7 +630,11 @@ public class Client implements Wordpress {
     private Map<String, Object> fieldsFrom(Post post) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
 
-        BiConsumer<String, Object> biConsumer = (key, value) -> Optional.ofNullable(value).ifPresent(v -> builder.put(key, v));
+        BiConsumer<String, Object> biConsumer = (key, value) -> {
+            if (value != null) {
+                builder.put(key, value);
+            }
+        };
 
         biConsumer.accept("date", post.getDate());
         biConsumer.accept("modified_gmt", post.getModified());
