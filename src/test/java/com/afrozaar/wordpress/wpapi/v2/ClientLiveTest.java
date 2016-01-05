@@ -1,14 +1,12 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
-import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.TAG;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
-import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
@@ -36,8 +34,6 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
-
-import com.google.common.collect.Lists;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -404,66 +400,32 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testGetCategoryTermsUsingPagedResponse() {
-        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY);
-        assertThat(pagedResponse).isNotNull();
-        assertThat(pagedResponse.getList()).isNotEmpty();
-    }
-
-    @Test
-    public void testTraversePagedResponse() {
-        final List<Term> collectedTerms = Lists.newArrayList();
-        PagedResponse<Term> pagedResponse = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY);
-        collectedTerms.addAll(pagedResponse.getList());
-
-        while (pagedResponse.hasNext()) {
-            pagedResponse = client.traverse(pagedResponse, PagedResponse.NEXT);
-            collectedTerms.addAll(pagedResponse.getList());
-            LOG.debug("Got {} more terms", pagedResponse.getList().size());
-        }
-        LOG.debug("Collected terms: {}: {}", collectedTerms.size(), collectedTerms);
-    }
-
-    @Test
-    public void testGetTermsCategories() {
-        final List<Term> categories = client.getTerms(CATEGORY);
-        assertThat(categories).isNotEmpty();
-        assertThat(categories.size()).isGreaterThan(10);
-        LOG.debug("total category terms: {}", categories.size());
-    }
-
-    @Test
-    public void testGetTermsTags() {
-        final List<Term> tags = client.getTerms(TAG);
+    public void testGetTags() {
+        List<Term> tags = client.getTags();
         assertThat(tags).isNotNull().isNotEmpty();
-        assertThat(tags.size()).isGreaterThan(10);
+        assertThat(tags.size()).isGreaterThan(0);
         LOG.debug("total tag terms: {}", tags.size());
     }
 
     @Test
-    public void testGetTermCategory() throws TermNotFoundException {
-        final List<Term> categories = client.getPagedResponse(Request.TERMS, Term.class, CATEGORY).getList();
-        final Term term = categories.get(0);
-        final Term fetchedTerm = client.getTerm(CATEGORY, term.getId());
-
-        assertThat(fetchedTerm).isNotNull();
-        assertThat(fetchedTerm.getId()).isEqualTo(term.getId());
-        assertThat(fetchedTerm.getName()).isEqualTo(term.getName());
-
-        LOG.debug("Fetched Term: {}", fetchedTerm);
+    public void testGetCategories() {
+        List<Term> categories = client.getCategories();
+        assertThat(categories).isNotNull().isNotEmpty();
+        assertThat(categories.size()).isGreaterThan(0);
+        LOG.debug("total category terms: {}", categories.size());
     }
 
     @Test
-    public void testCreateTaxonomyCategory() throws WpApiParsedException {
+    public void testCreateCategory() throws WpApiParsedException {
 
         final String expectedName = RandomStringUtils.randomAlphabetic(5);
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
 
-        final Term createdCategory = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term createdCategory = client.createCategory(TermBuilder.aTerm()
                 .withName(expectedName)
                 .withDescription(expectedDescription).build());
 
-        client.deleteTerm(CATEGORY, createdCategory);
+        client.deleteCategory(createdCategory);
 
         assertThat(createdCategory).isNotNull();
         assertThat(createdCategory.getName()).isEqualTo(expectedName);
@@ -476,8 +438,8 @@ public class ClientLiveTest {
 
         final Term build = TermBuilder.aTerm().withName("J-Unit").build();
 
-        client.createTerm(Taxonomies.TAG, build);
-        client.createTerm(Taxonomies.TAG, build);
+        client.createTag(build);
+        client.createTag(build);
     }
 
     @Test(expected = TermNotFoundException.class)
@@ -488,33 +450,33 @@ public class ClientLiveTest {
 
     @Test
     public void testCreateTaxonomyCategoryHierarchical() throws WpApiParsedException {
-        final Term rootTerm = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term rootTerm = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
 
         LOG.debug("rootTerm: {}", rootTerm);
 
-        final Term child1 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child1 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child2 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child2 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child3 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child3 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child4 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child4 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child41 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child41 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
-        final Term child42 = client.createTerm(CATEGORY, TermBuilder.aTerm()
+        final Term child42 = client.createCategory(TermBuilder.aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
@@ -528,7 +490,7 @@ public class ClientLiveTest {
         assertThat(rootTerm.getParentId()).isEqualTo(0L); // new root term will always have 0 as parent.
 
         // cleanup
-        client.deleteTerms(CATEGORY, child41, child42, child4, child3, child2, child1, rootTerm);
+        client.deleteCategories(child41, child42, child4, child3, child2, child1, rootTerm);
     }
 
     @Test
@@ -542,8 +504,8 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(TAG, tag);
-        client.deleteTerm(TAG, createdTag);
+        final Term createdTag = client.createTag(tag);
+        client.deleteTag(createdTag);
 
         assertThat(createdTag).isNotNull();
         assertThat(createdTag.getName()).isEqualTo(expectedName);
@@ -560,12 +522,14 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(TAG, tag);
-        final Term deletedTerm = client.deleteTerm(TAG, createdTag);
+        final Term createdTag = client.createTag(tag);
+        final Term deletedTerm = client.deleteTag(createdTag);
 
         assertThat(deletedTerm).isNotNull();
 
-        client.getTerm(TAG, createdTag.getId());
+        assertThat(deletedTerm.getName()).isEqualTo(createdTag.getName());
+
+        client.getTag(createdTag.getId());
 
         Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
@@ -578,15 +542,15 @@ public class ClientLiveTest {
                 .withTaxonomySlug("post_tag")
                 .build();
 
-        final Term createdTag = client.createTerm(TAG, tag);
+        final Term createdTag = client.createTag(tag);
 
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
         final String expectedName = RandomStringUtils.randomAlphabetic(10);
         createdTag.setDescription(expectedDescription);
         createdTag.setName(expectedName);
 
-        final Term updatedTerm = client.updateTerm(TAG, createdTag);
-        client.deleteTerm(TAG, updatedTerm);
+        final Term updatedTerm = client.updateTag(createdTag);
+        client.deleteTag(updatedTerm);
 
         assertThat(updatedTerm.getDescription()).isEqualTo(expectedDescription);
         assertThat(updatedTerm.getName()).isEqualTo(expectedName);
@@ -596,11 +560,11 @@ public class ClientLiveTest {
     public void testCreatePostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        Term term = TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
+        Term tagTerm = TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
 
         final Term postTerm;
         try {
-            postTerm = client.createPostTerm(post, Taxonomies.TAG, term);
+            postTerm = client.createPostTag(post, tagTerm);
         } catch (HttpClientErrorException e) {
             throw WpApiParsedException.of(ParsedRestException.of(e));
         }
@@ -614,13 +578,13 @@ public class ClientLiveTest {
     public void testGetPostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
 
-        final List<Term> postTags = client.getPostTerms(post, Taxonomies.TAG);
+        final List<Term> postTags = client.getPostTags(post);
 
         client.deletePost(post); // cleanup
 
@@ -630,15 +594,16 @@ public class ClientLiveTest {
     @Test(expected = WpApiParsedException.class)
     public void testDeletePostTagTerm() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-        final Term postTerm = client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        final Term postTerm = client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
 
         client.deletePost(post);
-        final Term deletedTerm = client.deletePostTerm(post, Taxonomies.TAG, postTerm, true);
+        final Term deletedTerm = client.deletePostTag(post, postTerm, true);
 
         assertThat(postTerm).isNotNull();
         assertThat(deletedTerm).isNotNull();
+        assertThat(deletedTerm.getName()).isEqualTo(postTerm.getName());
 
-        final Term term = client.getPostTerm(post, Taxonomies.TAG, postTerm);
+        final Term term = client.getPostTag(post, postTerm);
 
         failBecauseExceptionWasNotThrown(WpApiParsedException.class);
     }
@@ -651,16 +616,19 @@ public class ClientLiveTest {
 
         IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
             try {
-                client.createPostTerm(post, Taxonomies.TAG, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+                client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
             } catch (WpApiParsedException e) {
                 LOG.error("Error ", e);
             }
         });
 
-        final List<Term> postTags = client.getPostTerms(post, Taxonomies.TAG);
+        final List<Term> postTags = client.getPostTags(post);
 
         // cleanup
-        postTags.forEach(term -> client.deletePostTerm(post, TAG, term, true));
+        for (Term term : postTags) {
+            client.deletePostTag(post, term, true);
+        }
+
         client.deletePost(post);
 
         assertThat(postTags).isNotNull().hasSize(limit);
