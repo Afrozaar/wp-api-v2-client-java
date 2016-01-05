@@ -1,7 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -32,7 +32,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -341,40 +340,135 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
-        final Term termToUse = Objects.nonNull(term.getId()) ? term : createTerm(taxonomy, term);
-        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), taxonomy, termToUse.getId()), null, null).getBody();
+    public Term createTag(Term tagTerm) {
+        return doExchange1(Request.TAGS, HttpMethod.POST, Term.class, forExpand(), tagTerm.asMap(), null).getBody();
     }
 
     @Override
-    public Term updatePostTerm(Post post, String taxonomy, Term term) {
-        throw new UnsupportedOperationException("not yet implemented");
+    public List<Term> getTags() {
+        return getAllTermsForEndpoint(Request.TAGS);
     }
 
     @Override
-    public List<Term> getPostTerms(Post post, String taxonomy) {
-        // TODO: 2015/12/10 For tagging we might need to do paged requests for example if a post has a large number of tags.
-        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), taxonomy), null, null).getBody());
-    }
-
-    @Override
-    public Term deletePostTerm(Post post, String taxonomy, Term term) {
-        // This returns 501 Not Implemented from server. Use variant with force parameter.
-        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
-    }
-
-    @Override
-    public Term deletePostTerm(Post post, String taxonomy, Term term, boolean force) {
-        return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), taxonomy, term.getId()), ImmutableMap.of("force", force), null).getBody();
-    }
-
-    @Override
-    public Term getPostTerm(Post post, String taxonomy, Term term) throws WpApiParsedException {
+    public Term getTag(Long id) throws TermNotFoundException {
         try {
-            return doExchange1(Request.POST_TERM, HttpMethod.GET, Term.class, forExpand(post.getId(), taxonomy, term.getId()), null, null).getBody();
-        } catch (HttpStatusCodeException e) {
-            throw new WpApiParsedException(ParsedRestException.of(e));
+            return doExchange1(Request.TAG, HttpMethod.GET, Term.class, forExpand(id), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
         }
+    }
+
+    @Override
+    public Term deleteTag(Term tagTerm) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term createPostTag(Post post, Term tag) throws WpApiParsedException {
+        final Term termToUse = Objects.nonNull(tag.getId()) ? tag : createTag(tag);
+        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), Taxonomies.TAGS, termToUse.getId()), null, termToUse.asMap()).getBody();
+    }
+
+    @Override
+    public List<Term> getPostTags(Post post) {
+        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), Taxonomies.TAGS), null, null).getBody());
+    }
+
+    @Override
+    public Term deletePostTag(Post post, Term tagTerm, boolean force) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), Taxonomies.TAGS, tagTerm.getId()), ImmutableMap.of("force", force), null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term getPostTag(Post post, Term tagTerm) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.POST_TERM, HttpMethod.GET, Term.class, forExpand(post.getId(), TAGS, tagTerm.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public Term updateTag(Term tag) {
+        return doExchange1(Request.TAG, HttpMethod.POST, Term.class, forExpand(tag.getId()), null, tag.asMap()).getBody();
+    }
+
+    @Override
+    public Term getCategory(Long id) {
+        return doExchange1(Request.CATEGORY, HttpMethod.GET, Term.class, forExpand(id), null, null).getBody();
+    }
+
+    @Override
+    public List<Term> getCategories() {
+        return getAllTermsForEndpoint(Request.CATEGORIES);
+    }
+
+    private List<Term> getAllTermsForEndpoint(final String endpoint) {
+        List<Term> collected = new ArrayList<>();
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class);
+        collected.addAll(pagedResponse.getList());
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+        return collected;
+    }
+
+    @Override
+    public Term createCategory(Term categoryTerm) {
+        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap()).getBody();
+    }
+
+    @Override
+    public Term deleteCategory(Term categoryTerm) throws TermNotFoundException {
+        try {
+            return doExchange1(Request.CATEGORY, HttpMethod.DELETE, Term.class, forExpand(categoryTerm.getId()), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new TermNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    @Override
+    public List<Term> deleteCategories(Term... terms) {
+        List<Term> deletedTerms = new ArrayList<>(terms.length);
+
+        for (Term term : terms) {
+            try {
+                deletedTerms.add(deleteCategory(term));
+            } catch (TermNotFoundException e) {
+                LOG.error("Error ", e);
+            }
+        }
+
+        return deletedTerms;
     }
 
     @Override

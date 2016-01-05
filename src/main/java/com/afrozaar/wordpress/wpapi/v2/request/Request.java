@@ -13,8 +13,8 @@ import java.util.Map;
 public abstract class Request {
     public static final String POSTS = "/posts";
     public static final String POST = "/posts/{id}";
-    public static final String POST_TERMS = "/posts/{postId}/terms/{taxonomy}";
-    public static final String POST_TERM = "/posts/{postId}/terms/{taxonomy}/{termId}";
+    public static final String POST_TERMS = "/posts/{postId}/{taxonomy}";
+    public static final String POST_TERM = "/posts/{postId}/{taxonomy}/{termId}";
 
     public static final String METAS = "/posts/{postId}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
@@ -28,6 +28,10 @@ public abstract class Request {
     public static final String PAGE = "/pages/{pageId}";
     public static final String USERS = "/users";
     public static final String USER = "/users/{userId}";
+    public static final String TAGS = "/tags";
+    public static final String TAG = "/tags/{tagId}";
+    public static final String CATEGORIES = "/categories";
+    public static final String CATEGORY = "/categories/{categoryId}";
 
     final String uri;
     final Map<String, List<String>> params;

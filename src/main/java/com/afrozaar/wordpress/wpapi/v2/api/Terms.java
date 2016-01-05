@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface Terms {
 
+    @Deprecated
     Term createTerm(String taxonomy, Term term) throws WpApiParsedException;
 
     List<Term> getTerms(String taxonomy);
