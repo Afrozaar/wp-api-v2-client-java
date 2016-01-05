@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
-import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
@@ -439,8 +438,8 @@ public class ClientLiveTest {
 
         final Term build = TermBuilder.aTerm().withName("J-Unit").build();
 
-        client.createTerm(Taxonomies.TAG, build);
-        client.createTerm(Taxonomies.TAG, build);
+        client.createTag(build);
+        client.createTag(build);
     }
 
     @Test(expected = TermNotFoundException.class)
@@ -528,6 +527,8 @@ public class ClientLiveTest {
 
         assertThat(deletedTerm).isNotNull();
 
+        assertThat(deletedTerm.getName()).isEqualTo(createdTag.getName());
+
         client.getTag(createdTag.getId());
 
         Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
@@ -600,6 +601,7 @@ public class ClientLiveTest {
 
         assertThat(postTerm).isNotNull();
         assertThat(deletedTerm).isNotNull();
+        assertThat(deletedTerm.getName()).isEqualTo(postTerm.getName());
 
         final Term term = client.getPostTag(post, postTerm);
 

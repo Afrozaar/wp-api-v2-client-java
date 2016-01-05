@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface Tags {
 
-    Term createTag(Term tagTerm);
+    Term createTag(Term tagTerm) throws WpApiParsedException;
 
     List<Term> getTags();
 

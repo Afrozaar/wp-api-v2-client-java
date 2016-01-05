@@ -271,17 +271,6 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createTerm(String taxonomy, Term term) throws WpApiParsedException {
-        try {
-            return doExchange1(Request.TERMS, HttpMethod.POST, Term.class, forExpand(taxonomy), null, term.asMap()).getBody();
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            final WpApiParsedException exception = WpApiParsedException.of(e);
-            LOG.error("Could not create {} term '{}'. {} ", taxonomy, term.getName(), exception.getMessage(), exception);
-            throw exception;
-        }
-    }
-
-    @Override
     public List<Term> getTerms(String taxonomy) {
         List<Term> collected = new ArrayList<>();
         PagedResponse<Term> pagedResponse = this.getPagedResponse(Request.TERMS, Term.class, taxonomy);
@@ -340,8 +329,14 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Term createTag(Term tagTerm) {
-        return doExchange1(Request.TAGS, HttpMethod.POST, Term.class, forExpand(), tagTerm.asMap(), null).getBody();
+    public Term createTag(Term tagTerm) throws WpApiParsedException {
+        try {
+            return doExchange1(Request.TAGS, HttpMethod.POST, Term.class, forExpand(), tagTerm.asMap(), null).getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            final WpApiParsedException exception = WpApiParsedException.of(e);
+            LOG.error("Could not create tag '{}'. {} ", tagTerm.getName(), exception.getMessage(), exception);
+            throw exception;
+        }
     }
 
     @Override
@@ -365,13 +360,20 @@ public class Client implements Wordpress {
     @Override
     public Term deleteTag(Term tagTerm) throws TermNotFoundException {
         try {
-            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), null, null).getBody();
+            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), null, null).getBody();
+
+            Term toReturn = new Term();
+            BeanUtils.populate(toReturn, (Map) response.get("data"));
+            return toReturn;
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
             } else {
                 throw e;
             }
+        } catch (InvocationTargetException | IllegalAccessException e) {
+            LOG.error("Error ", e);
+            throw new RuntimeException(e);
         }
     }
 
