@@ -564,6 +564,11 @@ public class Client implements Wordpress {
 
     @Override
     public User deleteUser(User user) {
+        /*
+        TODO: check with devs, getting: Fatal error when using wordpress debug.
+           <b>Fatal error</b>:  Call to undefined function wp_delete_user() in
+           <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
+         */
         return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of("force", true), null).getBody();
     }
 
