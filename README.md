@@ -1,4 +1,6 @@
-https://codeship.com/projects/a508d500-9763-0133-6e3a-6aec7e338399/status?branch=master
+[ ![Codeship Status for Afrozaar/wp-api-v2-client-java
+](https://codeship.com/projects/a508d500-9763-0133-6e3a-6aec7e338399/status)](https://www.codeship.io/projects/125775)
+
 
 # WP-API v2 Java Client
 
