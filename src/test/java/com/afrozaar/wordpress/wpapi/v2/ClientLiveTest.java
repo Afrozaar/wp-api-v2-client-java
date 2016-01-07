@@ -48,8 +48,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -62,15 +62,25 @@ public class ClientLiveTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientLiveTest.class);
 
-    static String yamlConfig;
-    static ClientConfig clientConfig;
-    static Wordpress client;
+    private static ClientConfig clientConfig;
+    private static Wordpress client;
 
     @BeforeClass
-    public static void init() throws UnknownHostException {
-        yamlConfig = String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName());
-        clientConfig = ClientConfig.load(ClientConfig.class.getResourceAsStream(yamlConfig));
+    public static void init() throws IOException {
+        clientConfig = resolveConfig();
         client = ClientFactory.fromConfig(clientConfig);
+    }
+
+    private static ClientConfig resolveConfig() {
+        try {
+            Resource userResource = new ClassPathResource(String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName()));
+            Resource resourceToUse = userResource.exists()
+                    ? userResource
+                    : new ClassPathResource("/config/docker-test.yaml");
+            return ClientConfig.load(resourceToUse);
+        } catch (IOException e) {
+            throw new RuntimeException("Can not run tests without a configuration. Please ensure you have a valid configuration in ${project}/src/test/resources/config/<hostname>-test.yaml");
+        }
     }
 
     @Test
@@ -212,7 +222,7 @@ public class ClientLiveTest {
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
             post.setFeaturedImage(createdMedia.getId());
-            client.updatePostField(post.getId(),"featured_image", createdMedia.getId());
+            client.updatePostField(post.getId(), "featured_image", createdMedia.getId());
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         } finally {
