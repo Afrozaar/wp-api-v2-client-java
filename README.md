@@ -115,6 +115,12 @@ file, or WP-API's `plugin.php`:
 
 These tests are intended to run against a live WordPress installation.
 
+For convenience, a wordpress docker has been created. This docker has a pre-installed-and-set-up wordpress
+ instance, with the latest (beta9) version of rest-api and JSON Basic Auth plugins enabled.
+ Configuration has already been included in the test configuration directory.
+ 
+For more information see [Afrozaar/docker-wordpress](https://github.com/Afrozaar/docker-wordpress) on GitHub.
+
 ### Configuration
 
 To run against your local wordpress installation, it is required to have a YAML configuration file
@@ -133,8 +139,6 @@ Please ensure that you do not commit hard-coded environment information.
 
 ## WireMock Testing
 
+_*Deprecated*_
+
 The WireMock tests are sanity tests that must be rigid with known data and expectations.
-
-## Testing TODO's
-
-* Run tests in a dockerized Wordpress install
