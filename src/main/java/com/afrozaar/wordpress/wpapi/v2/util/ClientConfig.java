@@ -1,7 +1,11 @@
 package com.afrozaar.wordpress.wpapi.v2.util;
 
+import org.springframework.core.io.Resource;
+
+import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 public class ClientConfig {
@@ -35,6 +39,11 @@ public class ClientConfig {
 
     public static ClientConfig load(InputStream inputStream) {
         return new Yaml().loadAs(inputStream, ClientConfig.class);
+    }
+
+    public static ClientConfig load(Resource resource) throws IOException {
+        LoggerFactory.getLogger(ClientConfig.class).info("Loading ClientConfig using resource: {}", resource);
+        return load(resource.getInputStream());
     }
 
     public static ClientConfig of(String baseUrl, String username, String password, boolean debug) {
