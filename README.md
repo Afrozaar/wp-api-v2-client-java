@@ -1,4 +1,4 @@
-https://codeship.com/projects/125775/status?branch=master
+https://codeship.com/projects/a508d500-9763-0133-6e3a-6aec7e338399/status?branch=master
 
 # WP-API v2 Java Client
 
