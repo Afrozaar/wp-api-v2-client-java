@@ -116,10 +116,15 @@ file, or WP-API's `plugin.php`:
 These tests are intended to run against a live WordPress installation.
 
 For convenience, a wordpress docker has been created. This docker has a pre-installed-and-set-up wordpress
- instance, with the latest (beta9) version of rest-api and JSON Basic Auth plugins enabled.
- Configuration has already been included in the test configuration directory.
+instance, with the latest (beta9) version of rest-api and JSON Basic Auth plugins enabled.
+Configuration has already been included in the test configuration directory.
  
-For more information see [Afrozaar/docker-wordpress](https://github.com/Afrozaar/docker-wordpress) on GitHub.
+To make use of this docker, you can do the following: 
+ 
+    docker run -d --name wp_build_test -p 80:80 afrozaar/wordpress:latest
+    
+More configuration is required (adding an entry to your hosts file), so 
+see [Afrozaar/docker-wordpress](https://github.com/Afrozaar/docker-wordpress) on GitHub.
 
 ### Configuration
 
