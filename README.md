@@ -1,3 +1,5 @@
+https://codeship.com/projects/125775/status?branch=master
+
 # WP-API v2 Java Client
 
 A Java client to version 2 of the WP REST API
