@@ -1,14 +1,14 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -27,7 +27,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.PageBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -37,11 +36,9 @@ import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import org.apache.commons.lang.RandomStringUtils;
-import org.assertj.core.api.Assertions;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -50,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
@@ -84,7 +81,8 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void posts() {
+    public void testTraverse() {
+        //TODO need to create >10 pages before running this test
         final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
@@ -118,7 +116,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void searchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
+    public void testSearchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
 
         // given
         SearchRequest<Post> search = SearchRequest.Builder.aSearchRequest(Post.class).withParam("filter[author]", "999").build();
@@ -131,7 +129,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void searchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() {
+    public void testSearchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() {
         // given
         SearchRequest<Post> search = SearchRequest.Builder.aSearchRequest(Post.class).withParam("filter[author]", "1").build();
 
@@ -143,7 +141,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void searchForMetaKey() throws PostCreateException {
+    public void testSearchForMetaKey() throws PostCreateException {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
@@ -156,7 +154,7 @@ public class ClientLiveTest {
 
     @Test
     @Ignore // this is for documentation purpose only
-    public void searchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
+    public void testSearchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
 
         final PagedResponse<Post> response = client.search(SearchRequest.Builder.aSearchRequest(Post.class)
                 .withUri(Request.POSTS)
@@ -169,7 +167,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void createPostTestWithSufficientData_mustNotFailWithException() throws PostCreateException {
+    public void testCreatePostWithSufficientData_mustNotFailWithException() throws PostCreateException {
 
         final String expectedTitle = "Hello, World!";
         final String expectedExcerpt = "This is...";
@@ -191,7 +189,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void updatePostFields() throws PostCreateException {
+    public void testUpdatePost() throws PostCreateException {
         final Post post = newTestPostWithRandomData();
 
         final Post createdPost = client.createPost(post, PostStatus.publish);
@@ -228,10 +226,12 @@ public class ClientLiveTest {
         } finally {
             client.deletePost(post);
         }
+
+        //TODO need an assert?
     }
 
     @Test
-    public void getMediaItem() throws WpApiParsedException {
+    public void testDeletePost() throws WpApiParsedException {
 
         final Two<Post, Media> postWithMedia = newTestPostWithMedia();
 
@@ -247,7 +247,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getMediaItems() {
+    public void testGetMedia() {
         final List<Media> medias = client.getMedia();
 
         assertThat(medias).isNotNull().isNotEmpty();
@@ -256,7 +256,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testDeleteMedia() throws WpApiParsedException {
+    public void testDeletePost_shouldDeleteMediaFirst() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         Media media = client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
         Media media2 = client.getMedia(media.getId());
@@ -286,7 +286,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getPostMetas() throws PostCreateException {
+    public void testGetPostMetas() throws PostCreateException {
         // given
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
@@ -301,7 +301,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void getPostMeta() throws PostCreateException {
+    public void testGetPostMeta() throws PostCreateException {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
@@ -329,7 +329,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void updatePostMeta() throws PostCreateException {
+    public void testUpdatePostMeta() throws PostCreateException {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post, PostStatus.publish);
 
@@ -377,7 +377,7 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void deletePostMeta() throws PostCreateException {
+    public void testDeletePostMeta() throws PostCreateException {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post, PostStatus.publish);
 
@@ -411,6 +411,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetTags() {
+        //TODO need to create tags first
         List<Term> tags = client.getTags();
         assertThat(tags).isNotNull().isNotEmpty();
         assertThat(tags.size()).isGreaterThan(0);
@@ -419,6 +420,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetCategories() {
+        //TODO need to create categories first
         List<Term> categories = client.getCategories();
         assertThat(categories).isNotNull().isNotEmpty();
         assertThat(categories.size()).isGreaterThan(0);
@@ -431,7 +433,7 @@ public class ClientLiveTest {
         final String expectedName = RandomStringUtils.randomAlphabetic(5);
         final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
 
-        final Term createdCategory = client.createCategory(TermBuilder.aTerm()
+        final Term createdCategory = client.createCategory(aTerm()
                 .withName(expectedName)
                 .withDescription(expectedDescription).build());
 
@@ -444,9 +446,9 @@ public class ClientLiveTest {
     }
 
     @Test(expected = WpApiParsedException.class)
-    public void testCreateSameTaxonomyTagManyTimes() throws WpApiParsedException {
+    public void testCreateTagManyTimes() throws WpApiParsedException {
 
-        final Term build = TermBuilder.aTerm().withName("J-Unit").build();
+        final Term build = aTerm().withName("J-Unit").build();
 
         client.createTag(build);
         client.createTag(build);
@@ -454,39 +456,38 @@ public class ClientLiveTest {
 
     @Test(expected = TermNotFoundException.class)
     public void testGetTaxonomyCategoryNotFound_mustThrowTermNotFoundException() throws TermNotFoundException {
-        final Term term = client.getTerm(CATEGORY, 9999L);
-        failBecauseExceptionWasNotThrown(TermNotFoundException.class);
+        client.getTerm(CATEGORY, 9999L);
     }
 
     @Test
     public void testCreateTaxonomyCategoryHierarchical() throws WpApiParsedException {
-        final Term rootTerm = client.createCategory(TermBuilder.aTerm()
+        final Term rootTerm = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
 
         LOG.debug("rootTerm: {}", rootTerm);
 
-        final Term child1 = client.createCategory(TermBuilder.aTerm()
+        final Term child1 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child2 = client.createCategory(TermBuilder.aTerm()
+        final Term child2 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child3 = client.createCategory(TermBuilder.aTerm()
+        final Term child3 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child4 = client.createCategory(TermBuilder.aTerm()
+        final Term child4 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
-        final Term child41 = client.createCategory(TermBuilder.aTerm()
+        final Term child41 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
-        final Term child42 = client.createCategory(TermBuilder.aTerm()
+        final Term child42 = client.createCategory(aTerm()
                 .withName(RandomStringUtils.randomAlphabetic(5))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
@@ -508,7 +509,7 @@ public class ClientLiveTest {
 
         String expectedName = RandomStringUtils.randomAlphabetic(3);
         String expectedDescription = RandomStringUtils.randomAlphabetic(5);
-        Term tag = TermBuilder.aTerm()
+        Term tag = aTerm()
                 .withDescription(expectedDescription)
                 .withName(expectedName)
                 .withTaxonomySlug("post_tag")
@@ -526,7 +527,7 @@ public class ClientLiveTest {
     public void testDeleteTaxonomyTag() throws WpApiParsedException {
         String expectedName = RandomStringUtils.randomAlphabetic(3);
         String expectedDescription = RandomStringUtils.randomAlphabetic(5);
-        Term tag = TermBuilder.aTerm()
+        Term tag = aTerm()
                 .withDescription(expectedDescription)
                 .withName(expectedName)
                 .withTaxonomySlug("post_tag")
@@ -540,13 +541,11 @@ public class ClientLiveTest {
         assertThat(deletedTerm.getName()).isEqualTo(createdTag.getName());
 
         client.getTag(createdTag.getId());
-
-        Assertions.failBecauseExceptionWasNotThrown(TermNotFoundException.class);
     }
 
     @Test
     public void testUpdateTaxonomyTag() throws WpApiParsedException {
-        Term tag = TermBuilder.aTerm()
+        Term tag = aTerm()
                 .withDescription(RandomStringUtils.randomAlphabetic(5))
                 .withName(RandomStringUtils.randomAlphabetic(3))
                 .withTaxonomySlug("post_tag")
@@ -570,14 +569,9 @@ public class ClientLiveTest {
     public void testCreatePostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        Term tagTerm = TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
+        Term tagTerm = aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
 
-        final Term postTerm;
-        try {
-            postTerm = client.createPostTag(post, tagTerm);
-        } catch (HttpClientErrorException e) {
-            throw WpApiParsedException.of(ParsedRestException.of(e));
-        }
+        final Term postTerm = client.createPostTag(post, tagTerm);
 
         assertThat(postTerm).isNotNull();
 
@@ -588,11 +582,11 @@ public class ClientLiveTest {
     public void testGetPostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
 
         final List<Term> postTags = client.getPostTags(post);
 
@@ -604,7 +598,7 @@ public class ClientLiveTest {
     @Test(expected = WpApiParsedException.class)
     public void testDeletePostTagTerm() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-        final Term postTerm = client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        final Term postTerm = client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
 
         client.deletePost(post);
         final Term deletedTerm = client.deletePostTag(post, postTerm, true);
@@ -613,13 +607,11 @@ public class ClientLiveTest {
         assertThat(deletedTerm).isNotNull();
         assertThat(deletedTerm.getName()).isEqualTo(postTerm.getName());
 
-        final Term term = client.getPostTag(post, postTerm);
-
-        failBecauseExceptionWasNotThrown(WpApiParsedException.class);
+        client.getPostTag(post, postTerm);
     }
 
     @Test
-    public void testPagedPostTagTerms() throws WpApiParsedException {
+    public void testGetPostTagsPaged() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
         final int limit = 50;
@@ -671,16 +663,12 @@ public class ClientLiveTest {
     public void testDeletePage() throws PageNotFoundException {
         Page page = newPageWithRandomData();
         final Page createdPage = client.createPage(page, PostStatus.publish);
-
         assertThat(createdPage).isNotNull();
 
         final Page deletedPage = client.deletePage(createdPage, true);
-
         assertThat(deletedPage).isNotNull();
 
-        final Page pageNotFound = client.getPage(createdPage.getId());
-
-        failBecauseExceptionWasNotThrown(PageNotFoundException.class);
+        client.getPage(createdPage.getId());
     }
 
     @Test
@@ -712,12 +700,12 @@ public class ClientLiveTest {
 
     @Test
     public void testCreateUser() {
-        User userRequest = UserBuilder.aUser()
+        User userRequest = aUser()
                 .withFirstName(RandomStringUtils.randomAlphabetic(4))
                 .withLastName(RandomStringUtils.randomAlphabetic(7))
                 .withDescription(RandomStringUtils.randomAlphabetic(20))
                 .withEmail(String.format("%s@%s.test", RandomStringUtils.randomAlphabetic(4), RandomStringUtils.randomAlphabetic(3)))
-                .withRoles(Arrays.asList("administrator"))
+                .withRoles(Collections.singletonList("administrator"))
                 .build();
         final User createdUser = client.createUser(userRequest, RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphanumeric(3));
 
@@ -725,6 +713,7 @@ public class ClientLiveTest {
 
         assertThat(userRequest.getEmail()).isEqualTo(createdUser.getEmail());
         assertThat(userRequest.getDescription()).isEqualTo(createdUser.getDescription());
+        assertThat(userRequest.getFirstName()).isEqualTo(createdUser.getFirstName());
         assertThat(userRequest.getLastName()).isEqualTo(createdUser.getLastName());
         assertThat(createdUser.getId()).isNotNull();
     }
@@ -741,7 +730,7 @@ public class ClientLiveTest {
     // <b>Fatal error</b>:  Call to undefined function wp_delete_user() in <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
     public void testDeleteUser() {
 
-        User user = UserBuilder.aUser()
+        User user = aUser()
                 .withName(RandomStringUtils.randomAlphabetic(4))
                 .withLastName(RandomStringUtils.randomAlphabetic(5))
                 .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))

@@ -39,7 +39,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,13 +52,8 @@ public class ClientWireMockTest {
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
     @Test
-    public void foo() {
-        assertThat("x").isEqualTo("x");
-    }
-
-    @Test
-    public void QueryParams() {
-        RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter()));
+    public void testQueryParams() {
+        RestTemplate restTemplate = new RestTemplate(Collections.singletonList(new MappingJackson2HttpMessageConverter()));
 
         final ImmutableMap<String, String> of = ImmutableMap.of("foo", "bar", "baz", "foobar");
         //restTemplate.exchange("http://localhost/", HttpMethod.GET, null, String.class, of);
@@ -138,15 +133,6 @@ public class ClientWireMockTest {
         //        assertThat(response.getPrevious()).isEmpty();
     }
 
-    private byte[] contentFor(String endpoint) throws IOException {
-        return new ByteSource() {
-            @Override
-            public InputStream openStream() throws IOException {
-                return ClientWireMockTest.class.getResourceAsStream("/mock-resources" + endpoint + ".json");
-            }
-        }.read();
-    }
-
     @Test
     public void getResponse() throws JSONException, JsonProcessingException {
         Map<String, String> headers = new HashMap<>();
@@ -158,7 +144,7 @@ public class ClientWireMockTest {
         createStub(MockObject.POSTS, 22, headers);
     }
 
-    public void createStub(Enum type, int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
+    private void createStub(Enum type, int numOfPosts, Map<String, String> headers) throws JsonProcessingException {
         IWordpressMockGenerator wordpress = new WordpressMockGenerator();
         String postsJson = wordpress.generateResponse(type, numOfPosts);
 
