@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta9**)
+(Currently coding against **WP REST API Version 2.0-beta10**)
 
 See
 
@@ -26,10 +26,11 @@ See
 * Taxonomy CRUD
 * Post Terms CRUD
 * Pages CRUD
+* Users
 
 # Work In Progress
 
-* Users
+    ...
 
 # Not Yet Implemented
 
@@ -145,10 +146,3 @@ available at: `${project}/src/test/resources/config/${hostname}-test.yaml` with 
 This configuration must not be included in version control. _`*.yaml` is already included in the `.gitignore` file._
 
 Please ensure that you do not commit hard-coded environment information.
-
-## WireMock Testing
-
-_*Deprecated*_
-
-The WireMock tests are sanity tests that must be rigid with known data and expectations.
-
