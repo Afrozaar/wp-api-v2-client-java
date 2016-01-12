@@ -124,7 +124,11 @@ public class ClientWireMockTest {
 
         // when
         final Wordpress client = ClientFactory.fromConfig(of(baseUrl, username, password, true));
-        final Post response = client.getPost(49L);
+        try {
+            final Post response = client.getPost(49L);
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException e) {
+            LOG.error("Error ", e);
+        }
 
         //        final Optional<String> next = response.getNext();
 

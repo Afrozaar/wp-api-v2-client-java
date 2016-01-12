@@ -3,7 +3,9 @@ package com.afrozaar.wordpress.wpapi.v2;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -92,10 +94,16 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post getPost(Long id) {
-        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null);
-
-        return exchange.getBody();
+    public Post getPost(Long id) throws PostNotFoundException {
+        try {
+            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new PostNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -553,13 +561,22 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public User getUser(long userId) {
-        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), null, null).getBody();
+    public User getUser(long userId) throws UserNotFoundException {
+        return getUser(userId, null);
     }
 
     @Override
-    public User getUser(long userId, String context) {
-        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), ImmutableMap.of("context", context), null).getBody();
+    public User getUser(long userId, String context) throws UserNotFoundException {
+        final Map<String, Object> params = context == null ? null : ImmutableMap.of("context", context);
+        try {
+            return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), params, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new UserNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override

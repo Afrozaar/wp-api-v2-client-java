@@ -1,10 +1,19 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder.aContent;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder.anExcerpt;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder.aMedia;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.PageBuilder.aPage;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder.aPost;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
+import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
+import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import static org.junit.Assert.fail;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
@@ -20,13 +29,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.MediaBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.PageBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -39,6 +41,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.client.HttpServerErrorException;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -68,6 +71,14 @@ public class ClientLiveTest {
         client = ClientFactory.fromConfig(clientConfig);
     }
 
+    @Before
+    public void cleanup() {
+        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).build());
+        for (Post post : response.getList()) {
+            client.deletePost(post);
+        }
+    }
+
     private static ClientConfig resolveConfig() {
         try {
             Resource userResource = new ClassPathResource(String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName()));
@@ -81,8 +92,11 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testTraverse() {
-        //TODO need to create >10 pages before running this test
+    public void testTraverse() throws PostCreateException {
+
+        for (int i = 0; i < 11; i++) {
+            client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+        }
         final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
@@ -108,18 +122,19 @@ public class ClientLiveTest {
     public void testGetPost() throws PostCreateException {
         final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final Post post = client.getPost(createdPost.getId());
-
-        client.deletePost(createdPost); // cleanup
-
-        assertThat(post).isNotNull();
+        try {
+            final Post post = client.getPost(createdPost.getId());
+            assertThat(post).isNotNull();
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException e) {
+            fail(e.toString());
+        }
     }
 
     @Test
     public void testSearchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
 
         // given
-        SearchRequest<Post> search = SearchRequest.Builder.aSearchRequest(Post.class).withParam("filter[author]", "999").build();
+        SearchRequest<Post> search = aSearchRequest(Post.class).withParam("filter[author]", "999").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.search(search);
@@ -129,9 +144,10 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testSearchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() {
+    public void testSearchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() throws PostCreateException {
+        client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         // given
-        SearchRequest<Post> search = SearchRequest.Builder.aSearchRequest(Post.class).withParam("filter[author]", "1").build();
+        SearchRequest<Post> search = aSearchRequest(Post.class).withParam("filter[author]", "1").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.search(search);
@@ -145,9 +161,7 @@ public class ClientLiveTest {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PagedResponse<Post> response = client.search(SearchRequest.Builder.aSearchRequest(Post.class).withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
-
-        client.deletePost(postWithMeta.a);
+        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
 
         assertThat(response.getList()).isNotEmpty().hasSize(1);
     }
@@ -156,7 +170,7 @@ public class ClientLiveTest {
     @Ignore // this is for documentation purpose only
     public void testSearchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
 
-        final PagedResponse<Post> response = client.search(SearchRequest.Builder.aSearchRequest(Post.class)
+        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class)
                 .withUri(Request.POSTS)
                 .withParam("filter[meta_key]", "baobab_indexed")
                 .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
@@ -173,9 +187,9 @@ public class ClientLiveTest {
         final String expectedExcerpt = "This is...";
         final String expectedContent = "<p>This is the sandbox</p>\n";
 
-        final Post post = PostBuilder.aPost().withTitle(TitleBuilder.aTitle().withRendered(expectedTitle).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(expectedExcerpt).build())
-                .withContent(ContentBuilder.aContent().withRendered(expectedContent).build())
+        final Post post = aPost().withTitle(aTitle().withRendered(expectedTitle).build())
+                .withExcerpt(anExcerpt().withRendered(expectedExcerpt).build())
+                .withContent(aContent().withRendered(expectedContent).build())
                 .build();
 
         final Post createdPost = client.createPost(post, PostStatus.publish);
@@ -201,8 +215,6 @@ public class ClientLiveTest {
 
         final Post updatedPost = client.updatePost(createdPost);
 
-        client.deletePost(updatedPost); // cleanup before testing in case test fails.
-
         final String updatedContent = updatedPost.getContent().getRendered();
         final String updatedExcerpt = updatedPost.getExcerpt().getRendered();
 
@@ -223,23 +235,17 @@ public class ClientLiveTest {
             client.updatePostField(post.getId(), "featured_image", createdMedia.getId());
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
-        } finally {
-            client.deletePost(post);
         }
 
         //TODO need an assert?
     }
 
     @Test
-    public void testDeletePost() throws WpApiParsedException {
+    public void tesGetMedia() throws WpApiParsedException {
 
         final Two<Post, Media> postWithMedia = newTestPostWithMedia();
 
         final Media media = client.getMedia(postWithMedia.b.getId());
-
-        client.deletePost(postWithMedia.a);
-
-        // TODO: 2015/12/10 use when it becomes available: client.deleteMedia(postWithMedia.b);
 
         assertThat(media).isNotNull();
 
@@ -247,7 +253,11 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testGetMedia() {
+    public void testGetMedia() throws WpApiParsedException {
+        //TODO No idea why this is failing
+        final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+        client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
+
         final List<Media> medias = client.getMedia();
 
         assertThat(medias).isNotNull().isNotEmpty();
@@ -256,16 +266,13 @@ public class ClientLiveTest {
     }
 
     @Test
-    public void testDeletePost_shouldDeleteMediaFirst() throws WpApiParsedException {
+    public void testDeleteMedia() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         Media media = client.createMedia(newRandomMedia(post), new ClassPathResource("/bin/gradient_colormap.jpg"));
         Media media2 = client.getMedia(media.getId());
 
         //Check the response code is 2xx successful when deleted.
         assertThat(client.deleteMedia(media2, true)).isTrue();
-        client.deletePost(post);
-
-        //TODO: Double check that the article does not exist anymore
     }
 
     @Test
@@ -280,9 +287,6 @@ public class ClientLiveTest {
         Media updatedMedia = client.updateMedia(media);
 
         assertThat(updatedMedia.getDescription()).isEqualTo(media.getDescription());
-
-        client.deleteMedia(updatedMedia, true);
-        client.deletePost(post);
     }
 
     @Test
@@ -292,8 +296,6 @@ public class ClientLiveTest {
 
         //when
         final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.a.getId());
-
-        client.deletePost(postWithMeta.a); // cleanup
 
         // then
         assertThat(postMetas).isNotNull();
@@ -321,8 +323,6 @@ public class ClientLiveTest {
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
-        client.deletePost(createdPost); //cleanup
-
         assertThat(createdMeta).isNotNull();
         assertThat(createdMeta.getKey()).isEqualTo(key);
         assertThat(createdMeta.getValue()).isEqualTo(value);
@@ -347,10 +347,6 @@ public class ClientLiveTest {
         assertThat(updatedMeta.getValue()).isEqualTo(value2);
         assertThat(updatedMeta.getKey()).isNotEqualTo(createdMeta.getKey());
         assertThat(updatedMeta.getValue()).isNotEqualTo(createdMeta.getValue());
-
-        final Post deletedPost = client.deletePost(createdPost);
-
-        assertThat(deletedPost.getId()).isEqualTo(post.getId());
     }
 
     @Test
@@ -370,10 +366,6 @@ public class ClientLiveTest {
         assertThat(updatedMeta.getKey()).isEqualTo(key);
         assertThat(updatedMeta.getValue()).isEqualTo(value2);
         assertThat(updatedMeta.getValue()).isNotEqualTo(createdMeta.getValue());
-
-        final Post deletedPost = client.deletePost(createdPost);
-
-        assertThat(deletedPost.getId()).isEqualTo(post.getId());
     }
 
     @Test
@@ -618,7 +610,7 @@ public class ClientLiveTest {
 
         IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
             try {
-                client.createPostTag(post, TermBuilder.aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+                client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
             } catch (WpApiParsedException e) {
                 LOG.error("Error ", e);
             }
@@ -630,8 +622,6 @@ public class ClientLiveTest {
         for (Term term : postTags) {
             client.deletePostTag(post, term, true);
         }
-
-        client.deletePost(post);
 
         assertThat(postTags).isNotNull().hasSize(limit);
     }
@@ -720,14 +710,17 @@ public class ClientLiveTest {
 
     @Test
     public void testGetUser() {
-        User user = client.getUser(1L, Contexts.VIEW);
-        assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
-        assertThat(user.getName()).isEqualTo("docker");
+        try {
+            User user = client.getUser(1L, Contexts.VIEW);
+            assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
+            assertThat(user.getName()).isEqualTo("docker");
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
+            LOG.error("Error ", e);
+            fail(e.toString());
+        }
     }
 
     @Test
-    @Ignore // currently having an Internal Server Error:
-    // <b>Fatal error</b>:  Call to undefined function wp_delete_user() in <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
     public void testDeleteUser() {
 
         User user = aUser()
@@ -742,6 +735,12 @@ public class ClientLiveTest {
         client.getUsers().stream()
                 .filter(u -> u.getId() != 1L)
                 .forEach(u -> client.deleteUser(u));
+
+        try {
+            final User user1 = client.getUser(createdUser.getId());
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
+            LOG.error("Error ", e);
+        }
     }
 
     @Ignore
@@ -751,18 +750,18 @@ public class ClientLiveTest {
     }
 
     private Page newPageWithRandomData() {
-        return PageBuilder.aPage()
-                .withTitle(TitleBuilder.aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
-                .withContent(ContentBuilder.aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
+        return aPage()
+                .withTitle(aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
+                .withExcerpt(anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
+                .withContent(aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
                 .build();
     }
 
     private Post newTestPostWithRandomData() {
-        return PostBuilder.aPost()
-                .withContent(ContentBuilder.aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withExcerpt(ExcerptBuilder.anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+        return aPost()
+                .withContent(aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
+                .withTitle(aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withExcerpt(anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
                 //                .withFeaturedImage(113L)
                 .build();
     }
@@ -774,8 +773,8 @@ public class ClientLiveTest {
     }
 
     private Media newRandomMedia(Post post) {
-        return MediaBuilder.aMedia()
-                .withTitle(TitleBuilder.aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
+        return aMedia()
+                .withTitle(aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
                 .withCaption(RandomStringUtils.randomAlphabetic(50))
                 .withAltText("image")
                 .withDescription(RandomStringUtils.randomAscii(20))
