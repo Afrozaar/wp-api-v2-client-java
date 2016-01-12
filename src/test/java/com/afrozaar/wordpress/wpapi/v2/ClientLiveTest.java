@@ -1,7 +1,5 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder.aContent;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder.anExcerpt;
@@ -12,6 +10,10 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static org.junit.Assert.fail;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
@@ -120,9 +122,12 @@ public class ClientLiveTest {
     public void testGetPost() throws PostCreateException {
         final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final Post post = client.getPost(createdPost.getId());
-
-        assertThat(post).isNotNull();
+        try {
+            final Post post = client.getPost(createdPost.getId());
+            assertThat(post).isNotNull();
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException e) {
+            fail(e.toString());
+        }
     }
 
     @Test
@@ -705,14 +710,17 @@ public class ClientLiveTest {
 
     @Test
     public void testGetUser() {
-        User user = client.getUser(1L, Contexts.VIEW);
-        assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
-        assertThat(user.getName()).isEqualTo("docker");
+        try {
+            User user = client.getUser(1L, Contexts.VIEW);
+            assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
+            assertThat(user.getName()).isEqualTo("docker");
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
+            LOG.error("Error ", e);
+            fail(e.toString());
+        }
     }
 
     @Test
-    @Ignore // currently having an Internal Server Error:
-    // <b>Fatal error</b>:  Call to undefined function wp_delete_user() in <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
     public void testDeleteUser() {
 
         User user = aUser()
@@ -727,12 +735,39 @@ public class ClientLiveTest {
         client.getUsers().stream()
                 .filter(u -> u.getId() != 1L)
                 .forEach(u -> client.deleteUser(u));
+
+        try {
+            final User user1 = client.getUser(createdUser.getId());
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
+            LOG.error("Error ", e);
+        }
     }
 
-    @Ignore
     @Test
     public void testUpdateUser() {
-        // TODO: create a test to update a user.
+        User user = aUser()
+                .withName(RandomStringUtils.randomAlphabetic(4))
+                .withLastName(RandomStringUtils.randomAlphabetic(5))
+                .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))
+                .build();
+        String username = RandomStringUtils.randomAlphabetic(4);
+        String password = RandomStringUtils.randomAlphanumeric(5);
+        final User createdUser = client.createUser(user, username, password);
+
+        final String name = createdUser.getName();
+        final String firstName = createdUser.getFirstName();
+        final String lastName = createdUser.getLastName();
+
+        final String newFirstName = RandomStringUtils.randomAlphabetic(5);
+        createdUser.setFirstName(newFirstName);
+        final String newLastName = RandomStringUtils.randomAlphabetic(6);
+        createdUser.setLastName(newLastName);
+
+        User updatedUser = client.updateUser(createdUser);
+
+        assertThat(updatedUser.getFirstName()).isNotEqualTo(firstName).isEqualTo(newFirstName);
+        assertThat(updatedUser.getLastName()).isNotEqualTo(lastName).isEqualTo(newLastName);
+        assertThat(updatedUser.getName()).isEqualTo(name);
     }
 
     private Page newPageWithRandomData() {

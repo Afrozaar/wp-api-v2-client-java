@@ -3,7 +3,9 @@ package com.afrozaar.wordpress.wpapi.v2;
 import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -92,10 +94,16 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post getPost(Long id) {
-        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null);
-
-        return exchange.getBody();
+    public Post getPost(Long id) throws PostNotFoundException {
+        try {
+            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new PostNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
@@ -525,51 +533,47 @@ public class Client implements Wordpress {
         return collected;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public User createUser(User user, String username, String password) {
-
-        Function<User, MultiValueMap> userMap = input -> {
-            //Map<String, String> map = new HashMap<>();
-
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
-            //capabilities
-            map.add("description", input.getDescription());
-            map.add("email", input.getEmail()); //Required: true
-            map.add("first_name", input.getFirstName());
-            map.add("last_name", input.getLastName());
-            map.add("name", input.getName());
-            map.add("nickname", input.getNickname());
-            input.getRoles().forEach(role -> map.add("role", role));
-            map.add("slug", input.getSlug());
-            map.add("username", username); // Required: true
-            map.add("password", password); // Required: true
-
-            return map;
-        };
-        final MultiValueMap apply = userMap.apply(user);
-
-        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, apply).getBody();
+        final MultiValueMap userAsMap = userMap.apply(user);
+        userAsMap.add("username", username); // Required: true
+        userAsMap.add("password", password); // Required: true
+        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
     }
 
     @Override
-    public User getUser(long userId) {
-        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), null, null).getBody();
+    public User getUser(long userId) throws UserNotFoundException {
+        return getUser(userId, null);
     }
 
     @Override
-    public User getUser(long userId, String context) {
-        return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), ImmutableMap.of("context", context), null).getBody();
+    public User getUser(long userId, String context) throws UserNotFoundException {
+        final Map<String, Object> params = context == null ? null : ImmutableMap.of("context", context);
+        try {
+            return doExchange1(Request.USER, HttpMethod.GET, User.class, forExpand(userId), params, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new UserNotFoundException(e);
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override
     public User deleteUser(User user) {
+        /*
+        TODO: check with devs, getting: Fatal error when using wordpress debug.
+           <b>Fatal error</b>:  Call to undefined function wp_delete_user() in
+           <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
+         */
         return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of("force", true), null).getBody();
     }
 
     @Override
     public User updateUser(User user) {
-        throw new UnsupportedOperationException("Not Yet Implemented");
+        return doExchange1(Request.USER, HttpMethod.POST, User.class, forExpand(user.getId()), null, userMap.apply(user)).getBody();
     }
 
     @SuppressWarnings("unchecked")

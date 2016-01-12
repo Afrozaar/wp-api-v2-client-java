@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.api;
 
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
+import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
@@ -32,7 +33,7 @@ public interface Posts {
 
     Post createPost(Post post, PostStatus status) throws PostCreateException;
 
-    Post getPost(Long id);
+    Post getPost(Long id) throws PostNotFoundException;
 
     /**
      * <pre>
