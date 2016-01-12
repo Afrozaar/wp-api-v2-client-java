@@ -533,31 +533,13 @@ public class Client implements Wordpress {
         return collected;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public User createUser(User user, String username, String password) {
-
-        Function<User, MultiValueMap> userMap = input -> {
-            //Map<String, String> map = new HashMap<>();
-
-            MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
-
-            //capabilities
-            map.add("description", input.getDescription());
-            map.add("email", input.getEmail()); //Required: true
-            map.add("first_name", input.getFirstName());
-            map.add("last_name", input.getLastName());
-            map.add("name", input.getName());
-            map.add("nickname", input.getNickname());
-            input.getRoles().forEach(role -> map.add("role", role));
-            map.add("slug", input.getSlug());
-            map.add("username", username); // Required: true
-            map.add("password", password); // Required: true
-
-            return map;
-        };
-        final MultiValueMap apply = userMap.apply(user);
-
-        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, apply).getBody();
+        final MultiValueMap userAsMap = userMap.apply(user);
+        userAsMap.add("username", username); // Required: true
+        userAsMap.add("password", password); // Required: true
+        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
     }
 
     @Override
@@ -591,7 +573,7 @@ public class Client implements Wordpress {
 
     @Override
     public User updateUser(User user) {
-        throw new UnsupportedOperationException("Not Yet Implemented");
+        return doExchange1(Request.USER, HttpMethod.POST, User.class, forExpand(user.getId()), null, userMap.apply(user)).getBody();
     }
 
     @SuppressWarnings("unchecked")

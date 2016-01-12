@@ -743,10 +743,31 @@ public class ClientLiveTest {
         }
     }
 
-    @Ignore
     @Test
     public void testUpdateUser() {
-        // TODO: create a test to update a user.
+        User user = aUser()
+                .withName(RandomStringUtils.randomAlphabetic(4))
+                .withLastName(RandomStringUtils.randomAlphabetic(5))
+                .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))
+                .build();
+        String username = RandomStringUtils.randomAlphabetic(4);
+        String password = RandomStringUtils.randomAlphanumeric(5);
+        final User createdUser = client.createUser(user, username, password);
+
+        final String name = createdUser.getName();
+        final String firstName = createdUser.getFirstName();
+        final String lastName = createdUser.getLastName();
+
+        final String newFirstName = RandomStringUtils.randomAlphabetic(5);
+        createdUser.setFirstName(newFirstName);
+        final String newLastName = RandomStringUtils.randomAlphabetic(6);
+        createdUser.setLastName(newLastName);
+
+        User updatedUser = client.updateUser(createdUser);
+
+        assertThat(updatedUser.getFirstName()).isNotEqualTo(firstName).isEqualTo(newFirstName);
+        assertThat(updatedUser.getLastName()).isNotEqualTo(lastName).isEqualTo(newLastName);
+        assertThat(updatedUser.getName()).isEqualTo(name);
     }
 
     private Page newPageWithRandomData() {
