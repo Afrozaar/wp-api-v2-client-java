@@ -1,3 +1,7 @@
+[ ![Codeship Status for Afrozaar/wp-api-v2-client-java
+](https://codeship.com/projects/a508d500-9763-0133-6e3a-6aec7e338399/status)](https://www.codeship.io/projects/125775)
+
+
 # WP-API v2 Java Client
 
 A Java client to version 2 of the WP REST API
@@ -147,3 +151,4 @@ Please ensure that you do not commit hard-coded environment information.
 _*Deprecated*_
 
 The WireMock tests are sanity tests that must be rigid with known data and expectations.
+
