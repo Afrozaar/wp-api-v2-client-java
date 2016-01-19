@@ -30,7 +30,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -60,7 +59,7 @@ import java.util.stream.Collectors;
 public class Client implements Wordpress {
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
 
-    private RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter()));
+    private RestTemplate restTemplate = new RestTemplate();
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
 
@@ -155,6 +154,12 @@ public class Client implements Wordpress {
     public Post setPostFeaturedImage(Long postId, Media media) {
         Preconditions.checkArgument("image".equals(media.getMediaType()), "Can not set non-image media type as a featured image on a post.");
         return updatePostField(postId, "featured_image", media.getId());
+    }
+
+    @Override
+    public List<Media> getPostMedias(Long postId) {
+        Media[] medias = doExchange1(Request.MEDIAS, HttpMethod.GET, Media[].class, forExpand(), ImmutableMap.of("parent", postId), null).getBody();
+        return Arrays.asList(medias);
     }
 
     @Override

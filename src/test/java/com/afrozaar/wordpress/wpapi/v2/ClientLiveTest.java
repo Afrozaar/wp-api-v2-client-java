@@ -290,6 +290,15 @@ public class ClientLiveTest {
     }
 
     @Test
+    public void testGetPostMedias() throws WpApiParsedException {
+        final Two<Post, Media> postMediaTwo = newTestPostWithMedia();
+
+        final List<Media> postMedias = client.getPostMedias(postMediaTwo.a.getId());
+
+        assertThat(postMedias).isNotNull().isNotEmpty();
+    }
+
+    @Test
     public void testGetPostMetas() throws PostCreateException {
         // given
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
