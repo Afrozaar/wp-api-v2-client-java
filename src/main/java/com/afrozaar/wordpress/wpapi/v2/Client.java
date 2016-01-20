@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -209,7 +210,7 @@ public class Client implements Wordpress {
 
     @Override
     public PostMeta createMeta(Long postId, String key, String value) {
-        final ImmutableMap<String, String> body = ImmutableMap.of("key", key, "value", value);
+        final Object body = ((Object) ImmutableMap.of("key", key, "value", value));
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body);
         return exchange.getBody();
     }
@@ -669,7 +670,11 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity<B> entity = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).body(body);
+        final RequestEntity<B> entity = RequestEntity.method(method, uri)
+                .header(authTuple.a, authTuple.b)
+                .header(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
+                //.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(body);
         debugRequest(entity);
         final ResponseEntity<T> exchange = restTemplate.exchange(entity, typeRef);
         debugHeaders(exchange.getHeaders());
