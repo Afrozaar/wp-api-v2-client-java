@@ -63,7 +63,7 @@ public class MediaDetails {
                 ", height=" + height +
                 ", file='" + file + '\'' +
                 ", sizes=" + sizes +
-                ", imageMeta=" + imageMeta.toString() +
+//                ", imageMeta=" + imageMeta.toString() +
                 '}';
     }
 }
