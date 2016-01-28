@@ -6,10 +6,10 @@
     <packaging>jar</packaging>
     <version>1.0.0-beta10-SNAPSHOT</version>
     <name>wp-api-v2-client-java</name>
-    <url>https://bitbucket.org/afrozaar/wp-api-v2-client-java</url>
+    <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
 
     <scm>
-        <developerConnection>scm:git:ssh://git@bitbucket.org/afrozaar/wp-api-v2-client-java.git</developerConnection>
+        <developerConnection>scm:git:ssh://git@github.com/afrozaar/wp-api-v2-client-java.git</developerConnection>
     </scm>
 
     <build>
