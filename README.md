@@ -1,8 +1,12 @@
+[ ![Codeship Status for Afrozaar/wp-api-v2-client-java
+](https://codeship.com/projects/a508d500-9763-0133-6e3a-6aec7e338399/status)](https://www.codeship.io/projects/125775)
+
+
 # WP-API v2 Java Client
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta8**)
+(Currently coding against **WP REST API Version 2.0-beta10**)
 
 See
 
@@ -11,7 +15,7 @@ See
 
 # Current Development Requirements
 
-* WordPress 4.3+ installation
+* WordPress 4.4+ installation
 * JSON Basic Authentication (0.1 currently used)
 
 # Implemented
@@ -22,6 +26,11 @@ See
 * Taxonomy CRUD
 * Post Terms CRUD
 * Pages CRUD
+* Users
+
+# Work In Progress
+
+    ...
 
 # Not Yet Implemented
 
@@ -29,7 +38,6 @@ See
 * Post Types
 * Post Statuses
 * Comments
-* Users
 
 # Basic Usage
 
@@ -79,7 +87,7 @@ The client is flexible enough to build search requests of a particular type, if 
 * Also See [Advanced/Restricted Filtering](#Advanced/Restricted%20Filtering) for configuring restricted options 
 
 ## More Usage Examples
-* For more examples, see [`/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java`](https://bitbucket.org/afrozaar/wp-api-v2-client-java/src/3af73cf5eb8177ecce04f61320f70d971ea478ac/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java?at=develop)
+* For more examples, see [`/src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java`](src/test/java/com/afrozaar/wordpress/wpapi/v2/ClientLiveTest.java)
 which has all the tests for a live installation and thus has examples of how to use the client.
 
 # Advanced/Restricted Filtering
@@ -112,6 +120,17 @@ file, or WP-API's `plugin.php`:
 
 These tests are intended to run against a live WordPress installation.
 
+For convenience, a wordpress docker has been created. This docker has a pre-installed-and-set-up wordpress
+instance, with the latest (beta9) version of rest-api and JSON Basic Auth plugins enabled.
+Configuration has already been included in the test configuration directory.
+ 
+To make use of this docker, you can do the following: 
+ 
+    docker run -d --name wp_build_test -p 80:80 afrozaar/wordpress:latest
+    
+More configuration is required (adding an entry to your hosts file), so 
+see [Afrozaar/docker-wordpress](https://github.com/Afrozaar/docker-wordpress) on GitHub.
+
 ### Configuration
 
 To run against your local wordpress installation, it is required to have a YAML configuration file
@@ -127,11 +146,3 @@ available at: `${project}/src/test/resources/config/${hostname}-test.yaml` with 
 This configuration must not be included in version control. _`*.yaml` is already included in the `.gitignore` file._
 
 Please ensure that you do not commit hard-coded environment information.
-
-## WireMock Testing
-
-The WireMock tests are sanity tests that must be rigid with known data and expectations.
-
-## Testing TODO's
-
-* Run tests in a dockerized Wordpress install
