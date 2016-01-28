@@ -438,7 +438,7 @@ public class ClientLiveTest {
                 .withName(expectedName)
                 .withDescription(expectedDescription).build());
 
-        client.deleteCategory(createdCategory);
+        client.deleteCategory(createdCategory, true);
 
         assertThat(createdCategory).isNotNull();
         assertThat(createdCategory.getName()).isEqualTo(expectedName);
@@ -502,7 +502,7 @@ public class ClientLiveTest {
         assertThat(rootTerm.getParentId()).isEqualTo(0L); // new root term will always have 0 as parent.
 
         // cleanup
-        client.deleteCategories(child41, child42, child4, child3, child2, child1, rootTerm);
+        client.deleteCategories(true, child41, child42, child4, child3, child2, child1, rootTerm);
     }
 
     @Test
@@ -517,7 +517,7 @@ public class ClientLiveTest {
                 .build();
 
         final Term createdTag = client.createTag(tag);
-        client.deleteTag(createdTag);
+        client.deleteTag(createdTag, true);
 
         assertThat(createdTag).isNotNull();
         assertThat(createdTag.getName()).isEqualTo(expectedName);
@@ -535,7 +535,7 @@ public class ClientLiveTest {
                 .build();
 
         final Term createdTag = client.createTag(tag);
-        final Term deletedTerm = client.deleteTag(createdTag);
+        final Term deletedTerm = client.deleteTag(createdTag, true);
 
         assertThat(deletedTerm).isNotNull();
 
@@ -560,7 +560,7 @@ public class ClientLiveTest {
         createdTag.setName(expectedName);
 
         final Term updatedTerm = client.updateTag(createdTag);
-        client.deleteTag(updatedTerm);
+        client.deleteTag(updatedTerm, true);
 
         assertThat(updatedTerm.getDescription()).isEqualTo(expectedDescription);
         assertThat(updatedTerm.getName()).isEqualTo(expectedName);
