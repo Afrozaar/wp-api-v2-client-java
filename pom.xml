@@ -5,11 +5,42 @@
     <artifactId>wp-api-v2-client-java</artifactId>
     <packaging>jar</packaging>
     <version>2.0-beta11-SNAPSHOT</version>
-    <name>wp-api-v2-client-java</name>
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description>A Java client implementation to the WordPress WP-API v2 plugin.</description>
     <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>9</version>
+    </parent>
+
+    <licenses>
+        <license>
+          <name>The Apache License, Version 2.0</name>
+          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Johan Mynhardt</name>
+            <email>johanmynhardt@gmail.com</email>
+            <organization>Afrozaar</organization>
+            <organizationUrl>https://afrozaar.com</organizationUrl>
+        <developer>
+        <developer>
+            <name>Freddie O'Donnell</name>
+            <email></email>
+            <organization>Afrozaar</organization>
+            <organizationUrl>https://afrozaar.com</organizationUrl>
+        </developer>
+    </developers>
+
     <scm>
+        <connection>scm:git:git@github.com/afrozaar/wp-api-v2-client-java.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/afrozaar/wp-api-v2-client-java.git</developerConnection>
+        <url>git@github.com:afrozaar/wp-api-v2-client-java.git</url>
     </scm>
 
     <build>
