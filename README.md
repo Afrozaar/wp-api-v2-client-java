@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta10**)
+(Currently coding against **WP REST API Version 2.0-beta11**)
 
 See
 
@@ -15,7 +15,7 @@ See
 
 # Current Development Requirements
 
-* WordPress 4.4+ installation
+* WordPress 4.4.1+ installation
 * JSON Basic Authentication (0.1 currently used)
 
 # Implemented

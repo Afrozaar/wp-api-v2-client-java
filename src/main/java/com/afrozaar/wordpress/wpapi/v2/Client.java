@@ -1,6 +1,5 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import com.afrozaar.wordpress.wpapi.v2.api.Taxonomies;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
@@ -380,8 +379,14 @@ public class Client implements Wordpress {
 
     @Override
     public Term deleteTag(Term tagTerm) throws TermNotFoundException {
+        return deleteTag(tagTerm, false);
+    }
+
+    @Override
+    public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
-            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), null, null).getBody();
+            Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
+            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
 
             Term toReturn = new Term();
             BeanUtils.populate(toReturn, (Map) response.get(DATA));
@@ -401,18 +406,36 @@ public class Client implements Wordpress {
     @Override
     public Term createPostTag(Post post, Term tag) throws WpApiParsedException {
         final Term termToUse = Objects.nonNull(tag.getId()) ? tag : createTag(tag);
-        return doExchange1(Request.POST_TERM, HttpMethod.POST, Term.class, forExpand(post.getId(), Taxonomies.TAGS, termToUse.getId()), null, termToUse.asMap()).getBody();
+        final List<Term> postTags = new ArrayList<>(getPostTags(post));
+        postTags.add(termToUse);
+        final List<Long> tagIds = postTags.stream().map(Term::getId).collect(Collectors.toList());
+        //Map<String, Object> body = ImmutableMap.of("tags", tagIds);
+        updatePostField(post.getId(), "tags", tagIds);
+        return termToUse;
+        //return doExchange1(Request.POST, HttpMethod.POST, Term.class, forExpand(post.getId(), null, termToUse.getId()), null, body).getBody();
     }
 
     @Override
     public List<Term> getPostTags(Post post) {
-        return Arrays.asList(doExchange1(Request.POST_TERMS, HttpMethod.GET, Term[].class, forExpand(post.getId(), Taxonomies.TAGS), null, null).getBody());
+        Map<String, Object> queryParams = ImmutableMap.of("post", post.getId());
+        return Arrays.asList(doExchange1(Request.TAGS, HttpMethod.GET, Term[].class, forExpand(post.getId()), queryParams, null).getBody());
     }
 
     @Override
     public Term deletePostTag(Post post, Term tagTerm, boolean force) throws TermNotFoundException {
         try {
-            return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), Taxonomies.TAGS, tagTerm.getId()), ImmutableMap.of(FORCE, force), null).getBody();
+            final List<Term> postTags = new ArrayList<>(getPostTags(post));
+            final Optional<Term> found = postTags.stream().filter(term -> Objects.equals(term.getId(), tagTerm.getId())).findFirst();
+
+            if (found.isPresent()) {
+                postTags.remove(found.get());
+                updatePostField(post.getId(), "tags", termIds.apply(postTags));
+                return tagTerm;
+            } else {
+                throw new RuntimeException("Expected to find term in post's term list.");
+            }
+
+            //return doExchange1(Request.POST_TERM, HttpMethod.DELETE, Term.class, forExpand(post.getId(), Taxonomies.TAGS, tagTerm.getId()), ImmutableMap.of(FORCE, force), null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
@@ -468,8 +491,14 @@ public class Client implements Wordpress {
 
     @Override
     public Term deleteCategory(Term categoryTerm) throws TermNotFoundException {
+        return deleteCategory(categoryTerm, false);
+    }
+
+    @Override
+    public Term deleteCategory(Term categoryTerm, boolean force) throws TermNotFoundException {
         try {
-            return doExchange1(Request.CATEGORY, HttpMethod.DELETE, Term.class, forExpand(categoryTerm.getId()), null, null).getBody();
+            Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
+            return doExchange1(Request.CATEGORY, HttpMethod.DELETE, Term.class, forExpand(categoryTerm.getId()), queryParams, null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
@@ -481,11 +510,16 @@ public class Client implements Wordpress {
 
     @Override
     public List<Term> deleteCategories(Term... terms) {
+        return deleteCategories(false, terms);
+    }
+
+    @Override
+    public List<Term> deleteCategories(boolean force, Term... terms) {
         List<Term> deletedTerms = new ArrayList<>(terms.length);
 
         for (Term term : terms) {
             try {
-                deletedTerms.add(deleteCategory(term));
+                deletedTerms.add(deleteCategory(term, force));
             } catch (TermNotFoundException e) {
                 LOG.error("Error ", e);
             }
