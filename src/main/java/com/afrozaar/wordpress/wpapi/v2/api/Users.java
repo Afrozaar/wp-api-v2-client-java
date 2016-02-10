@@ -11,6 +11,7 @@ import java.util.function.Function;
 
 public interface Users {
     List<User> getUsers();
+    List<User> getUsers(String context);
 
     User createUser(User user, String username, String password);
 
