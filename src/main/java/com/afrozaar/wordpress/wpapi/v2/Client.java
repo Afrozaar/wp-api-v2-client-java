@@ -387,20 +387,13 @@ public class Client implements Wordpress {
     public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
-            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
-
-            Term toReturn = new Term();
-            BeanUtils.populate(toReturn, (Map) response.get(DATA));
-            return toReturn;
+            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
             } else {
                 throw e;
             }
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            LOG.error("Error ", e);
-            throw new RuntimeException(e);
         }
     }
 
