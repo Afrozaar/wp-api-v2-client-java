@@ -58,9 +58,9 @@ import java.util.stream.IntStream;
 /**
  * @author johan
  */
-public class ClientLiveTest {
+public class ClientLiveIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientLiveTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientLiveIT.class);
 
     private static ClientConfig clientConfig;
     private static Wordpress client;
