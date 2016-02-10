@@ -95,7 +95,7 @@
                             </run>
                         </image>
                     </images>
-                    <!--<docker.follow />-->
+                    <docker.follow />
                 </configuration>
                 <executions>
                     <execution>
@@ -119,10 +119,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.19</version>
                 <executions>
-                    <execution>
-                       <id>integration-test</id>
-                       <goals><goal>integration-test</goal></goals>
-                    </execution>
                     <execution>
                         <goals>
                             <goal>integration-test</goal>
