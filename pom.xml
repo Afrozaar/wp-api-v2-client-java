@@ -4,7 +4,7 @@
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
     <packaging>jar</packaging>
-    <version>2.0-beta12-SNAPSHOT</version>
+    <version>2.0-beta12</version>
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Java client implementation to the WordPress WP-API v2 plugin.</description>
     <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
