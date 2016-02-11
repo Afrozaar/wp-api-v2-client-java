@@ -58,9 +58,9 @@ import java.util.stream.IntStream;
 /**
  * @author johan
  */
-public class ClientLiveTest {
+public class ClientLiveIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientLiveTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ClientLiveIT.class);
 
     private static ClientConfig clientConfig;
     private static Wordpress client;
@@ -686,7 +686,7 @@ public class ClientLiveTest {
 
     @Test
     public void testGetUsers() {
-        List<User> users = client.getUsers();
+        List<User> users = client.getUsers(Contexts.EDIT);
 
         assertThat(users).isNotEmpty();
 
@@ -720,7 +720,7 @@ public class ClientLiveTest {
     @Test
     public void testGetUser() {
         try {
-            User user = client.getUser(1L, Contexts.VIEW);
+            User user = client.getUser(1L, Contexts.EDIT); // get access to the email, the 'edit' context is required.
             assertThat(user.getEmail()).isEqualTo("docker@docker.dev");
             assertThat(user.getName()).isEqualTo("docker");
         } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {

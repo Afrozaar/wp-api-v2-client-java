@@ -1,5 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
@@ -386,20 +387,13 @@ public class Client implements Wordpress {
     public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
-            Map response = doExchange1(Request.TAG, HttpMethod.DELETE, Map.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
-
-            Term toReturn = new Term();
-            BeanUtils.populate(toReturn, (Map) response.get(DATA));
-            return toReturn;
+            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
             } else {
                 throw e;
             }
-        } catch (InvocationTargetException | IllegalAccessException e) {
-            LOG.error("Error ", e);
-            throw new RuntimeException(e);
         }
     }
 
@@ -570,8 +564,13 @@ public class Client implements Wordpress {
 
     @Override
     public List<User> getUsers() {
+        return getUsers(Contexts.VIEW);
+    }
+
+    @Override
+    public List<User> getUsers(final String contextType) {
         List<User> collected = new ArrayList<>();
-        PagedResponse<User> usersResponse = this.getPagedResponse(Request.USERS, User.class);
+        PagedResponse<User> usersResponse = this.getPagedResponse(Request.USERS_WITH_CONTEXT, User.class, contextType);
         collected.addAll(usersResponse.getList());
         while (usersResponse.hasNext()) {
             usersResponse = traverse(usersResponse, PagedResponse.NEXT);
@@ -610,11 +609,6 @@ public class Client implements Wordpress {
 
     @Override
     public User deleteUser(User user) {
-        /*
-        TODO: check with devs, getting: Fatal error when using wordpress debug.
-           <b>Fatal error</b>:  Call to undefined function wp_delete_user() in
-           <b>/var/www/wp-content/plugins/rest-api/lib/endpoints/class-wp-rest-users-controller.php</b> on line <b>357</b><br />
-         */
         return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true), null).getBody();
     }
 
@@ -626,7 +620,7 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {
-        final URI uri = Request.of(context).usingClient(this).buildAndExpand(expandParams).toUri();
+        final URI uri = Request.of(context).usingClient(this).buildAndExpand((Object[]) expandParams).toUri();
         return getPagedResponse(uri, typeRef);
     }
 
