@@ -89,7 +89,7 @@ public class Client implements Wordpress {
                 .put("status", status.value)
                 .build();
         try {
-            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post).getBody();
+            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post, Optional.of(MediaType.APPLICATION_JSON)).getBody();
         } catch (HttpClientErrorException e) {
             throw new PostCreateException(e);
         }
@@ -480,7 +480,7 @@ public class Client implements Wordpress {
 
     @Override
     public Term createCategory(Term categoryTerm) {
-        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap()).getBody();
+        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap(), Optional.of(MediaType.APPLICATION_JSON)).getBody();
     }
 
     @Override
