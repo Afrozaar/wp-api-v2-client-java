@@ -21,6 +21,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
+import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -43,6 +44,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -69,6 +72,7 @@ public class Client implements Wordpress {
     private RestTemplate restTemplate = new RestTemplate();
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
+    private Properties properties = MavenProperties.getProperties();
 
     public final String baseUrl;
     final private String username;
@@ -698,9 +702,12 @@ public class Client implements Wordpress {
         return builder.build();
     }
 
+
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b);
+        final String userAgentValue = "wp-api-client-"+ properties.get("version");
+        final String userAgentKey = "User-Agent";
+        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentKey, userAgentValue);
 
         mediaType.ifPresent(builder::contentType);
 

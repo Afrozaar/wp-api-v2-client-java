@@ -9,11 +9,11 @@
     <description>A Java client implementation to the WordPress WP-API v2 plugin.</description>
     <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>9</version>
-    </parent>
+    <!--<parent>-->
+        <!--<groupId>org.sonatype.oss</groupId>-->
+        <!--<artifactId>oss-parent</artifactId>-->
+        <!--<version>9</version>-->
+    <!--</parent>-->
 
     <licenses>
         <license>
