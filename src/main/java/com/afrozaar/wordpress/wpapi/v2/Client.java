@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static java.lang.String.format;
+
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
@@ -20,8 +22,8 @@ import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
-import com.afrozaar.wordpress.wpapi.v2.util.Two;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
+import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -44,7 +46,6 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -68,16 +69,23 @@ public class Client implements Wordpress {
     private static final String CONTEXT_ = "context";
     private static final String VIEW = "view";
     private static final String DATA = "data";
+    private static final String VERSION = "version";
+    private static final String ARTIFACT_ID = "artifactId";
 
     private RestTemplate restTemplate = new RestTemplate();
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
-    private Properties properties = MavenProperties.getProperties();
+    private final Two<String, String> userAgentTuple;
 
     public final String baseUrl;
     final private String username;
     final private String password;
     final private boolean debug;
+
+    {
+        Properties properties = MavenProperties.getProperties();
+        userAgentTuple = Two.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
+    }
 
     public Client(String baseUrl, String username, String password, boolean debug) {
         this.baseUrl = baseUrl;
@@ -257,7 +265,7 @@ public class Client implements Wordpress {
     @Override
     public boolean deletePostMeta(Long postId, Long metaId) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), null, null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
     }
@@ -265,7 +273,7 @@ public class Client implements Wordpress {
     @Override
     public boolean deletePostMeta(Long postId, Long metaId, boolean force) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), ImmutableMap.of(FORCE, force), null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
     }
@@ -705,9 +713,10 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final String userAgentValue = "wp-api-client-"+ properties.get("version");
-        final String userAgentKey = "User-Agent";
-        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentKey, userAgentValue);
+        final RequestEntity.BodyBuilder builder = RequestEntity
+                .method(method, uri)
+                .header(authTuple.a, authTuple.b)
+                .header(userAgentTuple.a, userAgentTuple.b);
 
         mediaType.ifPresent(builder::contentType);
 
