@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
@@ -17,8 +16,8 @@
 
     <licenses>
         <license>
-          <name>The Apache License, Version 2.0</name>
-          <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -43,6 +42,29 @@
         <url>git@github.com:afrozaar/wp-api-v2-client-java.git</url>
     </scm>
 
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>artifactory.afrozaar.com-releases</name>
+            <url>${deploy-release}</url>
+        </repository>
+        <snapshotRepository>
+            <id>remote-plugins-snapshot</id>
+            <name>artifactory.afrozaar.com-snapshots</name>
+            <url>${deploy-snapshot}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>afrozaar</id>
+            <properties>
+                <repository.home>https://maven-repostiory.afrozaar.com/artifactory</repository.home>
+                <deploy-release>${repository.home}/libs-release-local</deploy-release>
+                <deploy-snapshot>${repository.home}/libs-snapshot-local</deploy-snapshot>
+            </properties>
+        </profile>
+    </profiles>
     <build>
         <pluginManagement>
             <plugins>
