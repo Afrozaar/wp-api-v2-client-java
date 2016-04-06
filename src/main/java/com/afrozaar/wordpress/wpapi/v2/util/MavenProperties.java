@@ -17,7 +17,7 @@ public class MavenProperties {
         Properties properties = new Properties();
         try {
             properties.load(is);
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             LOG.error("Error loading properties ", e);
         }
         return properties;

@@ -133,6 +133,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.13</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
@@ -188,6 +193,12 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.10</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

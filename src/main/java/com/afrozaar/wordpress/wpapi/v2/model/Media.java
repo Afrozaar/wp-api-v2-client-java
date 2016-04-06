@@ -3,13 +3,15 @@ package com.afrozaar.wordpress.wpapi.v2.model;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Map;
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Media {
 
     @JsonProperty("id")
     private Long id;
     @JsonProperty("media_details")
-    private MediaDetails mediaDetails;
+    private Map<String, Object> mediaDetails;
     @JsonProperty("author")
     private int author;
     @JsonProperty("guid")
@@ -46,6 +48,16 @@ public class Media {
     private Long post;
     @JsonProperty("source_url")
     private String sourceUrl;
+    @JsonProperty("mime_type")
+    private String mimeType;
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+    public void setMimeType(String mimeType) {
+        this.mimeType = mimeType;
+    }
 
     public String getCommentStatus() {
         return commentStatus;
@@ -175,11 +187,11 @@ public class Media {
         this.guid = guid;
     }
 
-    public MediaDetails getMediaDetails() {
+    public Map<String, Object> getMediaDetails() {
         return mediaDetails;
     }
 
-    public void setMediaDetails(MediaDetails mediaDetails) {
+    public void setMediaDetails(Map<String, Object> mediaDetails) {
         this.mediaDetails = mediaDetails;
     }
 
@@ -203,7 +215,7 @@ public class Media {
     public String toString() {
         return "Media{" +
                 "id=" + id +
-                ", mediaDetails=" + mediaDetails +
+//                ", mediaDetails=" + mediaDetails +
                 ", author=" + author +
                 ", guid=" + guid +
                 ", date='" + date + '\'' +
