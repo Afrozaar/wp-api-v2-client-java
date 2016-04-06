@@ -34,6 +34,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -45,6 +52,8 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.transform.Source;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -72,7 +81,7 @@ public class Client implements Wordpress {
     private static final String VERSION = "version";
     private static final String ARTIFACT_ID = "artifactId";
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
     private final Two<String, String> userAgentTuple;
@@ -92,14 +101,20 @@ public class Client implements Wordpress {
         this.username = username;
         this.password = password;
         this.debug = debug;
+
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+        messageConverters.add(new ByteArrayHttpMessageConverter());
+        messageConverters.add(new StringHttpMessageConverter());
+        messageConverters.add(new ResourceHttpMessageConverter());
+        messageConverters.add(new SourceHttpMessageConverter<Source>());
+        messageConverters.add(new AllEncompassingFormHttpMessageConverter());
+        messageConverters.add(new MappingJackson2HttpMessageConverter());
+        restTemplate = new RestTemplate(messageConverters);
     }
 
     @Override
     public Post createPost(final Map<String, Object> postFields, PostStatus status) throws PostCreateException {
-        final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>()
-                .putAll(postFields)
-                .put("status", status.value)
-                .build();
+        final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>().putAll(postFields).put("status", status.value).build();
         try {
             return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post, Optional.of(MediaType.APPLICATION_JSON)).getBody();
         } catch (HttpClientErrorException e) {
@@ -229,7 +244,8 @@ public class Client implements Wordpress {
     @Override
     public PostMeta createMeta(Long postId, String key, String value) {
         final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body, Optional.of(MediaType.APPLICATION_JSON));
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body,
+                Optional.of(MediaType.APPLICATION_JSON));
         return exchange.getBody();
     }
 
@@ -537,10 +553,7 @@ public class Client implements Wordpress {
     @Override
     public Page createPage(Page page, PostStatus status) {
         final Map<String, Object> map = page.asMap();
-        final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>()
-                .putAll(map)
-                .put("status", status.value)
-                .build();
+        final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>().putAll(map).put("status", status.value).build();
 
         return doExchange1(Request.PAGES, HttpMethod.POST, Page.class, forExpand(), null, pageFields).getBody();
     }
@@ -710,13 +723,9 @@ public class Client implements Wordpress {
         return builder.build();
     }
 
-
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity.BodyBuilder builder = RequestEntity
-                .method(method, uri)
-                .header(authTuple.a, authTuple.b)
-                .header(userAgentTuple.a, userAgentTuple.b);
+        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
 
         mediaType.ifPresent(builder::contentType);
 
@@ -735,7 +744,8 @@ public class Client implements Wordpress {
         return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, Optional.empty());
     }
 
-    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body, Optional<MediaType> mediaType) {
+    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body,
+            Optional<MediaType> mediaType) {
         final UriComponentsBuilder builder = Request.of(context).usingClient(this);
         if (queryParams != null) {
             queryParams.forEach(builder::queryParam);
@@ -744,10 +754,7 @@ public class Client implements Wordpress {
     }
 
     private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
-        return links.stream()
-                .filter(linkPredicate)
-                .map(Link::getHref)
-                .findFirst();
+        return links.stream().filter(linkPredicate).map(Link::getHref).findFirst();
     }
 
     private void debugRequest(RequestEntity<?> entity) {
