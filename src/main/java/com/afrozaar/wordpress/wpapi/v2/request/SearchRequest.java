@@ -42,6 +42,12 @@ public class SearchRequest<T> extends Request {
             return this;
         }
 
+        public Builder<BT> withPagination(int pageSize, int pageNumber) {
+            withParam("page", String.valueOf(pageNumber));
+            withParam("per_page", String.valueOf(pageSize));
+            return this;
+        }
+
         public Builder<BT> withUri(String uri) {
             this.uri = uri;
             return this;
