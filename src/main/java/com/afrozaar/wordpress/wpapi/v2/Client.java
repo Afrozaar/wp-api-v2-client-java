@@ -8,6 +8,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -606,11 +607,15 @@ public class Client implements Wordpress {
 
     @SuppressWarnings("unchecked")
     @Override
-    public User createUser(User user, String username, String password) {
+    public User createUser(User user, String username, String password) throws UsernameAlreadyExistsException {
         final MultiValueMap userAsMap = userMap.apply(user);
         userAsMap.add("username", username); // Required: true
         userAsMap.add("password", password); // Required: true
-        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        try {
+            return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        } catch (HttpServerErrorException e) {
+            throw new UsernameAlreadyExistsException(e).orRuntime("Unexpected exception");
+        }
     }
 
     @Override

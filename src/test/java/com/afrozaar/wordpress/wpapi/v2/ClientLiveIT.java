@@ -15,11 +15,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.fail;
 
+import static java.lang.String.format;
+import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
+
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Page;
@@ -29,6 +33,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
@@ -81,7 +86,7 @@ public class ClientLiveIT {
 
     private static ClientConfig resolveConfig() {
         try {
-            Resource userResource = new ClassPathResource(String.format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName()));
+            Resource userResource = new ClassPathResource(format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName()));
             Resource resourceToUse = userResource.exists()
                     ? userResource
                     : new ClassPathResource("/config/docker-test.yaml");
@@ -97,7 +102,7 @@ public class ClientLiveIT {
         for (int i = 0; i < 11; i++) {
             client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         }
-        final String EXPECTED = String.format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
+        final String EXPECTED = format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
 
@@ -210,8 +215,8 @@ public class ClientLiveIT {
         final String createdContent = createdPost.getContent().getRendered();
         final String createdExcerpt = createdPost.getExcerpt().getRendered();
 
-        createdPost.getContent().setRendered(RandomStringUtils.randomAlphabetic(50));
-        createdPost.getExcerpt().setRendered(RandomStringUtils.randomAlphabetic(50));
+        createdPost.getContent().setRendered(randomAlphabetic(50));
+        createdPost.getExcerpt().setRendered(randomAlphabetic(50));
 
         final Post updatedPost = client.updatePost(createdPost);
 
@@ -327,8 +332,8 @@ public class ClientLiveIT {
     public void createPostMeta() throws PostCreateException {
         final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(5);
+        final String key = randomAlphabetic(5);
+        final String value = randomAlphabetic(5);
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
@@ -342,10 +347,10 @@ public class ClientLiveIT {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post, PostStatus.publish);
 
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(5);
-        final String key2 = RandomStringUtils.randomAlphabetic(5);
-        final String value2 = RandomStringUtils.randomAlphabetic(5);
+        final String key = randomAlphabetic(5);
+        final String value = randomAlphabetic(5);
+        final String key2 = randomAlphabetic(5);
+        final String value2 = randomAlphabetic(5);
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
@@ -363,9 +368,9 @@ public class ClientLiveIT {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post, PostStatus.publish);
 
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(5);
-        final String value2 = RandomStringUtils.randomAlphabetic(5);
+        final String key = randomAlphabetic(5);
+        final String value = randomAlphabetic(5);
+        final String value2 = randomAlphabetic(5);
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
@@ -382,8 +387,8 @@ public class ClientLiveIT {
         Post post = newTestPostWithRandomData();
         final Post createdPost = client.createPost(post, PostStatus.publish);
 
-        final String key = RandomStringUtils.randomAlphabetic(5);
-        final String value = RandomStringUtils.randomAlphabetic(5);
+        final String key = randomAlphabetic(5);
+        final String value = randomAlphabetic(5);
 
         final PostMeta createdMeta = client.createMeta(createdPost.getId(), key, value);
 
@@ -431,8 +436,8 @@ public class ClientLiveIT {
     @Test
     public void testCreateCategory() throws WpApiParsedException {
 
-        final String expectedName = RandomStringUtils.randomAlphabetic(5);
-        final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
+        final String expectedName = randomAlphabetic(5);
+        final String expectedDescription = randomAlphabetic(10);
 
         final Term createdCategory = client.createCategory(aTerm()
                 .withName(expectedName)
@@ -463,34 +468,34 @@ public class ClientLiveIT {
     @Test
     public void testCreateTaxonomyCategoryHierarchical() throws WpApiParsedException {
         final Term rootTerm = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20)).build());
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20)).build());
 
         LOG.debug("rootTerm: {}", rootTerm);
 
         final Term child1 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
         final Term child2 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
         final Term child3 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
         final Term child4 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(rootTerm.getId()).build());
         final Term child41 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
         final Term child42 = client.createCategory(aTerm()
-                .withName(RandomStringUtils.randomAlphabetic(5))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
+                .withName(randomAlphabetic(5))
+                .withDescription(randomAlphabetic(20))
                 .withParentId(child4.getId()).build());
 
         assertThat(child42.getParentId()).isEqualTo(child4.getId());
@@ -508,8 +513,8 @@ public class ClientLiveIT {
     @Test
     public void testCreateTaxonomyTag() throws WpApiParsedException {
 
-        String expectedName = RandomStringUtils.randomAlphabetic(3);
-        String expectedDescription = RandomStringUtils.randomAlphabetic(5);
+        String expectedName = randomAlphabetic(3);
+        String expectedDescription = randomAlphabetic(5);
         Term tag = aTerm()
                 .withDescription(expectedDescription)
                 .withName(expectedName)
@@ -526,8 +531,8 @@ public class ClientLiveIT {
 
     @Test(expected = TermNotFoundException.class)
     public void testDeleteTaxonomyTag() throws WpApiParsedException {
-        String expectedName = RandomStringUtils.randomAlphabetic(3);
-        String expectedDescription = RandomStringUtils.randomAlphabetic(5);
+        String expectedName = randomAlphabetic(3);
+        String expectedDescription = randomAlphabetic(5);
         Term tag = aTerm()
                 .withDescription(expectedDescription)
                 .withName(expectedName)
@@ -547,15 +552,15 @@ public class ClientLiveIT {
     @Test
     public void testUpdateTaxonomyTag() throws WpApiParsedException {
         Term tag = aTerm()
-                .withDescription(RandomStringUtils.randomAlphabetic(5))
-                .withName(RandomStringUtils.randomAlphabetic(3))
+                .withDescription(randomAlphabetic(5))
+                .withName(randomAlphabetic(3))
                 .withTaxonomySlug("post_tag")
                 .build();
 
         final Term createdTag = client.createTag(tag);
 
-        final String expectedDescription = RandomStringUtils.randomAlphabetic(10);
-        final String expectedName = RandomStringUtils.randomAlphabetic(10);
+        final String expectedDescription = randomAlphabetic(10);
+        final String expectedName = randomAlphabetic(10);
         createdTag.setDescription(expectedDescription);
         createdTag.setName(expectedName);
 
@@ -570,7 +575,7 @@ public class ClientLiveIT {
     public void testCreatePostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        Term tagTerm = aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build();
+        Term tagTerm = aTerm().withName(randomAlphabetic(5)).build();
 
         final Term postTerm = client.createPostTag(post, tagTerm);
 
@@ -583,11 +588,11 @@ public class ClientLiveIT {
     public void testGetPostTagTerms() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
-        client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
+        client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
 
         final List<Term> postTags = client.getPostTags(post);
 
@@ -599,7 +604,7 @@ public class ClientLiveIT {
     @Test(expected = WpApiParsedException.class)
     public void testDeletePostTagTerm() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-        final Term postTerm = client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+        final Term postTerm = client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
 
         client.deletePost(post);
         final Term deletedTerm = client.deletePostTag(post, postTerm, true);
@@ -619,7 +624,7 @@ public class ClientLiveIT {
 
         IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
             try {
-                client.createPostTag(post, aTerm().withName(RandomStringUtils.randomAlphabetic(5)).build());
+                client.createPostTag(post, aTerm().withName(randomAlphabetic(5)).build());
             } catch (WpApiParsedException e) {
                 LOG.error("Error ", e);
             }
@@ -675,7 +680,7 @@ public class ClientLiveIT {
         final Page page = newPageWithRandomData();
         final Page createdPage = client.createPage(page, PostStatus.publish);
 
-        createdPage.getContent().setRaw(RandomStringUtils.randomAlphabetic(60));
+        createdPage.getContent().setRaw(randomAlphabetic(60));
 
         final Page updatedPage = client.updatePage(createdPage);
 
@@ -698,15 +703,15 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testCreateUser() {
+    public void testCreateUser() throws UsernameAlreadyExistsException {
         User userRequest = aUser()
-                .withFirstName(RandomStringUtils.randomAlphabetic(4))
-                .withLastName(RandomStringUtils.randomAlphabetic(7))
-                .withDescription(RandomStringUtils.randomAlphabetic(20))
-                .withEmail(String.format("%s@%s.test", RandomStringUtils.randomAlphabetic(4), RandomStringUtils.randomAlphabetic(3)))
+                .withFirstName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(7))
+                .withDescription(randomAlphabetic(20))
+                .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
                 .withRoles(Collections.singletonList("administrator"))
                 .build();
-        final User createdUser = client.createUser(userRequest, RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphanumeric(3));
+        final User createdUser = client.createUser(userRequest, randomAlphabetic(3), RandomStringUtils.randomAlphanumeric(3));
 
         LOG.debug("createdUser: {}", createdUser);
 
@@ -715,6 +720,37 @@ public class ClientLiveIT {
         assertThat(userRequest.getFirstName()).isEqualTo(createdUser.getFirstName());
         assertThat(userRequest.getLastName()).isEqualTo(createdUser.getLastName());
         assertThat(createdUser.getId()).isNotNull();
+    }
+
+    @Test(expected = UsernameAlreadyExistsException.class)
+    public void testCreateUserWithExistingUsername_MustReturnUsernameAlreadyExists() throws UsernameAlreadyExistsException {
+        // Given
+        final UserBuilder userBuilder = aUser()
+                .withName(randomAlphabetic(15))
+                .withFirstName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(7))
+                .withDescription(randomAlphabetic(20))
+                .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
+                .withRoles(Collections.singletonList("administrator"));
+
+        final User userFirst = userBuilder.build(); // first user
+        final User createdUser = client.createUser(userFirst, userFirst.getName(), RandomStringUtils.randomAlphanumeric(5));
+
+        LOG.debug("createdUser: {}", createdUser);
+
+        // When
+
+        final User userWithDuplicateUsername = userBuilder.but()
+                .withFirstName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(7))
+                .withDescription(randomAlphabetic(20))
+                .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
+                .withRoles(Collections.singletonList("administrator"))
+                .build();
+
+        assertThat(userWithDuplicateUsername.getName()).isEqualTo(userFirst.getName());
+
+        final User conflictedUser = client.createUser(userWithDuplicateUsername, userWithDuplicateUsername.getName(), RandomStringUtils.randomAlphanumeric(5));
     }
 
     @Test
@@ -730,14 +766,14 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testDeleteUser() {
+    public void testDeleteUser() throws UsernameAlreadyExistsException {
 
         User user = aUser()
-                .withName(RandomStringUtils.randomAlphabetic(4))
-                .withLastName(RandomStringUtils.randomAlphabetic(5))
-                .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))
+                .withName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(5))
+                .withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
                 .build();
-        String username = RandomStringUtils.randomAlphabetic(4);
+        String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);
 
@@ -753,13 +789,13 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testUpdateUser() {
+    public void testUpdateUser() throws UsernameAlreadyExistsException {
         User user = aUser()
-                .withName(RandomStringUtils.randomAlphabetic(4))
-                .withLastName(RandomStringUtils.randomAlphabetic(5))
-                .withEmail(String.format("%s@%s.dev", RandomStringUtils.randomAlphabetic(3), RandomStringUtils.randomAlphabetic(3)))
+                .withName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(5))
+                .withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
                 .build();
-        String username = RandomStringUtils.randomAlphabetic(4);
+        String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);
 
@@ -767,9 +803,9 @@ public class ClientLiveIT {
         final String firstName = createdUser.getFirstName();
         final String lastName = createdUser.getLastName();
 
-        final String newFirstName = RandomStringUtils.randomAlphabetic(5);
+        final String newFirstName = randomAlphabetic(5);
         createdUser.setFirstName(newFirstName);
-        final String newLastName = RandomStringUtils.randomAlphabetic(6);
+        final String newLastName = randomAlphabetic(6);
         createdUser.setLastName(newLastName);
 
         User updatedUser = client.updateUser(createdUser);
@@ -781,31 +817,31 @@ public class ClientLiveIT {
 
     private Page newPageWithRandomData() {
         return aPage()
-                .withTitle(aTitle().withRaw(RandomStringUtils.randomAlphabetic(20)).build())
-                .withExcerpt(anExcerpt().withRaw(RandomStringUtils.randomAlphabetic(10)).build())
-                .withContent(aContent().withRaw(RandomStringUtils.randomAlphabetic(50)).build())
+                .withTitle(aTitle().withRaw(randomAlphabetic(20)).build())
+                .withExcerpt(anExcerpt().withRaw(randomAlphabetic(10)).build())
+                .withContent(aContent().withRaw(randomAlphabetic(50)).build())
                 .build();
     }
 
     private Post newTestPostWithRandomData() {
         return aPost()
-                .withContent(aContent().withRendered(RandomStringUtils.randomAlphabetic(20)).build())
-                .withTitle(aTitle().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
-                .withExcerpt(anExcerpt().withRendered(RandomStringUtils.randomAlphabetic(5)).build())
+                .withContent(aContent().withRendered(randomAlphabetic(20)).build())
+                .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
+                .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build())
                 //                .withFeaturedImage(113L)
                 .build();
     }
 
     private Two<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
-        final PostMeta meta = client.createMeta(post.getId(), RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
+        final PostMeta meta = client.createMeta(post.getId(), randomAlphabetic(5), randomAlphabetic(10));
         return Two.of(post, meta);
     }
 
     private Media newRandomMedia(Post post) {
         return aMedia()
-                .withTitle(aTitle().withRendered(RandomStringUtils.randomAlphabetic(10)).build())
-                .withCaption(RandomStringUtils.randomAlphabetic(50))
+                .withTitle(aTitle().withRendered(randomAlphabetic(10)).build())
+                .withCaption(randomAlphabetic(50))
                 .withAltText("image")
                 .withDescription(RandomStringUtils.randomAscii(20))
                 .withPost(post.getId())
