@@ -23,6 +23,7 @@ import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -763,6 +764,28 @@ public class ClientLiveIT {
             LOG.error("Error ", e);
             fail(e.toString());
         }
+    }
+
+    @Ignore
+    @Test
+    public void testGetUserWithNoRoles() throws UsernameAlreadyExistsException, UserNotFoundException {
+
+        //It turns out that creating a user with this role is not directly possible using wp-api.
+        // So for now just ignore this test and fix the issue.
+        // @see https://github.com/Afrozaar/wp-api-v2-client-java/issues/11
+
+        final User userWithDuplicateUsername = aUser()
+                .withFirstName(randomAlphabetic(4))
+                .withLastName(randomAlphabetic(7))
+                .withDescription(randomAlphabetic(20))
+                .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
+                .withCapabilities(Collections.emptyMap())
+                .withRoles(Collections.emptyList())
+                .build();
+
+        final User user = client.createUser(userWithDuplicateUsername, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(10));
+
+        client.getUser(user.getId(), Contexts.EDIT);
     }
 
     @Test

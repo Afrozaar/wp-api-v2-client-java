@@ -39,6 +39,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
@@ -49,6 +50,9 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
@@ -103,13 +107,18 @@ public class Client implements Wordpress {
         this.password = password;
         this.debug = debug;
 
+        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json()
+                .featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
+                .build();
+
         List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
         messageConverters.add(new ByteArrayHttpMessageConverter());
         messageConverters.add(new StringHttpMessageConverter());
         messageConverters.add(new ResourceHttpMessageConverter());
         messageConverters.add(new SourceHttpMessageConverter<Source>());
         messageConverters.add(new AllEncompassingFormHttpMessageConverter());
-        messageConverters.add(new MappingJackson2HttpMessageConverter());
+        messageConverters.add(new MappingJackson2HttpMessageConverter(emptyArrayAsNullObjectMapper));
+        //messageConverters.add(new MappingJackson2HttpMessageConverter());
         restTemplate = new RestTemplate(messageConverters);
     }
 
@@ -495,7 +504,7 @@ public class Client implements Wordpress {
         return getAllTermsForEndpoint(Request.CATEGORIES);
     }
 
-    private List<Term> getAllTermsForEndpoint(final String endpoint, String ... expandParams) {
+    private List<Term> getAllTermsForEndpoint(final String endpoint, String... expandParams) {
         List<Term> collected = new ArrayList<>();
         PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class, expandParams);
         collected.addAll(pagedResponse.getList());
