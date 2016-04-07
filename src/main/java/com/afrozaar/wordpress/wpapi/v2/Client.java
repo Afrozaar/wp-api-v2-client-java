@@ -439,8 +439,7 @@ public class Client implements Wordpress {
 
     @Override
     public List<Term> getPostTags(Post post) {
-        Map<String, Object> queryParams = ImmutableMap.of("post", post.getId());
-        return Arrays.asList(doExchange1(Request.TAGS, HttpMethod.GET, Term[].class, forExpand(post.getId()), queryParams, null).getBody());
+        return getAllTermsForEndpoint(Request.POST_TAGS, post.getId().toString());
     }
 
     @Override
@@ -495,9 +494,9 @@ public class Client implements Wordpress {
         return getAllTermsForEndpoint(Request.CATEGORIES);
     }
 
-    private List<Term> getAllTermsForEndpoint(final String endpoint) {
+    private List<Term> getAllTermsForEndpoint(final String endpoint, String ... expandParams) {
         List<Term> collected = new ArrayList<>();
-        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class);
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class, expandParams);
         collected.addAll(pagedResponse.getList());
         while (pagedResponse.hasNext()) {
             pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
