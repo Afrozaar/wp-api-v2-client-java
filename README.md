@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta11**)
+(Currently coding against **WP REST API Version 2.0-beta13**)
 
 See
 

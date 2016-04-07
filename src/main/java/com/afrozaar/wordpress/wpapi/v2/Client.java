@@ -8,6 +8,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -439,8 +440,7 @@ public class Client implements Wordpress {
 
     @Override
     public List<Term> getPostTags(Post post) {
-        Map<String, Object> queryParams = ImmutableMap.of("post", post.getId());
-        return Arrays.asList(doExchange1(Request.TAGS, HttpMethod.GET, Term[].class, forExpand(post.getId()), queryParams, null).getBody());
+        return getAllTermsForEndpoint(Request.POST_TAGS, post.getId().toString());
     }
 
     @Override
@@ -495,9 +495,9 @@ public class Client implements Wordpress {
         return getAllTermsForEndpoint(Request.CATEGORIES);
     }
 
-    private List<Term> getAllTermsForEndpoint(final String endpoint) {
+    private List<Term> getAllTermsForEndpoint(final String endpoint, String ... expandParams) {
         List<Term> collected = new ArrayList<>();
-        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class);
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class, expandParams);
         collected.addAll(pagedResponse.getList());
         while (pagedResponse.hasNext()) {
             pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
@@ -606,11 +606,15 @@ public class Client implements Wordpress {
 
     @SuppressWarnings("unchecked")
     @Override
-    public User createUser(User user, String username, String password) {
+    public User createUser(User user, String username, String password) throws UsernameAlreadyExistsException {
         final MultiValueMap userAsMap = userMap.apply(user);
         userAsMap.add("username", username); // Required: true
         userAsMap.add("password", password); // Required: true
-        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        try {
+            return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        } catch (HttpServerErrorException e) {
+            throw new UsernameAlreadyExistsException(e).orRuntime("Unexpected exception");
+        }
     }
 
     @Override
