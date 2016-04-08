@@ -131,6 +131,20 @@ public class ClientLiveIT {
         try {
             final Post post = client.getPost(createdPost.getId());
             assertThat(post).isNotNull();
+            assertThat(post.getContent().getRaw()).isNull();
+        } catch (com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException e) {
+            fail(e.toString());
+        }
+    }
+
+    @Test
+    public void testGetPostWithEditContext_RawMustNotBeNull() throws PostCreateException {
+        final Post createdPost = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
+
+        try {
+            final Post post = client.getPost(createdPost.getId(), Contexts.EDIT);
+            assertThat(post).isNotNull();
+            assertThat(post.getContent().getRaw()).isNotNull();
         } catch (com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException e) {
             fail(e.toString());
         }

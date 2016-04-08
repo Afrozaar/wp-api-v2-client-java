@@ -139,8 +139,13 @@ public class Client implements Wordpress {
 
     @Override
     public Post getPost(Long id) throws PostNotFoundException {
+        return getPost(id, Contexts.VIEW);
+    }
+
+    @Override
+    public Post getPost(Long id, String context) throws PostNotFoundException {
         try {
-            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null).getBody();
+            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new PostNotFoundException(e);
