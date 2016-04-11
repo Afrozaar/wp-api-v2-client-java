@@ -154,7 +154,7 @@ public class ClientLiveIT {
     public void testSearchWithFilterParametersForInvalidAuthor_shouldReturnEmptyList() {
 
         // given
-        SearchRequest<Post> search = aSearchRequest(Post.class).withParam("filter[author]", "999").build();
+        SearchRequest<Post> search = aSearchRequest(Post.class).withFilter("author", "999").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.search(search);
@@ -167,7 +167,7 @@ public class ClientLiveIT {
     public void testSearchWithFilterParametersForValidAuthor_shouldReturnPopulatedList() throws PostCreateException {
         client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         // given
-        SearchRequest<Post> search = aSearchRequest(Post.class).withParam("filter[author]", "1").build();
+        SearchRequest<Post> search = aSearchRequest(Post.class).withFilter("author", "1").build();
 
         // when
         final PagedResponse<Post> postPagedResponse = client.search(search);
@@ -181,7 +181,7 @@ public class ClientLiveIT {
 
         final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withParam("filter[meta_key]", postWithMeta.b.getKey()).build());
+        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withFilter("meta_key", postWithMeta.b.getKey()).build());
 
         assertThat(response.getList()).isNotEmpty().hasSize(1);
     }
@@ -192,8 +192,8 @@ public class ClientLiveIT {
 
         final PagedResponse<Post> response = client.search(aSearchRequest(Post.class)
                 .withUri(Request.POSTS)
-                .withParam("filter[meta_key]", "baobab_indexed")
-                .withParam("filter[meta_compare]", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
+                .withFilter("meta_key", "baobab_indexed")
+                .withFilter("meta_compare", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
                 .build());
 
         // this request using curl/httpie:

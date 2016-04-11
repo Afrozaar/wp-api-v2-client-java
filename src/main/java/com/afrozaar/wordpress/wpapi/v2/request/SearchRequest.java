@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.request;
 
+import static java.lang.String.format;
+
 import com.google.common.collect.ImmutableMap;
 
 import java.util.Arrays;
@@ -30,6 +32,30 @@ public class SearchRequest<T> extends Request {
 
         public static <BT> Builder<BT> aSearchRequest(Class<BT> clazz) {
             return new Builder<>(clazz);
+        }
+
+        public Builder<BT> withContext(String context) {
+            return withParam(Request.QP_CONTEXT, context);
+        }
+
+        public Builder<BT> withOrderBy(String orderBy) {
+            return withParam(Request.QP_ORDER_BY, orderBy);
+        }
+
+        public Builder<BT> withOrderAsc() {
+            return withOrder("asc");
+        }
+
+        public Builder<BT> withOrderDesc() {
+            return withOrder("desc");
+        }
+
+        private Builder<BT> withOrder(String order) {
+            return withParam(Request.QP_ORDER, order);
+        }
+
+        public Builder<BT> withFilter(String key, String... values) {
+            return withParam(format("filter[%s]", key), values);
         }
 
         public Builder<BT> withParam(String key, String... values) {
