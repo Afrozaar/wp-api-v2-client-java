@@ -14,6 +14,12 @@
         <!--<version>9</version>-->
     <!--</parent>-->
 
+    <properties>
+        <repository.home>https://maven-repository.afrozaar.com/artifactory</repository.home>
+        <release-repository>${repository.home}/public-release</release-repository>
+        <snapshot-repository>${repository.home}/public-snapshot</snapshot-repository>
+    </properties>
+    
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -46,12 +52,12 @@
         <repository>
             <id>central</id>
             <name>artifactory.afrozaar.com-releases</name>
-            <url>${deploy-release}</url>
+            <url>${release-repository}</url>
         </repository>
         <snapshotRepository>
             <id>remote-plugins-snapshot</id>
             <name>artifactory.afrozaar.com-snapshots</name>
-            <url>${deploy-snapshot}</url>
+            <url>${snapshot-repository}</url>
         </snapshotRepository>
     </distributionManagement>
 
