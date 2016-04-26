@@ -23,6 +23,7 @@ import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -88,12 +89,11 @@ public class ClientLiveIT {
     private static ClientConfig resolveConfig() {
         try {
             Resource userResource = new ClassPathResource(format("/config/%s-test.yaml", InetAddress.getLocalHost().getHostName()));
-            Resource resourceToUse = userResource.exists()
-                    ? userResource
-                    : new ClassPathResource("/config/docker-test.yaml");
+            Resource resourceToUse = userResource.exists() ? userResource : new ClassPathResource("/config/docker-test.yaml");
             return ClientConfig.load(resourceToUse);
         } catch (IOException e) {
-            throw new RuntimeException("Can not run tests without a configuration. Please ensure you have a valid configuration in ${project}/src/test/resources/config/<hostname>-test.yaml");
+            throw new RuntimeException(
+                    "Can not run tests without a configuration. Please ensure you have a valid configuration in ${project}/src/test/resources/config/<hostname>-test.yaml");
         }
     }
 
@@ -190,11 +190,11 @@ public class ClientLiveIT {
     @Ignore // this is for documentation purpose only
     public void testSearchForPostsNotHavingAParticularMetaKey() throws PostCreateException {
 
-        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class)
-                .withUri(Request.POSTS)
-                .withFilter("meta_key", "baobab_indexed")
-                .withFilter("meta_compare", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
-                .build());
+        final PagedResponse<Post> response = client
+                .search(aSearchRequest(Post.class).withUri(Request.POSTS)
+                        .withFilter("meta_key", "baobab_indexed")
+                        .withFilter("meta_compare", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
+                        .build());
 
         // this request using curl/httpie:
         // http --auth 'username:wordpress!' http://myhost/wp-json/wp/v2/posts?filter[meta_key]=baobab_indexed&filter[meta_compare]=NOT%20EXISTS
@@ -454,9 +454,7 @@ public class ClientLiveIT {
         final String expectedName = randomAlphabetic(5);
         final String expectedDescription = randomAlphabetic(10);
 
-        final Term createdCategory = client.createCategory(aTerm()
-                .withName(expectedName)
-                .withDescription(expectedDescription).build());
+        final Term createdCategory = client.createCategory(aTerm().withName(expectedName).withDescription(expectedDescription).build());
 
         client.deleteCategory(createdCategory, true);
 
@@ -482,36 +480,16 @@ public class ClientLiveIT {
 
     @Test
     public void testCreateTaxonomyCategoryHierarchical() throws WpApiParsedException {
-        final Term rootTerm = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20)).build());
+        final Term rootTerm = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).build());
 
         LOG.debug("rootTerm: {}", rootTerm);
 
-        final Term child1 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(rootTerm.getId()).build());
-        final Term child2 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(rootTerm.getId()).build());
-        final Term child3 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(rootTerm.getId()).build());
-        final Term child4 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(rootTerm.getId()).build());
-        final Term child41 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(child4.getId()).build());
-        final Term child42 = client.createCategory(aTerm()
-                .withName(randomAlphabetic(5))
-                .withDescription(randomAlphabetic(20))
-                .withParentId(child4.getId()).build());
+        final Term child1 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child2 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child3 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child4 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child41 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
+        final Term child42 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
 
         assertThat(child42.getParentId()).isEqualTo(child4.getId());
         assertThat(child41.getParentId()).isEqualTo(child4.getId());
@@ -530,11 +508,7 @@ public class ClientLiveIT {
 
         String expectedName = randomAlphabetic(3);
         String expectedDescription = randomAlphabetic(5);
-        Term tag = aTerm()
-                .withDescription(expectedDescription)
-                .withName(expectedName)
-                .withTaxonomySlug("post_tag")
-                .build();
+        Term tag = aTerm().withDescription(expectedDescription).withName(expectedName).withTaxonomySlug("post_tag").build();
 
         final Term createdTag = client.createTag(tag);
         client.deleteTag(createdTag, true);
@@ -548,11 +522,7 @@ public class ClientLiveIT {
     public void testDeleteTaxonomyTag() throws WpApiParsedException {
         String expectedName = randomAlphabetic(3);
         String expectedDescription = randomAlphabetic(5);
-        Term tag = aTerm()
-                .withDescription(expectedDescription)
-                .withName(expectedName)
-                .withTaxonomySlug("post_tag")
-                .build();
+        Term tag = aTerm().withDescription(expectedDescription).withName(expectedName).withTaxonomySlug("post_tag").build();
 
         final Term createdTag = client.createTag(tag);
         final Term deletedTerm = client.deleteTag(createdTag, true);
@@ -566,11 +536,7 @@ public class ClientLiveIT {
 
     @Test
     public void testUpdateTaxonomyTag() throws WpApiParsedException {
-        Term tag = aTerm()
-                .withDescription(randomAlphabetic(5))
-                .withName(randomAlphabetic(3))
-                .withTaxonomySlug("post_tag")
-                .build();
+        Term tag = aTerm().withDescription(randomAlphabetic(5)).withName(randomAlphabetic(3)).withTaxonomySlug("post_tag").build();
 
         final Term createdTag = client.createTag(tag);
 
@@ -718,9 +684,8 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testCreateUser() throws UsernameAlreadyExistsException {
-        User userRequest = aUser()
-                .withFirstName(randomAlphabetic(4))
+    public void testCreateUser() throws WpApiParsedException {
+        User userRequest = aUser().withFirstName(randomAlphabetic(4))
                 .withLastName(randomAlphabetic(7))
                 .withDescription(randomAlphabetic(20))
                 .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
@@ -738,10 +703,9 @@ public class ClientLiveIT {
     }
 
     @Test(expected = UsernameAlreadyExistsException.class)
-    public void testCreateUserWithExistingUsername_MustReturnUsernameAlreadyExists() throws UsernameAlreadyExistsException {
+    public void testCreateUserWithExistingUsername_MustReturnUsernameAlreadyExists() throws WpApiParsedException {
         // Given
-        final UserBuilder userBuilder = aUser()
-                .withName(randomAlphabetic(15))
+        final UserBuilder userBuilder = aUser().withName(randomAlphabetic(15))
                 .withFirstName(randomAlphabetic(4))
                 .withLastName(randomAlphabetic(7))
                 .withDescription(randomAlphabetic(20))
@@ -782,14 +746,13 @@ public class ClientLiveIT {
 
     @Ignore
     @Test
-    public void testGetUserWithNoRoles() throws UsernameAlreadyExistsException, UserNotFoundException {
+    public void testGetUserWithNoRoles() throws WpApiParsedException {
 
         //It turns out that creating a user with this role is not directly possible using wp-api.
         // So for now just ignore this test and fix the issue.
         // @see https://github.com/Afrozaar/wp-api-v2-client-java/issues/11
 
-        final User userWithDuplicateUsername = aUser()
-                .withFirstName(randomAlphabetic(4))
+        final User userWithDuplicateUsername = aUser().withFirstName(randomAlphabetic(4))
                 .withLastName(randomAlphabetic(7))
                 .withDescription(randomAlphabetic(20))
                 .withEmail(format("%s@%s.test", randomAlphabetic(4), randomAlphabetic(3)))
@@ -803,20 +766,14 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testDeleteUser() throws UsernameAlreadyExistsException {
+    public void testDeleteUser() throws WpApiParsedException {
 
-        User user = aUser()
-                .withName(randomAlphabetic(4))
-                .withLastName(randomAlphabetic(5))
-                .withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
-                .build();
+        User user = aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3))).build();
         String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);
 
-        client.getUsers().stream()
-                .filter(u -> u.getId() != 1L)
-                .forEach(u -> client.deleteUser(u));
+        client.getUsers().stream().filter(u -> u.getId() != 1L).forEach(u -> client.deleteUser(u));
 
         try {
             final User user1 = client.getUser(createdUser.getId());
@@ -826,12 +783,8 @@ public class ClientLiveIT {
     }
 
     @Test
-    public void testUpdateUser() throws UsernameAlreadyExistsException {
-        User user = aUser()
-                .withName(randomAlphabetic(4))
-                .withLastName(randomAlphabetic(5))
-                .withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
-                .build();
+    public void testUpdateUser() throws WpApiParsedException {
+        User user = aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3))).build();
         String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);
@@ -853,16 +806,14 @@ public class ClientLiveIT {
     }
 
     private Page newPageWithRandomData() {
-        return aPage()
-                .withTitle(aTitle().withRaw(randomAlphabetic(20)).build())
+        return aPage().withTitle(aTitle().withRaw(randomAlphabetic(20)).build())
                 .withExcerpt(anExcerpt().withRaw(randomAlphabetic(10)).build())
                 .withContent(aContent().withRaw(randomAlphabetic(50)).build())
                 .build();
     }
 
     private Post newTestPostWithRandomData() {
-        return aPost()
-                .withContent(aContent().withRendered(randomAlphabetic(20)).build())
+        return aPost().withContent(aContent().withRendered(randomAlphabetic(20)).build())
                 .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
                 .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build())
                 //                .withFeaturedImage(113L)
@@ -876,8 +827,7 @@ public class ClientLiveIT {
     }
 
     private Media newRandomMedia(Post post) {
-        return aMedia()
-                .withTitle(aTitle().withRendered(randomAlphabetic(10)).build())
+        return aMedia().withTitle(aTitle().withRendered(randomAlphabetic(10)).build())
                 .withCaption(randomAlphabetic(50))
                 .withAltText("image")
                 .withDescription(RandomStringUtils.randomAscii(20))

@@ -13,14 +13,17 @@ public class MavenProperties {
 
     public static Properties getProperties() {
 
-        InputStream is = MavenProperties.class.getClassLoader().getResourceAsStream("META-INF/maven/com.afrozaar.wordpress/wp-api-v2-client-java/pom.properties");
-        Properties properties = new Properties();
-        try {
-            properties.load(is);
-        } catch (IOException | NullPointerException e) {
-            LOG.error("Error loading properties ", e);
+        try (InputStream is = MavenProperties.class.getClassLoader().getResourceAsStream("META-INF/maven/com.afrozaar.wordpress/wp-api-v2-client-java/pom.properties")) {
+            Properties properties = new Properties();
+            try {
+                properties.load(is);
+            } catch (IOException | NullPointerException e) {
+                LOG.error("Error loading properties ", e);
+            }
+            return properties;
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
         }
-        return properties;
     }
 
     public static void main(String[] args) {

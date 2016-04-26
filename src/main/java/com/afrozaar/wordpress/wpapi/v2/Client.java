@@ -3,10 +3,13 @@ package com.afrozaar.wordpress.wpapi.v2;
 import static java.lang.String.format;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
+import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -107,9 +110,7 @@ public class Client implements Wordpress {
         this.password = password;
         this.debug = debug;
 
-        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json()
-                .featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
-                .build();
+        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT).build();
 
         List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
         messageConverters.add(new ByteArrayHttpMessageConverter());
@@ -620,15 +621,27 @@ public class Client implements Wordpress {
 
     @SuppressWarnings("unchecked")
     @Override
-    public User createUser(User user, String username, String password) throws UsernameAlreadyExistsException {
+    public User createUser(User user, String username, String password) throws WpApiParsedException {
         final MultiValueMap userAsMap = userMap.apply(user);
         userAsMap.add("username", username); // Required: true
         userAsMap.add("password", password); // Required: true
         try {
             return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
         } catch (HttpServerErrorException e) {
-            throw new UsernameAlreadyExistsException(e).orRuntime("Unexpected exception");
+            try {
+                ParsedRestException restException = ParsedRestException.of(e);
+                switch (restException.getCode()) {
+                case ExceptionCodes.EXISTING_USER_LOGIN:
+                    throw new UsernameAlreadyExistsException(restException);
+                case ExceptionCodes.EXISTING_USER_EMAIL:
+                    throw new UserEmailAlreadyExistsException(restException);
+                }
+            } catch (RuntimeException rte) {
+                LOG.info("error parsing {}", e.getResponseBodyAsString(), e);
+            }
+            throw e;
         }
+
     }
 
     @Override
