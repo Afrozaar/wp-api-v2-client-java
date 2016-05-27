@@ -1,11 +1,14 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.afrozaar.wordpress.wpapi.v2.deserializer.StringBooleanMapDeserializer;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import javax.annotation.Generated;
 
@@ -40,6 +43,7 @@ public class User {
     @JsonProperty("avatar_urls")
     private AvatarUrls avatarUrls;
     @JsonProperty("capabilities")
+    @JsonDeserialize(using = StringBooleanMapDeserializer.class)
     private Map<String, Boolean> capabilities;
     @JsonProperty("description")
     private String description;
