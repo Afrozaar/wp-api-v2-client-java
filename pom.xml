@@ -10,17 +10,13 @@
     <description>A Java client implementation to the WordPress WP-API v2 plugin.</description>
     <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
 
-    <!--<parent>-->
-        <!--<groupId>org.sonatype.oss</groupId>-->
-        <!--<artifactId>oss-parent</artifactId>-->
-        <!--<version>9</version>-->
-    <!--</parent>-->
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>9</version>
+    </parent>
 
-    <properties>
-        <repository.home>https://maven-repository.afrozaar.com/artifactory</repository.home>
-        <release-repository>${repository.home}/public-release</release-repository>
-        <snapshot-repository>${repository.home}/public-snapshot</snapshot-repository>
-    </properties>
+
     
     <licenses>
         <license>
@@ -50,27 +46,33 @@
         <url>git@github.com:afrozaar/wp-api-v2-client-java.git</url>
     </scm>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>artifactory.afrozaar.com-releases</name>
-            <url>${release-repository}</url>
-        </repository>
-        <snapshotRepository>
-            <id>remote-plugins-snapshot</id>
-            <name>artifactory.afrozaar.com-snapshots</name>
-            <url>${snapshot-repository}</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <profiles>
         <profile>
             <id>afrozaar</id>
-            <properties>
+<!--            <properties>
                 <repository.home>https://maven-repostiory.afrozaar.com/artifactory</repository.home>
                 <deploy-release>${repository.home}/libs-release-local</deploy-release>
                 <deploy-snapshot>${repository.home}/libs-snapshot-local</deploy-snapshot>
+            </properties>-->
+
+            <properties>
+                <repository.home>https://maven-repository.afrozaar.com/artifactory</repository.home>
+                <release-repository>${repository.home}/public-release</release-repository>
+                <snapshot-repository>${repository.home}/public-snapshot</snapshot-repository>
             </properties>
+
+            <distributionManagement>
+                <repository>
+                    <id>central</id>
+                    <name>artifactory.afrozaar.com-releases</name>
+                    <url>${release-repository}</url>
+                </repository>
+                <snapshotRepository>
+                    <id>remote-plugins-snapshot</id>
+                    <name>artifactory.afrozaar.com-snapshots</name>
+                    <url>${snapshot-repository}</url>
+                </snapshotRepository>
+            </distributionManagement>
         </profile>
     </profiles>
     <build>
@@ -89,74 +91,74 @@
         </pluginManagement>
 
         <plugins>
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-gpg-plugin</artifactId>-->
-                <!--<version>1.5</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>sign-artifacts</id>-->
-                        <!--<phase>verify</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>sign</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<groupId>org.jolokia</groupId>-->
-                <!--<artifactId>docker-maven-plugin</artifactId>-->
-                <!--<version>0.13.8</version>-->
-                <!--<configuration>-->
-                    <!--<images>-->
-                        <!--<image>-->
-                            <!--<name>afrozaar/wordpress</name>-->
-                            <!--<run>-->
-                                <!--<log>-->
-                                    <!--<enabled>true</enabled>-->
-                                    <!--<color>red</color>-->
-                                <!--</log>-->
-                                <!--<wait>-->
-                                    <!--<log>INFO success: mysqld entered RUNNING state</log>-->
-                                <!--</wait>-->
-                                <!--<ports>-->
-                                    <!--<port>80:80</port>-->
-                                <!--</ports>-->
-                            <!--</run>-->
-                        <!--</image>-->
-                    <!--</images>-->
-                    <!--<docker.follow />-->
-                <!--</configuration>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<id>integration-test-start</id>-->
-                        <!--<phase>pre-integration-test</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>start</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                    <!--<execution>-->
-                        <!--<id>integration-test-stop</id>-->
-                        <!--<phase>post-integration-test</phase>-->
-                        <!--<goals>-->
-                            <!--<goal>stop</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
-            <!--<plugin>-->
-                <!--<groupId>org.apache.maven.plugins</groupId>-->
-                <!--<artifactId>maven-failsafe-plugin</artifactId>-->
-                <!--<version>2.19</version>-->
-                <!--<executions>-->
-                    <!--<execution>-->
-                        <!--<goals>-->
-                            <!--<goal>integration-test</goal>-->
-                            <!--<goal>verify</goal>-->
-                        <!--</goals>-->
-                    <!--</execution>-->
-                <!--</executions>-->
-            <!--</plugin>-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.jolokia</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.13.8</version>
+                <configuration>
+                    <images>
+                        <image>
+                            <name>afrozaar/wordpress</name>
+                            <run>
+                                <log>
+                                    <enabled>true</enabled>
+                                    <color>red</color>
+                                </log>
+                                <wait>
+                                    <log>INFO success: mysqld entered RUNNING state</log>
+                                </wait>
+                                <ports>
+                                    <port>80:80</port>
+                                </ports>
+                            </run>
+                        </image>
+                    </images>
+                    <docker.follow />
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>integration-test-start</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>integration-test-stop</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.19</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
         </plugins>
     </build>
