@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta13**)
+(Currently coding against **WP REST API Version 2.0-beta13.1**)
 
 See
 
@@ -154,4 +154,10 @@ Latest snapshot is available from our public maven repository at
 * https://maven-repository.afrozaar.com/artifactory/public-snapshot
 * https://maven-repository.afrozaar.com/artifactory/public-release
 
-Release versions should also be available on public maven repositories.
+Release versions should also be available on public maven repositories:
+
+    <dependency>
+      <groupId>com.afrozaar.wordpress</groupId>
+      <artifactId>wp-api-v2-client-java</artifactId>
+      <version>2.0-beta13</version>
+    </dependency>
