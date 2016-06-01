@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta11**)
+(Currently coding against **WP REST API Version 2.0-beta13**)
 
 See
 
@@ -146,3 +146,12 @@ available at: `${project}/src/test/resources/config/${hostname}-test.yaml` with 
 This configuration must not be included in version control. _`*.yaml` is already included in the `.gitignore` file._
 
 Please ensure that you do not commit hard-coded environment information.
+
+# Maven
+
+Latest snapshot is available from our public maven repository at 
+
+* https://maven-repository.afrozaar.com/artifactory/public-snapshot
+* https://maven-repository.afrozaar.com/artifactory/public-release
+
+Release versions should also be available on public maven repositories.

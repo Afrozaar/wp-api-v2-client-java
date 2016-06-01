@@ -34,6 +34,7 @@ public interface Posts {
     Post createPost(Post post, PostStatus status) throws PostCreateException;
 
     Post getPost(Long id) throws PostNotFoundException;
+    Post getPost(Long id, String context) throws PostNotFoundException;
 
     /**
      * <pre>

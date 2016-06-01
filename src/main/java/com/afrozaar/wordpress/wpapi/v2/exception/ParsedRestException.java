@@ -51,6 +51,19 @@ public class ParsedRestException {
         return cause;
     }
 
+    /*@Override
+    public String toString() {
+        return String.format("ParsedRestException: code=%s, message=%s, data=%s", this.code, this.errorMessage, this.data);
+    }*/
+
+    @Override
+    public String toString() {
+        return "ParsedRestException{" + "code='" + code + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", data=" + data +
+                '}';
+    }
+
     private static ObjectMapper getMapper() {
         return mapper == null ? mapper = new ObjectMapper() : mapper;
     }

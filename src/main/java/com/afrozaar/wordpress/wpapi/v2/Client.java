@@ -1,11 +1,17 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static java.lang.String.format;
+
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
+import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -20,6 +26,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
+import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import com.google.common.base.Preconditions;
@@ -31,6 +38,14 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.ResourceHttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.converter.support.AllEncompassingFormHttpMessageConverter;
+import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -39,9 +54,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.transform.Source;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -52,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -65,31 +86,48 @@ public class Client implements Wordpress {
     private static final String CONTEXT_ = "context";
     private static final String VIEW = "view";
     private static final String DATA = "data";
+    private static final String VERSION = "version";
+    private static final String ARTIFACT_ID = "artifactId";
 
-    private RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
+    private final Two<String, String> userAgentTuple;
 
     public final String baseUrl;
     final private String username;
     final private String password;
     final private boolean debug;
 
+    {
+        Properties properties = MavenProperties.getProperties();
+        userAgentTuple = Two.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
+    }
+
     public Client(String baseUrl, String username, String password, boolean debug) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
         this.debug = debug;
+
+        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT).build();
+
+        List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
+        messageConverters.add(new ByteArrayHttpMessageConverter());
+        messageConverters.add(new StringHttpMessageConverter());
+        messageConverters.add(new ResourceHttpMessageConverter());
+        messageConverters.add(new SourceHttpMessageConverter<Source>());
+        messageConverters.add(new AllEncompassingFormHttpMessageConverter());
+        messageConverters.add(new MappingJackson2HttpMessageConverter(emptyArrayAsNullObjectMapper));
+        //messageConverters.add(new MappingJackson2HttpMessageConverter());
+        restTemplate = new RestTemplate(messageConverters);
     }
 
     @Override
     public Post createPost(final Map<String, Object> postFields, PostStatus status) throws PostCreateException {
-        final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>()
-                .putAll(postFields)
-                .put("status", status.value)
-                .build();
+        final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>().putAll(postFields).put("status", status.value).build();
         try {
-            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post).getBody();
+            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post, Optional.of(MediaType.APPLICATION_JSON)).getBody();
         } catch (HttpClientErrorException e) {
             throw new PostCreateException(e);
         }
@@ -102,8 +140,13 @@ public class Client implements Wordpress {
 
     @Override
     public Post getPost(Long id) throws PostNotFoundException {
+        return getPost(id, Contexts.VIEW);
+    }
+
+    @Override
+    public Post getPost(Long id, String context) throws PostNotFoundException {
         try {
-            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), null, null).getBody();
+            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new PostNotFoundException(e);
@@ -217,7 +260,8 @@ public class Client implements Wordpress {
     @Override
     public PostMeta createMeta(Long postId, String key, String value) {
         final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body, Optional.of(MediaType.APPLICATION_JSON));
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body,
+                Optional.of(MediaType.APPLICATION_JSON));
         return exchange.getBody();
     }
 
@@ -253,7 +297,7 @@ public class Client implements Wordpress {
     @Override
     public boolean deletePostMeta(Long postId, Long metaId) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), null, null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
     }
@@ -261,7 +305,7 @@ public class Client implements Wordpress {
     @Override
     public boolean deletePostMeta(Long postId, Long metaId, boolean force) {
         final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), ImmutableMap.of(FORCE, force), null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), String.format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
         return exchange.getStatusCode().is2xxSuccessful();
     }
@@ -411,8 +455,7 @@ public class Client implements Wordpress {
 
     @Override
     public List<Term> getPostTags(Post post) {
-        Map<String, Object> queryParams = ImmutableMap.of("post", post.getId());
-        return Arrays.asList(doExchange1(Request.TAGS, HttpMethod.GET, Term[].class, forExpand(post.getId()), queryParams, null).getBody());
+        return getAllTermsForEndpoint(Request.POST_TAGS, post.getId().toString());
     }
 
     @Override
@@ -467,9 +510,9 @@ public class Client implements Wordpress {
         return getAllTermsForEndpoint(Request.CATEGORIES);
     }
 
-    private List<Term> getAllTermsForEndpoint(final String endpoint) {
+    private List<Term> getAllTermsForEndpoint(final String endpoint, String... expandParams) {
         List<Term> collected = new ArrayList<>();
-        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class);
+        PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class, expandParams);
         collected.addAll(pagedResponse.getList());
         while (pagedResponse.hasNext()) {
             pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
@@ -480,7 +523,7 @@ public class Client implements Wordpress {
 
     @Override
     public Term createCategory(Term categoryTerm) {
-        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap()).getBody();
+        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap(), Optional.of(MediaType.APPLICATION_JSON)).getBody();
     }
 
     @Override
@@ -525,10 +568,7 @@ public class Client implements Wordpress {
     @Override
     public Page createPage(Page page, PostStatus status) {
         final Map<String, Object> map = page.asMap();
-        final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>()
-                .putAll(map)
-                .put("status", status.value)
-                .build();
+        final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>().putAll(map).put("status", status.value).build();
 
         return doExchange1(Request.PAGES, HttpMethod.POST, Page.class, forExpand(), null, pageFields).getBody();
     }
@@ -581,11 +621,27 @@ public class Client implements Wordpress {
 
     @SuppressWarnings("unchecked")
     @Override
-    public User createUser(User user, String username, String password) {
+    public User createUser(User user, String username, String password) throws WpApiParsedException {
         final MultiValueMap userAsMap = userMap.apply(user);
         userAsMap.add("username", username); // Required: true
         userAsMap.add("password", password); // Required: true
-        return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        try {
+            return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
+        } catch (HttpServerErrorException e) {
+            try {
+                ParsedRestException restException = ParsedRestException.of(e);
+                switch (restException.getCode()) {
+                case ExceptionCodes.EXISTING_USER_LOGIN:
+                    throw new UsernameAlreadyExistsException(restException);
+                case ExceptionCodes.EXISTING_USER_EMAIL:
+                    throw new UserEmailAlreadyExistsException(restException);
+                }
+            } catch (RuntimeException rte) {
+                LOG.info("error parsing {}", e.getResponseBodyAsString(), e);
+            }
+            throw e;
+        }
+
     }
 
     @Override
@@ -700,7 +756,7 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
         final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b);
+        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
 
         mediaType.ifPresent(builder::contentType);
 
@@ -719,7 +775,8 @@ public class Client implements Wordpress {
         return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, Optional.empty());
     }
 
-    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body, Optional<MediaType> mediaType) {
+    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body,
+            Optional<MediaType> mediaType) {
         final UriComponentsBuilder builder = Request.of(context).usingClient(this);
         if (queryParams != null) {
             queryParams.forEach(builder::queryParam);
@@ -728,10 +785,7 @@ public class Client implements Wordpress {
     }
 
     private Optional<String> link(List<Link> links, Predicate<? super Link> linkPredicate) {
-        return links.stream()
-                .filter(linkPredicate)
-                .map(Link::getHref)
-                .findFirst();
+        return links.stream().filter(linkPredicate).map(Link::getHref).findFirst();
     }
 
     private void debugRequest(RequestEntity<?> entity) {

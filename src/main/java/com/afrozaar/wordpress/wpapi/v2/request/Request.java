@@ -15,6 +15,7 @@ public abstract class Request {
     public static final String POST = "/posts/{id}";
     public static final String POST_TERMS = "/posts/{postId}/{taxonomy}";
     public static final String POST_TERM = "/posts/{postId}/{taxonomy}/{termId}";
+    public static final String POST_TAGS = "/tags?post={postId}";
 
     public static final String METAS = "/posts/{postId}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
@@ -33,6 +34,9 @@ public abstract class Request {
     public static final String TAG = "/tags/{tagId}";
     public static final String CATEGORIES = "/categories";
     public static final String CATEGORY = "/categories/{categoryId}";
+    public static final String QP_CONTEXT = "context";
+    public static final String QP_ORDER_BY = "orderby";
+    public static final String QP_ORDER = "order";
 
     final String uri;
     final Map<String, List<String>> params;

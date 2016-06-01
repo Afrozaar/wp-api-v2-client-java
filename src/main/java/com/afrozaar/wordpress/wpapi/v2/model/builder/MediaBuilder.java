@@ -2,13 +2,14 @@ package com.afrozaar.wordpress.wpapi.v2.model.builder;
 
 import com.afrozaar.wordpress.wpapi.v2.model.Guid;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
-import com.afrozaar.wordpress.wpapi.v2.model.MediaDetails;
 import com.afrozaar.wordpress.wpapi.v2.model.Title;
+
+import java.util.Map;
 
 public class MediaBuilder {
     private String altText;
     private Long id;
-    private MediaDetails mediaDetails;
+    private Map<String, Object> mediaDetails;
     private int author;
     private Guid guid;
     private String date;
@@ -43,7 +44,7 @@ public class MediaBuilder {
         return this;
     }
 
-    public MediaBuilder withMediaDetails(MediaDetails mediaDetails) {
+    public MediaBuilder withMediaDetails(Map<String, Object> mediaDetails) {
         this.mediaDetails = mediaDetails;
         return this;
     }

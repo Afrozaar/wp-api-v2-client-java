@@ -1,6 +1,9 @@
 package com.afrozaar.wordpress.wpapi.v2.api;
 
+import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
+import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
+import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
 
 import org.springframework.util.LinkedMultiValueMap;
@@ -11,14 +14,17 @@ import java.util.function.Function;
 
 public interface Users {
     List<User> getUsers();
+
     List<User> getUsers(String context);
 
-    User createUser(User user, String username, String password);
+    User createUser(User user, String username, String password) throws WpApiParsedException;
 
     User getUser(long userId) throws UserNotFoundException;
+
     User getUser(long userId, String context) throws UserNotFoundException;
 
     User updateUser(User user);
+
     User deleteUser(User user);
 
     Function<User, MultiValueMap> userMap = input -> {

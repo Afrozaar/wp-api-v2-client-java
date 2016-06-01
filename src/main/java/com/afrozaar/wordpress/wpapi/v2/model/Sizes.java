@@ -1,9 +1,10 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(Include.NON_NULL)
 public class Sizes {
     @JsonProperty("thumbnail")
     private Thumbnail thumbnail;
@@ -28,9 +29,6 @@ public class Sizes {
 
     @Override
     public String toString() {
-        return "Sizes{" +
-                "thumbnail=" + (thumbnail != null ? thumbnail.toString() : null) +
-                ", medium=" + (medium != null ? medium.toString() : null) +
-                '}';
+        return "Sizes{" + "thumbnail=" + (thumbnail != null ? thumbnail.toString() : null) + ", medium=" + (medium != null ? medium.toString() : null) + '}';
     }
 }
