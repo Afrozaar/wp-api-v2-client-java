@@ -115,7 +115,7 @@ If needed, `org.springframework.http.client.ClientHttpRequestFactory` can be pro
 
 
 		TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
-		
+
 		SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
 		        .loadTrustMaterial(null, acceptingTrustStrategy)
 		        .build();
@@ -130,10 +130,12 @@ If needed, `org.springframework.http.client.ClientHttpRequestFactory` can be pro
 		        new HttpComponentsClientHttpRequestFactory();
 
 		requestFactory.setHttpClient(httpClient);
-		
+
 		boolean debug = false;
 
-		final Wordpress client = ClientFactory.fromConfig(ClientConfig.of(httpsBaseURL, username, password, debug, requestFactory));
+		final Wordpress wordpress = ClientFactory.builder(ClientConfig.of(httpBaseURL, username, password, debug))
+                .withRequestFactory(requestFactory)
+                .build();
 
 
 # TODO

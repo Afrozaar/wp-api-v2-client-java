@@ -1,7 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2.util;
 
 import org.springframework.core.io.Resource;
-import org.springframework.http.client.ClientHttpRequestFactory;
 
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -13,7 +12,6 @@ public class ClientConfig {
 
     Wordpress wordpress;
     boolean debug;
-    ClientHttpRequestFactory requestFactory;
 
     public ClientConfig() {
     }
@@ -21,11 +19,6 @@ public class ClientConfig {
     private ClientConfig(boolean debug, Wordpress wordpress) {
         this.debug = debug;
         this.wordpress = wordpress;
-    }
-    private ClientConfig(boolean debug, Wordpress wordpress, ClientHttpRequestFactory requestFactory) {
-        this.debug = debug;
-        this.wordpress = wordpress;
-        this.requestFactory = requestFactory;
     }
 
     public boolean isDebug() {
@@ -43,14 +36,6 @@ public class ClientConfig {
     public void setWordpress(Wordpress wordpress) {
         this.wordpress = wordpress;
     }
-    
-	public ClientHttpRequestFactory getRequestFactory() {
-		return requestFactory;
-	}
-
-	public void setRequestFactory(ClientHttpRequestFactory requestFactory) {
-		this.requestFactory = requestFactory;
-	}
 
     public static ClientConfig load(InputStream inputStream) {
         return new Yaml().loadAs(inputStream, ClientConfig.class);
@@ -63,9 +48,6 @@ public class ClientConfig {
 
     public static ClientConfig of(String baseUrl, String username, String password, boolean debug) {
         return new ClientConfig(debug, new Wordpress(baseUrl, username, password));
-    }
-    public static ClientConfig of(String baseUrl, String username, String password, boolean debug, ClientHttpRequestFactory requestFactory) {
-        return new ClientConfig(debug, new Wordpress(baseUrl, username, password),requestFactory);
     }
 
     public static class Wordpress {
