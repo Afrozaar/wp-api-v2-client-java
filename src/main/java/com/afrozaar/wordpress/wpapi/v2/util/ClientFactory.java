@@ -13,6 +13,6 @@ public class ClientFactory {
 
     public static Wordpress fromConfig(ClientConfig config) {
         final ClientConfig.Wordpress wordpress = config.getWordpress();
-        return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, config.debug);
+        return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, config.debug, config.requestFactory);
     }
 }
