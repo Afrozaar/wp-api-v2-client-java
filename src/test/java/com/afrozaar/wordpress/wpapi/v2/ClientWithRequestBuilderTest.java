@@ -6,6 +6,7 @@ import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -27,7 +28,7 @@ public class ClientWithRequestBuilderTest {
 
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+        SSLContext sslContext = SSLContexts.custom()
                 .loadTrustMaterial(null, acceptingTrustStrategy)
                 .build();
 
