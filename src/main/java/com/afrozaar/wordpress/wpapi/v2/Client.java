@@ -38,6 +38,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.ResourceHttpMessageConverter;
@@ -105,6 +106,10 @@ public class Client implements Wordpress {
     }
 
     public Client(String baseUrl, String username, String password, boolean debug) {
+       this(baseUrl, username, password, debug, null);
+    }
+    
+    public Client(String baseUrl, String username, String password, boolean debug, ClientHttpRequestFactory requestFactory) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
@@ -121,6 +126,11 @@ public class Client implements Wordpress {
         messageConverters.add(new MappingJackson2HttpMessageConverter(emptyArrayAsNullObjectMapper));
         //messageConverters.add(new MappingJackson2HttpMessageConverter());
         restTemplate = new RestTemplate(messageConverters);
+        
+        if(requestFactory != null){;
+        	restTemplate.setRequestFactory(requestFactory);
+        } 
+        
     }
 
     @Override

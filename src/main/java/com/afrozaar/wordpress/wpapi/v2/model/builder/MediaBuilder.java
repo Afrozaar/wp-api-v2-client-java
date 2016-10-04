@@ -26,6 +26,7 @@ public class MediaBuilder {
     private String mediaType;
     private Long post;
     private String sourceUrl;
+    private String mimeType;
 
     private MediaBuilder() {
     }
@@ -129,8 +130,13 @@ public class MediaBuilder {
         return this;
     }
 
+    public MediaBuilder withMimeType(String mimeType) {
+        this.mimeType = mimeType;
+        return this;
+    }
+
     public MediaBuilder but() {
-        return aMedia().withAltText(altText).withId(id).withMediaDetails(mediaDetails).withAuthor(author).withGuid(guid).withDate(date).withModified(modified).withModifiedGmt(modifiedGmt).withSlug(slug).withType(type).withLink(link).withTitle(title).withCommentStatus(commentStatus).withPingStatus(pingStatus).withCaption(caption).withDescription(description).withMediaType(mediaType).withPost(post).withSourceUrl(sourceUrl);
+        return aMedia().withAltText(altText).withId(id).withMediaDetails(mediaDetails).withAuthor(author).withGuid(guid).withDate(date).withModified(modified).withModifiedGmt(modifiedGmt).withSlug(slug).withType(type).withLink(link).withTitle(title).withCommentStatus(commentStatus).withPingStatus(pingStatus).withCaption(caption).withDescription(description).withMediaType(mediaType).withPost(post).withSourceUrl(sourceUrl).withMimeType(mimeType);
     }
 
     public Media build() {
@@ -154,6 +160,7 @@ public class MediaBuilder {
         media.setMediaType(mediaType);
         media.setPost(post);
         media.setSourceUrl(sourceUrl);
+        media.setMimeType(mimeType);
         return media;
     }
 }

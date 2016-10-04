@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta13**)
+(Currently coding against **WP REST API Version 2.0-beta13.1**)
 
 See
 
@@ -109,6 +109,34 @@ file, or WP-API's `plugin.php`:
     }
     add_filter( 'rest_query_vars', 'my_allow_meta_query' );
     
+# Controlling HTTP Connection behavior
+
+If needed, `org.springframework.http.client.ClientHttpRequestFactory` can be provided to control the HTTP connection behavior. Below example shows how to disable SSL verification when invoking https wordpress endpoints.
+
+
+		TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
+
+		SSLContext sslContext = org.apache.http.ssl.SSLContexts.custom()
+		        .loadTrustMaterial(null, acceptingTrustStrategy)
+		        .build();
+
+		SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+
+		CloseableHttpClient httpClient = HttpClients.custom()
+		        .setSSLSocketFactory(csf)
+		        .build();
+
+		HttpComponentsClientHttpRequestFactory requestFactory =
+		        new HttpComponentsClientHttpRequestFactory();
+
+		requestFactory.setHttpClient(httpClient);
+
+		boolean debug = false;
+
+		final Wordpress wordpress = ClientFactory.builder(ClientConfig.of(httpBaseURL, username, password, debug))
+                .withRequestFactory(requestFactory)
+                .build();
+
 
 # TODO
 
@@ -154,4 +182,10 @@ Latest snapshot is available from our public maven repository at
 * https://maven-repository.afrozaar.com/artifactory/public-snapshot
 * https://maven-repository.afrozaar.com/artifactory/public-release
 
-Release versions should also be available on public maven repositories.
+Release versions should also be available on public maven repositories:
+
+    <dependency>
+      <groupId>com.afrozaar.wordpress</groupId>
+      <artifactId>wp-api-v2-client-java</artifactId>
+      <version>2.0-beta13</version>
+    </dependency>
