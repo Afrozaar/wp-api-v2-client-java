@@ -1,1 +1,1 @@
-mvn clean -DskipTests javadoc:jar source:jar verify deploy
+mvn clean -DskipTests javadoc:jar source:jar verify deploy $@
