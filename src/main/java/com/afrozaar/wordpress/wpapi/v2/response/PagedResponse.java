@@ -96,9 +96,7 @@ public class PagedResponse<T> {
         }
 
         public Builder<BT> withNext(Optional<String> next) {
-            if (next.isPresent()) {
-                this.next = next.get();
-            }
+            next.ifPresent(n -> this.next = n);
             return this;
         }
 
@@ -108,9 +106,7 @@ public class PagedResponse<T> {
         }
 
         public Builder<BT> withPrevious(Optional<String> previous) {
-            if (previous.isPresent()) {
-                this.previous = previous.get();
-            }
+            previous.ifPresent(p -> this.previous = p);
             return this;
         }
 
