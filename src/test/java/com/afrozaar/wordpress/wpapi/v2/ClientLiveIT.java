@@ -248,7 +248,7 @@ public class ClientLiveIT {
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
             post.setFeaturedMedia(createdMedia.getId());
-            client.updatePostField(post.getId(), "featured_image", createdMedia.getId());
+            client.updatePostField(post.getId(), "featured_media", createdMedia.getId());
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         }
@@ -812,7 +812,6 @@ public class ClientLiveIT {
         return aPost().withContent(aContent().withRendered(randomAlphabetic(20)).build())
                 .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
                 .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build())
-                //                .withFeaturedImage(113L)
                 .build();
     }
 

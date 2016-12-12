@@ -213,9 +213,9 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post setPostFeaturedImage(Long postId, Media media) {
+    public Post setPostFeaturedMedia(Long postId, Media media) {
         Preconditions.checkArgument("image".equals(media.getMediaType()), "Can not set non-image media type as a featured image on a post.");
-        return updatePostField(postId, "featured_image", media.getId());
+        return updatePostField(postId, "featured_media", media.getId());
     }
 
     @Override
@@ -781,7 +781,7 @@ public class Client implements Wordpress {
         biConsumer.accept("ping_status", post.getPingStatus());
         biConsumer.accept("format", post.getFormat());
         biConsumer.accept("sticky", post.getSticky());
-        biConsumer.accept("featured_image", post.getFeaturedMedia());
+        biConsumer.accept("featured_media", post.getFeaturedMedia());
 
         return builder.build();
     }

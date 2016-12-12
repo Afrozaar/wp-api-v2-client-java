@@ -201,9 +201,9 @@ public class Post {
     }
 
     /**
-     * @param featuredMedia The featured_image
+     * @param featuredMedia The featured_media
      */
-    @JsonProperty("featured_image")
+    @JsonProperty("featured_media")
     public void setFeaturedMedia(Long featuredMedia) {
         this.featuredMedia = featuredMedia;
     }

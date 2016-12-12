@@ -27,7 +27,7 @@ import java.util.function.BiConsumer;
         "date",
         "date_gmt",
         "excerpt",
-        "featured_image",
+        "featured_media",
         "guid",
         "id",
         "link",
@@ -59,8 +59,8 @@ public class Page {
     private String dateGmt;
     @JsonProperty("excerpt")
     private Excerpt excerpt;
-    @JsonProperty("featured_image")
-    private Long featuredImage;
+    @JsonProperty("featured_media")
+    private Long featuredMedia;
     @JsonProperty("guid")
     private Guid guid;
     @JsonProperty("id")
@@ -205,19 +205,19 @@ public class Page {
     }
 
     /**
-     * @return The featuredImage
+     * @return The featuredMedia
      */
-    @JsonProperty("featured_image")
-    public Long getFeaturedImage() {
-        return featuredImage;
+    @JsonProperty("featured_media")
+    public Long getFeaturedMedia() {
+        return featuredMedia;
     }
 
     /**
-     * @param featuredImage The featured_image
+     * @param featuredMedia The featured_media
      */
-    @JsonProperty("featured_image")
-    public void setFeaturedImage(Long featuredImage) {
-        this.featuredImage = featuredImage;
+    @JsonProperty("featured_media")
+    public void setFeaturedMedia(Long featuredMedia) {
+        this.featuredMedia = featuredMedia;
     }
 
     /**
@@ -464,7 +464,7 @@ public class Page {
         c.accept("date", date);
         c.accept("date_gmt", dateGmt);
         c.accept("excerpt", Objects.nonNull(excerpt) ? excerpt.getRaw() : null);
-        c.accept("featured_image", featuredImage);
+        c.accept("featured_media", featuredMedia);
         c.accept("guid", Objects.nonNull(guid) ? guid.getRaw() : null);
         c.accept("id", id);
         c.accept("link", link);
