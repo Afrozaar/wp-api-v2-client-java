@@ -17,7 +17,7 @@ public class PostBuilder {
     private String slug;
     private String link;
     private Content content;
-    private Long featuredImage;
+    private Long featuredMedia;
     private String format;
     private Boolean sticky;
     private String commentStatus;
@@ -70,8 +70,8 @@ public class PostBuilder {
         return this;
     }
 
-    public PostBuilder withFeaturedImage(Long featuredImage) {
-        this.featuredImage = featuredImage;
+    public PostBuilder withFeaturedMedia(Long featuredMedia) {
+        this.featuredMedia = featuredMedia;
         return this;
     }
 
@@ -121,7 +121,24 @@ public class PostBuilder {
     }
 
     public PostBuilder but() {
-        return aPost().withAuthor(author).withId(id).withTitle(title).withLinks(Links).withSlug(slug).withLink(link).withContent(content).withFeaturedImage(featuredImage).withFormat(format).withSticky(sticky).withCommentStatus(commentStatus).withGuid(guid).withExcerpt(excerpt).withDate(date).withModifiedGmt(modifiedGmt).withType(type).withPingStatus(pingStatus);
+        return aPost()
+                .withAuthor(author)
+                .withId(id)
+                .withTitle(title)
+                .withLinks(Links)
+                .withSlug(slug)
+                .withLink(link)
+                .withContent(content)
+                .withFeaturedMedia(featuredMedia)
+                .withFormat(format)
+                .withSticky(sticky)
+                .withCommentStatus(commentStatus)
+                .withGuid(guid)
+                .withExcerpt(excerpt)
+                .withDate(date)
+                .withModifiedGmt(modifiedGmt)
+                .withType(type)
+                .withPingStatus(pingStatus);
     }
 
     public Post build() {
@@ -133,7 +150,7 @@ public class PostBuilder {
         post.setSlug(slug);
         post.setLink(link);
         post.setContent(content);
-        post.setFeaturedImage(featuredImage);
+        post.setFeaturedMedia(featuredMedia);
         post.setFormat(format);
         post.setSticky(sticky);
         post.setCommentStatus(commentStatus);

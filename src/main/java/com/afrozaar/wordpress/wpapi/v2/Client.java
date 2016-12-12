@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static java.lang.String.format;
+import static java.net.URLDecoder.decode;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
@@ -57,7 +58,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,6 +66,7 @@ import javax.xml.transform.Source;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -78,6 +79,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class Client implements Wordpress {
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
@@ -211,9 +213,9 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public Post setPostFeaturedImage(Long postId, Media media) {
+    public Post setPostFeaturedMedia(Long postId, Media media) {
         Preconditions.checkArgument("image".equals(media.getMediaType()), "Can not set non-image media type as a featured image on a post.");
-        return updatePostField(postId, "featured_image", media.getId());
+        return updatePostField(postId, "featured_media", media.getId());
     }
 
     @Override
@@ -723,19 +725,39 @@ public class Client implements Wordpress {
         //Link -> [<http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"]
 
         Optional<List<String>> linkHeader = Optional.ofNullable(headers.get(Strings.HEADER_LINK));
-        if (linkHeader.isPresent()) {
-            final String rawResponse = linkHeader.get().get(0);
-            final String[] links = rawResponse.split(", ");
 
-            return Arrays.stream(links).map(link -> { // <http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"
-                String[] linkData = link.split("; ");
-                final String href = linkData[0].replace("<", "").replace(">", "");
-                final String rel = linkData[1].substring(4).replace("\"", "");
-                return Link.of(href, rel);
-            }).collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return linkHeader
+                .map(List::stream)
+                .map(Stream::findFirst)
+                .map(rawResponse -> {
+                    final String[] links = rawResponse.get().split(", ");
+
+                    return Arrays.stream(links).map(link -> { // <http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"
+                        String[] linkData = link.split("; ");
+                        final String href = linkData[0].replace("<", "").replace(">", "");
+                        final String rel = linkData[1].substring(4).replace("\"", "");
+                        return Link.of(fixQuery(href), rel);
+                    }).collect(Collectors.toList());
+                })
+                .orElse(Collections.emptyList());
+    }
+
+    private String fixQuery(String href) {
+
+        final UriComponents build = UriComponentsBuilder.fromHttpUrl(href).build();
+
+        final MultiValueMap<String, String> queryParams = build.getQueryParams();
+        final MultiValueMap<String, String> queryParamsFixed = new LinkedMultiValueMap<>();
+
+        queryParams.forEach((key, values) -> queryParamsFixed.put(decode(key), values.stream().map(URLDecoder::decode).collect(Collectors.toList())));
+
+        return UriComponentsBuilder.fromPath(build.getPath())
+                .scheme(build.getScheme())
+                .queryParams(queryParamsFixed)
+                .fragment(build.getFragment())
+                .port(build.getPort())
+                .host(build.getHost()).build().toUriString();
+
     }
 
     private Map<String, Object> fieldsFrom(Post post) {
@@ -759,7 +781,7 @@ public class Client implements Wordpress {
         biConsumer.accept("ping_status", post.getPingStatus());
         biConsumer.accept("format", post.getFormat());
         biConsumer.accept("sticky", post.getSticky());
-        biConsumer.accept("featured_image", post.getFeaturedImage());
+        biConsumer.accept("featured_media", post.getFeaturedMedia());
 
         return builder.build();
     }
