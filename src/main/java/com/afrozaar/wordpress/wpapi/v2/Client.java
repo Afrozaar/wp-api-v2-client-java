@@ -58,7 +58,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -782,7 +781,7 @@ public class Client implements Wordpress {
         biConsumer.accept("ping_status", post.getPingStatus());
         biConsumer.accept("format", post.getFormat());
         biConsumer.accept("sticky", post.getSticky());
-        biConsumer.accept("featured_image", post.getFeaturedImage());
+        biConsumer.accept("featured_image", post.getFeaturedMedia());
 
         return builder.build();
     }

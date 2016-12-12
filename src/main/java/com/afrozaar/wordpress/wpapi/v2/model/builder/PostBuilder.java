@@ -133,7 +133,7 @@ public class PostBuilder {
         post.setSlug(slug);
         post.setLink(link);
         post.setContent(content);
-        post.setFeaturedImage(featuredImage);
+        post.setFeaturedMedia(featuredImage);
         post.setFormat(format);
         post.setSticky(sticky);
         post.setCommentStatus(commentStatus);
