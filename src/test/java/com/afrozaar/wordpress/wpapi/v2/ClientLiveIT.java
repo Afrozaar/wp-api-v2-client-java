@@ -1,5 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder.aContent;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder.anExcerpt;
@@ -10,11 +13,6 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import static org.junit.Assert.fail;
-
 import static java.lang.String.format;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
 
@@ -23,8 +21,6 @@ import com.afrozaar.wordpress.wpapi.v2.api.Posts;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
@@ -251,8 +247,8 @@ public class ClientLiveIT {
             Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
             final Media createdMedia = client.createMedia(media, resource);
             LOG.debug("created media: {}", createdMedia);
-            post.setFeaturedImage(createdMedia.getId());
-            client.updatePostField(post.getId(), "featured_image", createdMedia.getId());
+            post.setFeaturedMedia(createdMedia.getId());
+            client.updatePostField(post.getId(), "featured_media", createdMedia.getId());
         } catch (HttpServerErrorException e) {
             LOG.error("Error: {}", e.getResponseBodyAsString(), e);
         }
@@ -816,7 +812,6 @@ public class ClientLiveIT {
         return aPost().withContent(aContent().withRendered(randomAlphabetic(20)).build())
                 .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
                 .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build())
-                //                .withFeaturedImage(113L)
                 .build();
     }
 

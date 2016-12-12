@@ -14,7 +14,7 @@ public class PageBuilder {
     private String date;
     private String dateGmt;
     private Excerpt excerpt;
-    private Long featuredImage;
+    private Long featuredMedia;
     private Guid guid;
     private Long id;
     private String link;
@@ -72,8 +72,8 @@ public class PageBuilder {
         return this;
     }
 
-    public PageBuilder withFeaturedImage(Long featuredImage) {
-        this.featuredImage = featuredImage;
+    public PageBuilder withFeaturedMedia(Long featuredMedia) {
+        this.featuredMedia = featuredMedia;
         return this;
     }
 
@@ -148,7 +148,29 @@ public class PageBuilder {
     }
 
     public PageBuilder but() {
-        return aPage().withAuthor(author).withLinks(Links).withCommentStatus(commentStatus).withContent(content).withDate(date).withDateGmt(dateGmt).withExcerpt(excerpt).withFeaturedImage(featuredImage).withGuid(guid).withId(id).withLink(link).withMenuOrder(menuOrder).withModified(modified).withModifiedGmt(modifiedGmt).withParent(parent).withPassword(password).withPingStatus(pingStatus).withSlug(slug).withStatus(status).withTemplate(template).withTitle(title).withType(type);
+        return aPage()
+                .withAuthor(author)
+                .withLinks(Links)
+                .withCommentStatus(commentStatus)
+                .withContent(content)
+                .withDate(date)
+                .withDateGmt(dateGmt)
+                .withExcerpt(excerpt)
+                .withFeaturedMedia(featuredMedia)
+                .withGuid(guid)
+                .withId(id)
+                .withLink(link)
+                .withMenuOrder(menuOrder)
+                .withModified(modified)
+                .withModifiedGmt(modifiedGmt)
+                .withParent(parent)
+                .withPassword(password)
+                .withPingStatus(pingStatus)
+                .withSlug(slug)
+                .withStatus(status)
+                .withTemplate(template)
+                .withTitle(title)
+                .withType(type);
     }
 
     public Page build() {
@@ -160,7 +182,7 @@ public class PageBuilder {
         page.setDate(date);
         page.setDateGmt(dateGmt);
         page.setExcerpt(excerpt);
-        page.setFeaturedImage(featuredImage);
+        page.setFeaturedMedia(featuredMedia);
         page.setGuid(guid);
         page.setId(id);
         page.setLink(link);

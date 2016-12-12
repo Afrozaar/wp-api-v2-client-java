@@ -22,7 +22,7 @@ public interface Medias {
 
     boolean deleteMedia(Media media, boolean force);
 
-    Post setPostFeaturedImage(Long postId, Media media);
+    Post setPostFeaturedMedia(Long postId, Media media);
 
     List<Media> getPostMedias(Long postId);
 }

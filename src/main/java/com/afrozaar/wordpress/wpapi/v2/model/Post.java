@@ -23,7 +23,7 @@ import java.util.Map;
         "_links",
         "modified",
         "guid",
-        "featured_image",
+        "featured_media",
         "sticky",
         "password",
         "format",
@@ -53,8 +53,8 @@ public class Post {
     private String modified;
     @JsonProperty("guid")
     private Guid guid;
-    @JsonProperty("featured_image")
-    private Long featuredImage;
+    @JsonProperty("featured_media")
+    private Long featuredMedia;
     @JsonProperty("sticky")
     private Boolean sticky;
     @JsonProperty("password")
@@ -193,19 +193,19 @@ public class Post {
     }
 
     /**
-     * @return The featuredImage
+     * @return The featuredMedia
      */
-    @JsonProperty("featured_image")
-    public Long getFeaturedImage() {
-        return featuredImage;
+    @JsonProperty("featured_media")
+    public Long getFeaturedMedia() {
+        return featuredMedia;
     }
 
     /**
-     * @param featuredImage The featured_image
+     * @param featuredMedia The featured_media
      */
-    @JsonProperty("featured_image")
-    public void setFeaturedImage(Long featuredImage) {
-        this.featuredImage = featuredImage;
+    @JsonProperty("featured_media")
+    public void setFeaturedMedia(Long featuredMedia) {
+        this.featuredMedia = featuredMedia;
     }
 
     /**
