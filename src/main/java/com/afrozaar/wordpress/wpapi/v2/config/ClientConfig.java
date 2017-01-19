@@ -1,4 +1,4 @@
-package com.afrozaar.wordpress.wpapi.v2.util;
+package com.afrozaar.wordpress.wpapi.v2.config;
 
 import org.springframework.core.io.Resource;
 

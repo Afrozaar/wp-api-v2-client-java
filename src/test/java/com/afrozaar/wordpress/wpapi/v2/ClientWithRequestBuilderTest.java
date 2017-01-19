@@ -1,7 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
 
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 

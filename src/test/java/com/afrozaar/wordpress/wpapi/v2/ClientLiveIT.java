@@ -1,8 +1,5 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import static org.junit.Assert.*;
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder.aContent;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder.anExcerpt;
@@ -13,11 +10,18 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import static org.junit.Assert.fail;
+
 import static java.lang.String.format;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
@@ -35,8 +39,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 import com.afrozaar.wordpress.wpapi.v2.util.Two;
 
 import org.springframework.core.io.ClassPathResource;

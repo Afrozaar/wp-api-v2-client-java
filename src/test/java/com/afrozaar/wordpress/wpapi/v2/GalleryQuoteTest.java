@@ -1,6 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
@@ -9,8 +11,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientConfig;
-import com.afrozaar.wordpress.wpapi.v2.util.ClientFactory;
 
 import org.junit.Ignore;
 import org.junit.Test;
