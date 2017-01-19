@@ -19,6 +19,7 @@ public abstract class Request {
 
     public static final String METAS = "/posts/{postId}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
+    public static final String META_POST_DELETE = "/posts/{postId}/meta/{metaId}/delete";
     public static final String TAXONOMIES = "/taxonomies";
     public static final String TAXONOMY = "/taxonomies/{slug}";
     public static final String TERMS = "/terms/{taxonomySlug}";

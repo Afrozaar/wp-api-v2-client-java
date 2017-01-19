@@ -21,5 +21,5 @@ public interface PostMetas {
 
     boolean deletePostMeta(Long postId, Long metaId);
 
-    boolean deletePostMeta(Long postId, Long metaId, boolean force);
+    boolean deletePostMeta(Long postId, Long metaId, Boolean force);
 }

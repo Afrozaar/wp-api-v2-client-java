@@ -2,6 +2,8 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
@@ -57,6 +59,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -77,6 +80,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -99,9 +103,10 @@ public class Client implements Wordpress {
     private final Tuple2<String, String> userAgentTuple;
 
     public final String baseUrl;
-    final private String username;
-    final private String password;
-    final private boolean debug;
+    private final String username;
+    private final String password;
+    private final boolean debug;
+    private Boolean canDeleteMetaViaPost = null;
 
     {
         Properties properties = MavenProperties.getProperties();
@@ -307,20 +312,48 @@ public class Client implements Wordpress {
         return exchange.getBody();
     }
 
+    private BiFunction<Long, Long, Boolean> supportsMetaDeleteViaPostMethod = (pid, mid) -> {
+        if (nonNull(canDeleteMetaViaPost)) {
+            return canDeleteMetaViaPost;
+        }
+
+        try {
+            Function<Map, Boolean> expected = map -> Stream.of("endpoints", "methods", "namespace").allMatch(map::containsKey) && ((ArrayList) map.get("methods")).get(0) == "POST";
+
+            final ResponseEntity<Map> responseEntity = doExchange1(Request.META_POST_DELETE, HttpMethod.OPTIONS, Map.class, forExpand(pid, mid), null, null);
+            canDeleteMetaViaPost = responseEntity.getStatusCode().is2xxSuccessful() && expected.apply(responseEntity.getBody());
+            LOG.info("Wordpress instance at {} supports deleting meta via POST /posts/:pid/meta/:mid/delete : {}", Client.this.baseUrl, canDeleteMetaViaPost);
+            return canDeleteMetaViaPost;
+        } catch (Exception jme) {
+            canDeleteMetaViaPost = false;
+
+            //com.fasterxml.jackson.databind.JsonMappingException: Can not deserialize instance of java.util.LinkedHashMap out of START_ARRAY token
+            if (!(jme instanceof JsonMappingException)) {
+                LOG.error("Unexpected exception pinging for POST /posts/:pid/meta/:mid/delete");
+            }
+
+            return canDeleteMetaViaPost;
+        }
+    };
+
     @Override
     public boolean deletePostMeta(Long postId, Long metaId) {
-        final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), null, null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
-
-        return exchange.getStatusCode().is2xxSuccessful();
+        return deletePostMeta(postId, metaId, null);
     }
 
     @Override
-    public boolean deletePostMeta(Long postId, Long metaId, boolean force) {
-        final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), ImmutableMap.of(FORCE, force), null);
-        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+    public boolean deletePostMeta(Long postId, Long metaId, Boolean force) {
+        if (supportsMetaDeleteViaPostMethod.apply(postId, metaId)) {
+            // deleting meta via meta POST is available, so use that to delete.
+            final ResponseEntity<Map> result = doExchange1(Request.META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            return result.getStatusCode().is2xxSuccessful() && "Deleted meta".equals(result.getBody().get("message"));
+        } else {
+            // attempt normal delete
+            final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
-        return exchange.getStatusCode().is2xxSuccessful();
+            return exchange.getStatusCode().is2xxSuccessful();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -456,7 +489,7 @@ public class Client implements Wordpress {
 
     @Override
     public Term createPostTag(Post post, Term tag) throws WpApiParsedException {
-        final Term termToUse = Objects.nonNull(tag.getId()) ? tag : createTag(tag);
+        final Term termToUse = nonNull(tag.getId()) ? tag : createTag(tag);
         final List<Term> postTags = new ArrayList<>(getPostTags(post));
         postTags.add(termToUse);
         final List<Long> tagIds = postTags.stream().map(Term::getId).collect(Collectors.toList());
