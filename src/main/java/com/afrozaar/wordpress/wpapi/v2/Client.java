@@ -318,10 +318,11 @@ public class Client implements Wordpress {
         }
 
         try {
-            Function<Map, Boolean> expected = map -> Stream.of("endpoints", "methods", "namespace").allMatch(map::containsKey) && ((ArrayList) map.get("methods")).get(0) == "POST";
+            Function<Map, Boolean> expected = map -> nonNull(map) && Stream.of("endpoints", "methods", "namespace").allMatch(map::containsKey) && Objects.equals(((ArrayList) map.get("methods")).get(0), "POST");
 
             final ResponseEntity<Map> responseEntity = doExchange1(Request.META_POST_DELETE, HttpMethod.OPTIONS, Map.class, forExpand(pid, mid), null, null);
-            canDeleteMetaViaPost = responseEntity.getStatusCode().is2xxSuccessful() && expected.apply(responseEntity.getBody());
+            final Map body = responseEntity.getBody();
+            canDeleteMetaViaPost = responseEntity.getStatusCode().is2xxSuccessful() && expected.apply(body);
             LOG.info("Wordpress instance at {} supports deleting meta via POST /posts/:pid/meta/:mid/delete : {}", Client.this.baseUrl, canDeleteMetaViaPost);
             return canDeleteMetaViaPost;
         } catch (Exception jme) {
@@ -329,7 +330,7 @@ public class Client implements Wordpress {
 
             //com.fasterxml.jackson.databind.JsonMappingException: Can not deserialize instance of java.util.LinkedHashMap out of START_ARRAY token
             if (!(jme instanceof JsonMappingException)) {
-                LOG.error("Unexpected exception pinging for POST /posts/:pid/meta/:mid/delete");
+                LOG.error("Unexpected exception pinging for POST /posts/:pid/meta/:mid/delete", jme);
             }
 
             return canDeleteMetaViaPost;
