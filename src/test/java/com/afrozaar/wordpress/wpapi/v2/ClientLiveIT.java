@@ -39,7 +39,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
-import com.afrozaar.wordpress.wpapi.v2.util.Two;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuple2;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -177,7 +177,7 @@ public class ClientLiveIT {
     @Test
     public void testSearchForMetaKey() throws PostCreateException {
 
-        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
+        final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
         final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withFilter("meta_key", postWithMeta.b.getKey()).build());
 
@@ -261,7 +261,7 @@ public class ClientLiveIT {
     @Test
     public void tesGetMedia() throws WpApiParsedException {
 
-        final Two<Post, Media> postWithMedia = newTestPostWithMedia();
+        final Tuple2<Post, Media> postWithMedia = newTestPostWithMedia();
 
         final Media media = client.getMedia(postWithMedia.b.getId());
 
@@ -309,7 +309,7 @@ public class ClientLiveIT {
 
     @Test
     public void testGetPostMedias() throws WpApiParsedException {
-        final Two<Post, Media> postMediaTwo = newTestPostWithMedia();
+        final Tuple2<Post, Media> postMediaTwo = newTestPostWithMedia();
 
         final List<Media> postMedias = client.getPostMedias(postMediaTwo.a.getId());
 
@@ -319,7 +319,7 @@ public class ClientLiveIT {
     @Test
     public void testGetPostMetas() throws PostCreateException {
         // given
-        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
+        final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
         //when
         final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.a.getId());
@@ -332,7 +332,7 @@ public class ClientLiveIT {
     @Test
     public void testGetPostMeta() throws PostCreateException {
 
-        final Two<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
+        final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
         final PostMeta postMeta = client.getPostMeta(postWithMeta.a.getId(), postWithMeta.b.getId());
 
@@ -817,10 +817,10 @@ public class ClientLiveIT {
                 .build();
     }
 
-    private Two<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
+    private Tuple2<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         final PostMeta meta = client.createMeta(post.getId(), randomAlphabetic(5), randomAlphabetic(10));
-        return Two.of(post, meta);
+        return Tuple2.of(post, meta);
     }
 
     private Media newRandomMedia(Post post) {
@@ -832,12 +832,12 @@ public class ClientLiveIT {
                 .build();
     }
 
-    private Two<Post, Media> newTestPostWithMedia() throws WpApiParsedException {
+    private Tuple2<Post, Media> newTestPostWithMedia() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
         Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
         final Media mediaItem = client.createMedia(newRandomMedia(post), resource);
 
-        return Two.of(post, mediaItem);
+        return Tuple2.of(post, mediaItem);
     }
 }

@@ -28,7 +28,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
-import com.afrozaar.wordpress.wpapi.v2.util.Two;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuple2;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -58,6 +58,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,7 +96,7 @@ public class Client implements Wordpress {
     private final RestTemplate restTemplate;
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
-    private final Two<String, String> userAgentTuple;
+    private final Tuple2<String, String> userAgentTuple;
 
     public final String baseUrl;
     final private String username;
@@ -104,7 +105,7 @@ public class Client implements Wordpress {
 
     {
         Properties properties = MavenProperties.getProperties();
-        userAgentTuple = Two.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
+        userAgentTuple = Tuple2.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
     }
 
     public Client(String baseUrl, String username, String password, boolean debug) {
@@ -787,7 +788,7 @@ public class Client implements Wordpress {
     }
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
-        final Two<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
         final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
 
         mediaType.ifPresent(builder::contentType);
