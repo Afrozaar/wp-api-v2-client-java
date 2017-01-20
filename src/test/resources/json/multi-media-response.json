@@ -1,0 +1,82 @@
+[
+  {
+    "id": 5227,
+    "date": "2017-01-20T11:49:04",
+    "date_gmt": "2017-01-20T11:49:04",
+    "guid": {
+      "rendered": "http:\/\/johan-wp\/wp-content\/uploads\/2017\/01\/gradient_colormap-2.jpg"
+    },
+    "modified": "2017-01-20T11:49:04",
+    "modified_gmt": "2017-01-20T11:49:04",
+    "slug": "winwosblvq",
+    "type": "attachment",
+    "link": "http:\/\/johan-wp\/dubjl__trashed\/winwosblvq\/",
+    "title": {
+      "rendered": "WINwosbLVQ"
+    },
+    "author": 1,
+    "comment_status": "open",
+    "ping_status": "closed",
+    "meta": {},
+    "alt_text": "image",
+    "caption": {
+      "raw": "YmWDXWlmDNyITKTplpvndMPyAWcdDdiWpoQZaXKDOwkCTBIQBf"
+    },
+    "description": {
+      "raw": "Vc8 V9zYB-sXorrzJ&lt;n%"
+    },
+    "media_type": "image",
+    "mime_type": "image\/jpeg",
+    "media_details": {
+      "width": 700,
+      "height": 700,
+      "file": "2017\/01\/gradient_colormap-2.jpg",
+      "image_meta": {
+        "aperture": "0",
+        "credit": "",
+        "camera": "",
+        "caption": "",
+        "created_timestamp": "0",
+        "copyright": "",
+        "focal_length": "0",
+        "iso": "0",
+        "shutter_speed": "0",
+        "title": "",
+        "orientation": "0",
+        "keywords": []
+      },
+      "sizes": {}
+    },
+    "post": 5226,
+    "source_url": "http:\/\/johan-wp\/wp-content\/uploads\/2017\/01\/gradient_colormap-2.jpg",
+    "_links": {
+      "self": [
+        {
+          "href": "http:\/\/johan-wp\/wp-json\/wp\/v2\/media\/5227"
+        }
+      ],
+      "collection": [
+        {
+          "href": "http:\/\/johan-wp\/wp-json\/wp\/v2\/media"
+        }
+      ],
+      "about": [
+        {
+          "href": "http:\/\/johan-wp\/wp-json\/wp\/v2\/types\/attachment"
+        }
+      ],
+      "author": [
+        {
+          "embeddable": true,
+          "href": "http:\/\/johan-wp\/wp-json\/wp\/v2\/users\/1"
+        }
+      ],
+      "replies": [
+        {
+          "embeddable": true,
+          "href": "http:\/\/johan-wp\/wp-json\/wp\/v2\/comments?post=5227"
+        }
+      ]
+    }
+  }
+]

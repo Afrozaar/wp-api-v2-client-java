@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -45,13 +46,16 @@ public final class CustomRenderableParser {
     }
 
     public static <T> T parse(String response, Class<T> clazz) {
-        LOG.debug("Parsing response for {}", clazz);
+        LOG.debug("Parsing response for {}", clazz.getCanonicalName());
+
         try {
             final JsonNode jsonNode = objectMapper.readValue(response, JsonNode.class);
 
-            renderableFieldsFrom(jsonNode)
-                    .filter(modifiableFields::contains)
-                    .forEach(renderableField -> ((ObjectNode) jsonNode).put(renderableField, jsonNode.get(renderableField).get("raw").asText()));
+            if (clazz.isArray()) {
+                jsonNode.iterator().forEachRemaining(transformNode);
+            } else {
+                transformNode.accept(jsonNode);
+            }
 
             return objectMapper.convertValue(jsonNode, clazz);
         } catch (IOException e) {
@@ -60,21 +64,16 @@ public final class CustomRenderableParser {
         }
     }
 
-    private static Stream<String> renderableFieldsFrom(JsonNode jsonNode0) {
-        final Function<JsonNode, Stream<String>> findRenderableFields = jsonNode -> stream(jsonNode)
-                .filter(entry -> entry.getValue().fields().hasNext())
-                .filter(entry -> stream(entry.getValue().fields())
-                        .filter(field -> "raw".equals(field.getKey()) || "rendered".equals(field.getKey()))
-                        .count() > 0)
-                .map(Map.Entry::getKey);
-        return findRenderableFields.apply(jsonNode0);
-    }
+    private static final Function<Iterator<Map.Entry<String, JsonNode>>, Stream<Map.Entry<String, JsonNode>>> streamIterator = iterator -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 
-    private static Stream<Map.Entry<String, JsonNode>> stream(JsonNode node) {
-        return stream(node.fields());
-    }
+    private static final Function<JsonNode, Stream<String>> findRenderableFields = jsonNode -> streamIterator.apply(jsonNode.fields())
+            .filter(entry -> entry.getValue().fields().hasNext())
+            .filter(entry -> streamIterator.apply(entry.getValue().fields())
+                    .filter(field -> "raw".equals(field.getKey()) || "rendered".equals(field.getKey()))
+                    .count() > 0)
+            .map(Map.Entry::getKey);
 
-    private static Stream<Map.Entry<String, JsonNode>> stream(Iterator<Map.Entry<String, JsonNode>> iterator) {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
-    }
+    private static final Consumer<JsonNode> transformNode = node -> findRenderableFields.apply(node)
+            .filter(modifiableFields::contains)
+            .forEach(renderableField -> ((ObjectNode) node).put(renderableField, node.get(renderableField).get("raw").asText()));
 }
