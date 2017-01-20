@@ -1,0 +1,86 @@
+{
+  "_links": {
+    "about": [
+      {
+        "href": "http://docker.dev/wp-json/wp/v2/types/attachment"
+      }
+    ],
+    "author": [
+      {
+        "embeddable": true,
+        "href": "http://docker.dev/wp-json/wp/v2/users/1"
+      }
+    ],
+    "collection": [
+      {
+        "href": "http://docker.dev/wp-json/wp/v2/media"
+      }
+    ],
+    "replies": [
+      {
+        "embeddable": true,
+        "href": "http://docker.dev/wp-json/wp/v2/comments?post=193"
+      }
+    ],
+    "self": [
+      {
+        "href": "http://docker.dev/wp-json/wp/v2/media/193"
+      }
+    ]
+  },
+  "alt_text": "image",
+  "author": 1,
+  "caption": {
+    "raw": "voweVaDWUaSyJuxbUbJwChmlCTRbukUVoqpcvAHEqDkDGPDnHQ",
+    "rendered": "<p>voweVaDWUaSyJuxbUbJwChmlCTRbukUVoqpcvAHEqDkDGPDnHQ</p>\n"
+  },
+  "comment_status": "open",
+  "date": "2017-01-20T09:43:31",
+  "date_gmt": "2017-01-20T09:43:31",
+  "description": {
+    "raw": "5v[^O*w>bDrb.8o/\"<@%",
+    "rendered": "<p class=\"attachment\"><a href='http://docker.dev/wp-content/uploads/2017/01/gradient_colormap-1.jpg'><img width=\"300\" height=\"300\" src=\"http://docker.dev/wp-content/uploads/2017/01/gradient_colormap-1.jpg\" class=\"attachment-medium size-medium\" alt=\"image\" /></a></p>\n<p>5v[^O*w>bDrb.8o/&#8221;<@%\n</p>\n"
+  },
+  "guid": {
+    "raw": "http://docker.dev/wp-content/uploads/2017/01/gradient_colormap-1.jpg",
+    "rendered": "http://docker.dev/wp-content/uploads/2017/01/gradient_colormap-1.jpg"
+  },
+  "id": 193,
+  "link": "http://docker.dev/xdprv/lkmkwilslp/",
+  "media_details": {
+    "file": "2017/01/gradient_colormap-1.jpg",
+    "height": 700,
+    "image_meta": {
+      "aperture": "0",
+      "camera": "",
+      "caption": "",
+      "copyright": "",
+      "created_timestamp": "0",
+      "credit": "",
+      "focal_length": "0",
+      "iso": "0",
+      "keywords": [],
+      "orientation": "0",
+      "shutter_speed": "0",
+      "title": ""
+    },
+    "sizes": {},
+    "width": 700
+  },
+  "media_type": "image",
+  "meta": [],
+  "mime_type": "image/jpeg",
+  "modified": "2017-01-20T09:43:31",
+  "modified_gmt": "2017-01-20T09:43:31",
+  "ping_status": "closed",
+  "post": 192,
+  "slug": "lkmkwilslp",
+  "source_url": "http://docker.dev/wp-content/uploads/2017/01/gradient_colormap-1.jpg",
+  "status": "inherit",
+  "template": "",
+  "title": {
+    "raw": "LKMKWIlSLp",
+    "rendered": "LKMKWIlSLp"
+  },
+  "type": "attachment"
+}

@@ -266,6 +266,7 @@ public class ClientLiveIT {
         final Media media = client.getMedia(postWithMedia.b.getId());
 
         assertThat(media).isNotNull();
+        assertThat(media.getDescription()).isEqualTo(postWithMedia.b.getDescription());
 
         LOG.debug("Media: {}", media);
     }

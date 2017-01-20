@@ -27,6 +27,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.CustomRenderableParser;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
@@ -212,7 +213,7 @@ public class Client implements Wordpress {
 
             uploadMap.add("file", resource);
 
-            return doExchange1(Request.MEDIAS, HttpMethod.POST, Media.class, forExpand(), null, uploadMap).getBody();
+            return CustomRenderableParser.parseMedia(doExchange1(Request.MEDIAS, HttpMethod.POST, String.class, forExpand(), null, uploadMap).getBody());
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             throw WpApiParsedException.of(e);
         }
@@ -244,7 +245,8 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id) {
-        return doExchange1(Request.MEDIA, HttpMethod.GET, Media.class, forExpand(id), null, null).getBody();
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null).getBody(),
+                Media.class);
     }
 
     @Override
