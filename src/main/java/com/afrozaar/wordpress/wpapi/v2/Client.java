@@ -227,7 +227,7 @@ public class Client implements Wordpress {
 
     @Override
     public List<Media> getPostMedias(Long postId) {
-        Media[] medias = doExchange1(Request.MEDIAS, HttpMethod.GET, Media[].class, forExpand(), ImmutableMap.of("parent", postId), null).getBody();
+        Media[] medias = CustomRenderableParser.parse(doExchange1(Request.MEDIAS, HttpMethod.GET, String.class, forExpand(), ImmutableMap.of("parent", postId), null).getBody(), Media[].class);
         return Arrays.asList(medias);
     }
 
