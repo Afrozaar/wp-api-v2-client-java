@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.response;
 
+import static java.util.Optional.ofNullable;
+
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 
 import org.springframework.http.HttpStatus;
@@ -75,5 +77,8 @@ public final class CustomRenderableParser {
 
     private static final Consumer<JsonNode> transformNode = node -> findRenderableFields.apply(node)
             .filter(modifiableFields::contains)
-            .forEach(renderableField -> ((ObjectNode) node).put(renderableField, node.get(renderableField).get("raw").asText()));
+            .forEach(
+                    renderableField -> ofNullable(node.get(renderableField).get("raw"))
+                            .ifPresent(raw -> ((ObjectNode) node).put(renderableField, raw.asText()))
+            );
 }
