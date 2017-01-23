@@ -600,7 +600,7 @@ public class ClientLiveIT {
     public void testGetPostTagsPaged() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final int limit = 50;
+        final int limit = 10;
 
         IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
             try {

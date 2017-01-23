@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -39,6 +40,8 @@ public final class CustomRenderableParser {
     private static final Logger LOG = LoggerFactory.getLogger(CustomRenderableParser.class);
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static final Set<String> modifiableFields = new HashSet<>(Arrays.asList("description", "caption"));
+    private static final String RENDERED = "rendered";
+    private static final String RAW = "raw";
 
     private CustomRenderableParser() {
         // Make other classes unable to instantiate.
@@ -53,11 +56,13 @@ public final class CustomRenderableParser {
     }
 
     public static <T> T parse(String response, Class<T> clazz) {
-        LOG.debug("Parsing response for {}", clazz.getCanonicalName());
+        //LOG.debug("Parsing response for {}", clazz.getCanonicalName());
+        //LOG.debug("Response String: {}", response);
 
         try {
             final JsonNode jsonNode = objectMapper.readValue(response, JsonNode.class);
 
+            //LOG.debug("{} isArray: {}", clazz.getCanonicalName(), clazz.isArray());
             if (clazz.isArray()) {
                 jsonNode.iterator().forEachRemaining(transformNode);
             } else {
@@ -73,17 +78,30 @@ public final class CustomRenderableParser {
 
     private static final Function<Iterator<Map.Entry<String, JsonNode>>, Stream<Map.Entry<String, JsonNode>>> streamIterator = iterator -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
 
+
     private static final Function<JsonNode, Stream<String>> findRenderableFields = jsonNode -> streamIterator.apply(jsonNode.fields())
             .filter(entry -> entry.getValue().fields().hasNext())
             .filter(entry -> streamIterator.apply(entry.getValue().fields())
-                    .filter(field -> "raw".equals(field.getKey()) || "rendered".equals(field.getKey()))
+                    .filter(field -> RAW.equals(field.getKey()) || RENDERED.equals(field.getKey()))
                     .count() > 0)
             .map(Map.Entry::getKey);
 
     private static final Consumer<JsonNode> transformNode = node -> findRenderableFields.apply(node)
             .filter(modifiableFields::contains)
-            .forEach(
-                    renderableField -> ofNullable(node.get(renderableField).get("raw"))
-                            .ifPresent(raw -> ((ObjectNode) node).put(renderableField, raw.asText()))
-            );
+            .forEach(renderableField -> {
+                final Optional<JsonNode> raw1 = ofNullable(node.get(renderableField).get(RAW));
+                if (raw1.isPresent()) {
+                    final JsonNode jsonNode = raw1.get();
+                    ((ObjectNode) node).put(renderableField, jsonNode.asText());
+                } else {
+                    ofNullable(node.get(renderableField).get(RENDERED))
+                            .map(jsonNode -> jsonNode.asText().replaceAll("<[^>]*>", ""))
+                            .map(strippedText -> {
+                                LOG.warn("Raw field for parent '{}' not available. Using regex-stripped value: {}", renderableField, strippedText);
+                                return strippedText;
+                            })
+                            .ifPresent(strippedText -> ((ObjectNode) node).put(renderableField, strippedText));
+                }
+
+            });
 }

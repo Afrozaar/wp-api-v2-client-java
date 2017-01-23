@@ -484,7 +484,7 @@ public class Client implements Wordpress {
     public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
-            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
+            return CustomRenderableParser.parse(doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null), Term.class);
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
@@ -748,11 +748,16 @@ public class Client implements Wordpress {
     @Override
     public <T> PagedResponse<T> getPagedResponse(final URI uri, Class<T> typeRef) {
         try {
-            final ResponseEntity<T[]> exchange = doExchange0(HttpMethod.GET, uri, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"), null, Optional.empty());
+
+            final ResponseEntity<String> exchange = doExchange0(HttpMethod.GET, uri, String.class, null, Optional.empty());
+            final String body1 = exchange.getBody();
+            //LOG.debug("about to parse response for paged response {}: {}", typeRef, body1);
+            final T[] parse = CustomRenderableParser.parse(body1, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"));
+
             final HttpHeaders headers = exchange.getHeaders();
             final List<Link> links = parseLinks(headers);
 
-            final List<T> body = Arrays.asList((T[]) exchange.getBody()); // Ugly... but the only way to get the generic stuff working
+            final List<T> body = Arrays.asList(parse); // Ugly... but the only way to get the generic stuff working
 
             return PagedResponse.Builder.aPagedResponse(typeRef)
                     .withPages(headers)
