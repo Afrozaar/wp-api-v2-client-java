@@ -40,8 +40,7 @@ public class ClientUserUnitTest {
 
     @Test
     public void deserializeMixedMap() throws IOException {
-        //final Map map = mapper.readValue("{\"namespace\":\"wp\\/v2\",\"methods\":[\"POST\"],\"endpoints\":[{\"methods\":[\"POST\"],\"args\":{\"force\":{\"required\":false,\"default\":false,\"description\":\"Required to be true, as resource does not support trashing.\"}}}]}", Map.class);
-        final Map map = mapper.readValue("[]", Map.class);
+        final Map map = mapper.readValue("{\"namespace\":\"wp\\/v2\",\"methods\":[\"POST\"],\"endpoints\":[{\"methods\":[\"POST\"],\"args\":{\"force\":{\"required\":false,\"default\":false,\"description\":\"Required to be true, as resource does not support trashing.\"}}}]}", Map.class);
 
         System.out.println("map = " + ((ArrayList) map.get("methods")).get(0));
     }
