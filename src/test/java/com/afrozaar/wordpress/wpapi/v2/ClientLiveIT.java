@@ -776,6 +776,7 @@ public class ClientLiveIT {
 
         try {
             final User user1 = client.getUser(createdUser.getId());
+            fail("Expected a UserNotFound exception!");
         } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
             LOG.error("Error ", e);
         }
