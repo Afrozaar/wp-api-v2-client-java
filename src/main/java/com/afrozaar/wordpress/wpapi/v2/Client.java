@@ -250,8 +250,7 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id) {
-        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null).getBody(),
-                Media.class);
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null), Media.class);
     }
 
     @Override
@@ -265,20 +264,19 @@ public class Client implements Wordpress {
         p.accept("caption", media.getCaption());
         p.accept("description", media.getDescription());
 
-        ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(media.getId()), null, builder.build());
-
-        return exchange.getBody();
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.POST, String.class, forExpand(media.getId()), null, builder.build()), Media.class);
     }
 
     @Override
     public boolean deleteMedia(Media media, boolean force) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
+        final ResponseEntity<String> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
     @Override
     public boolean deleteMedia(Media media) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), null, null);
+        // We don't care to deserialize the received response back into a media object.
+        final ResponseEntity<String> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), null, null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
