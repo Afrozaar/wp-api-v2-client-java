@@ -93,6 +93,7 @@ public class Client implements Wordpress {
     private static final String META_VALUE = "value";
     private static final String FORCE = "force";
     private static final String CONTEXT_ = "context";
+    private static final String REASSIGN = "reassign";
     private static final String VIEW = "view";
     private static final String DATA = "data";
     private static final String VERSION = "version";
@@ -717,7 +718,18 @@ public class Client implements Wordpress {
 
     @Override
     public User deleteUser(User user) {
-        return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true), null).getBody();
+        return deleteUser(user, null);
+    }
+
+    @Override
+    public User deleteUser(User user, Long reassign) {
+        try {
+            return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true, REASSIGN, (nonNull(reassign) ? reassign : 1L)), null).getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            final WpApiParsedException of = WpApiParsedException.of(e);
+            LOG.error("Error Deleting user {}", user.getId(), of);
+            throw new RuntimeException(of);
+        }
     }
 
     @Override
