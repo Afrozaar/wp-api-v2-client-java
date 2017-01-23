@@ -5,6 +5,7 @@ import static java.util.Optional.ofNullable;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,6 +46,10 @@ public final class CustomRenderableParser {
 
     public static Media parseMedia(String stringResponse) throws HttpClientErrorException {
         return parse(stringResponse, Media.class);
+    }
+
+    public static <T> T parse(ResponseEntity<String> response, Class<T> clazz) {
+        return parse(response.getBody(), clazz);
     }
 
     public static <T> T parse(String response, Class<T> clazz) {
