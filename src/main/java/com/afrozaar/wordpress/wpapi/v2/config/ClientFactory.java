@@ -1,4 +1,4 @@
-package com.afrozaar.wordpress.wpapi.v2.util;
+package com.afrozaar.wordpress.wpapi.v2.config;
 
 import com.afrozaar.wordpress.wpapi.v2.Client;
 import com.afrozaar.wordpress.wpapi.v2.Wordpress;

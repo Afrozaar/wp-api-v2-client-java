@@ -1,0 +1,79 @@
+{
+  "id": 5219,
+  "date": "2017-01-20T09:33:13",
+  "date_gmt": "2017-01-20T09:33:13",
+  "guid": {
+    "rendered": "http://johan-wp/wp-content/uploads/2017/01/gradient_colormap-1.jpg",
+    "raw": "http://johan-wp/wp-content/uploads/2017/01/gradient_colormap-1.jpg"
+  },
+  "modified": "2017-01-20T09:33:13",
+  "modified_gmt": "2017-01-20T09:33:13",
+  "slug": "ncnqyxupgj",
+  "status": "inherit",
+  "type": "attachment",
+  "link": "http://johan-wp/xfrco/ncnqyxupgj/",
+  "title": {
+    "raw": "ncnQyxUpGJ",
+    "rendered": "ncnQyxUpGJ"
+  },
+  "author": 1,
+  "comment_status": "open",
+  "ping_status": "closed",
+  "meta": {},
+  "alt_text": "image",
+  "caption": "RwdSYKQjVMfAlgAXAOhDZAAQUwGUSHDqLzoRYEbJSNmBBgbrOJ",
+  "description": ".:LH7e&amp;6_KF4p{P)N,PL",
+  "media_type": "image",
+  "mime_type": "image/jpeg",
+  "media_details": {
+    "width": 700,
+    "height": 700,
+    "file": "2017/01/gradient_colormap-1.jpg",
+    "image_meta": {
+      "aperture": "0",
+      "credit": "",
+      "camera": "",
+      "caption": "",
+      "created_timestamp": "0",
+      "copyright": "",
+      "focal_length": "0",
+      "iso": "0",
+      "shutter_speed": "0",
+      "title": "",
+      "orientation": "0",
+      "keywords": []
+    },
+    "sizes": {}
+  },
+  "post": 5218,
+  "source_url": "http://johan-wp/wp-content/uploads/2017/01/gradient_colormap-1.jpg",
+  "_links": {
+    "self": [
+      {
+        "href": "http://johan-wp/wp-json/wp/v2/media/5219"
+      }
+    ],
+    "collection": [
+      {
+        "href": "http://johan-wp/wp-json/wp/v2/media"
+      }
+    ],
+    "about": [
+      {
+        "href": "http://johan-wp/wp-json/wp/v2/types/attachment"
+      }
+    ],
+    "author": [
+      {
+        "embeddable": true,
+        "href": "http://johan-wp/wp-json/wp/v2/users/1"
+      }
+    ],
+    "replies": [
+      {
+        "embeddable": true,
+        "href": "http://johan-wp/wp-json/wp/v2/comments?post=5219"
+      }
+    ]
+  }
+}

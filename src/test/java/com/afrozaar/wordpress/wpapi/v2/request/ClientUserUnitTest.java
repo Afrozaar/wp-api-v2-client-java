@@ -1,9 +1,11 @@
 package com.afrozaar.wordpress.wpapi.v2.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class ClientUserUnitTest {
@@ -34,5 +36,12 @@ public class ClientUserUnitTest {
     @Test
     public void mapJsonToHashmap() throws IOException {
         Map map = mapper.readValue(json, Map.class);
+    }
+
+    @Test
+    public void deserializeMixedMap() throws IOException {
+        final Map map = mapper.readValue("{\"namespace\":\"wp\\/v2\",\"methods\":[\"POST\"],\"endpoints\":[{\"methods\":[\"POST\"],\"args\":{\"force\":{\"required\":false,\"default\":false,\"description\":\"Required to be true, as resource does not support trashing.\"}}}]}", Map.class);
+
+        System.out.println("map = " + ((ArrayList) map.get("methods")).get(0));
     }
 }
