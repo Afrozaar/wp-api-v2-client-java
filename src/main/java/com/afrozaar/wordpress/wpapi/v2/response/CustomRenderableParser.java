@@ -2,6 +2,7 @@ package com.afrozaar.wordpress.wpapi.v2.response;
 
 import static java.util.Optional.ofNullable;
 
+import com.afrozaar.wordpress.wpapi.v2.model.DeleteResponse;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 
 import org.springframework.http.HttpStatus;
@@ -38,6 +39,8 @@ import java.util.stream.StreamSupport;
 public final class CustomRenderableParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomRenderableParser.class);
+    public static final String FIELD_PREVIOUS = "previous";
+    public static final String FIELD_DELETED = "deleted";
     private static ObjectMapper objectMapper = new ObjectMapper();
     private static final Set<String> modifiableFields = new HashSet<>(Arrays.asList("description", "caption"));
     private static final String RENDERED = "rendered";
@@ -56,24 +59,48 @@ public final class CustomRenderableParser {
     }
 
     public static <T> T parse(String response, Class<T> clazz) {
-        //LOG.debug("Parsing response for {}", clazz.getCanonicalName());
-        //LOG.debug("Response String: {}", response);
+        LOG.debug("Parsing response for {}", clazz.getCanonicalName());
+
+        LOG.trace("Type parameters: {}", clazz.getTypeParameters());
+        LOG.trace("Response String: {}", response);
 
         try {
             final JsonNode jsonNode = objectMapper.readValue(response, JsonNode.class);
 
-            //LOG.debug("{} isArray: {}", clazz.getCanonicalName(), clazz.isArray());
-            if (clazz.isArray()) {
-                jsonNode.iterator().forEachRemaining(transformNode);
-            } else {
-                transformNode.accept(jsonNode);
-            }
-
-            return objectMapper.convertValue(jsonNode, clazz);
+            return parseNode(jsonNode, clazz);
         } catch (IOException e) {
             LOG.error("Error ", e);
             throw new HttpClientErrorException(HttpStatus.I_AM_A_TEAPOT, "There was an error parsing the response body.", response.getBytes(), StandardCharsets.UTF_8);
         }
+    }
+
+    public static <T> DeleteResponse<T> parseDeleteResponse(ResponseEntity<String> response, Class<T> clazz) {
+        return parseDeleteResponse(response.getBody(), clazz);
+    }
+
+    public static <T> DeleteResponse<T> parseDeleteResponse(String response, Class<T> clazz) {
+        LOG.trace("parsing delete response for '{}' from {}", clazz.getCanonicalName(), response);
+
+        try {
+            final JsonNode rootNode = objectMapper.readValue(response, JsonNode.class);
+
+            return DeleteResponse.of(rootNode.get(FIELD_DELETED).asBoolean(), parseNode(rootNode.get(FIELD_PREVIOUS), clazz));
+        } catch (IOException e) {
+            LOG.error("Error ", e);
+            throw new HttpClientErrorException(HttpStatus.I_AM_A_TEAPOT, "There was an error reading the response body.", response.getBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private static <T> T parseNode(JsonNode jsonNode, Class<T> clazz) {
+        LOG.trace("{} isArray: {}", clazz.getCanonicalName(), clazz.isArray());
+
+        if (clazz.isArray()) {
+            jsonNode.iterator().forEachRemaining(transformNode);
+        } else {
+            transformNode.accept(jsonNode);
+        }
+
+        return objectMapper.convertValue(jsonNode, clazz);
     }
 
     private static final Function<Iterator<Map.Entry<String, JsonNode>>, Stream<Map.Entry<String, JsonNode>>> streamIterator = iterator -> StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);

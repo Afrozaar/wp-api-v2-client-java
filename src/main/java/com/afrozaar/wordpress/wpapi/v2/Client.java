@@ -16,6 +16,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
+import com.afrozaar.wordpress.wpapi.v2.model.DeleteResponse;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Page;
@@ -484,7 +485,12 @@ public class Client implements Wordpress {
     public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
-            return CustomRenderableParser.parse(doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null), Term.class);
+
+            final ResponseEntity<String> tResponseEntity = doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null);
+            final DeleteResponse<Term> termDeleteResponse = CustomRenderableParser.parseDeleteResponse(tResponseEntity, Term.class);
+            final Term previous = termDeleteResponse.getPrevious();
+            LOG.debug("Deleted term @{}/'{}' of taxonomy '{}': {}", previous.getId(), previous.getName(), previous.getTaxonomySlug(), termDeleteResponse.getDeleted());
+            return previous;
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
