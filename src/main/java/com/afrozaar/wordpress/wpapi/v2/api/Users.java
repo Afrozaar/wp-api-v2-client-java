@@ -1,8 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2.api;
 
-import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
 
@@ -26,6 +24,8 @@ public interface Users {
     User updateUser(User user);
 
     User deleteUser(User user);
+
+    User deleteUser(User user, Long reassign);
 
     Function<User, MultiValueMap> userMap = input -> {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();

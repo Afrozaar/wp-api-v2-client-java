@@ -16,6 +16,7 @@ import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
+import com.afrozaar.wordpress.wpapi.v2.model.DeleteResponse;
 import com.afrozaar.wordpress.wpapi.v2.model.Link;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Page;
@@ -93,6 +94,7 @@ public class Client implements Wordpress {
     private static final String META_VALUE = "value";
     private static final String FORCE = "force";
     private static final String CONTEXT_ = "context";
+    private static final String REASSIGN = "reassign";
     private static final String VIEW = "view";
     private static final String DATA = "data";
     private static final String VERSION = "version";
@@ -250,8 +252,7 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id) {
-        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null).getBody(),
-                Media.class);
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null), Media.class);
     }
 
     @Override
@@ -265,20 +266,19 @@ public class Client implements Wordpress {
         p.accept("caption", media.getCaption());
         p.accept("description", media.getDescription());
 
-        ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.POST, Media.class, forExpand(media.getId()), null, builder.build());
-
-        return exchange.getBody();
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.POST, String.class, forExpand(media.getId()), null, builder.build()), Media.class);
     }
 
     @Override
     public boolean deleteMedia(Media media, boolean force) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
+        final ResponseEntity<String> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
     @Override
     public boolean deleteMedia(Media media) {
-        final ResponseEntity<Media> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, Media.class, forExpand(media.getId()), null, null);
+        // We don't care to deserialize the received response back into a media object.
+        final ResponseEntity<String> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), null, null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
@@ -485,7 +485,12 @@ public class Client implements Wordpress {
     public Term deleteTag(Term tagTerm, boolean force) throws TermNotFoundException {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
-            return doExchange1(Request.TAG, HttpMethod.DELETE, Term.class, forExpand(tagTerm.getId()), queryParams, null).getBody();
+
+            final ResponseEntity<String> tResponseEntity = doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null);
+            final DeleteResponse<Term> termDeleteResponse = CustomRenderableParser.parseDeleteResponse(tResponseEntity, Term.class);
+            final Term previous = termDeleteResponse.getPrevious();
+            LOG.debug("Deleted term @{}/'{}' of taxonomy '{}': {}", previous.getId(), previous.getName(), previous.getTaxonomySlug(), termDeleteResponse.getDeleted());
+            return previous;
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new TermNotFoundException(e);
@@ -719,7 +724,18 @@ public class Client implements Wordpress {
 
     @Override
     public User deleteUser(User user) {
-        return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true), null).getBody();
+        return deleteUser(user, null);
+    }
+
+    @Override
+    public User deleteUser(User user, Long reassign) {
+        try {
+            return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true, REASSIGN, (nonNull(reassign) ? reassign : 1L)), null).getBody();
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            final WpApiParsedException of = WpApiParsedException.of(e);
+            LOG.error("Error Deleting user {}", user.getId(), of);
+            throw new RuntimeException(of);
+        }
     }
 
     @Override
@@ -738,11 +754,16 @@ public class Client implements Wordpress {
     @Override
     public <T> PagedResponse<T> getPagedResponse(final URI uri, Class<T> typeRef) {
         try {
-            final ResponseEntity<T[]> exchange = doExchange0(HttpMethod.GET, uri, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"), null, Optional.empty());
+
+            final ResponseEntity<String> exchange = doExchange0(HttpMethod.GET, uri, String.class, null, Optional.empty());
+            final String body1 = exchange.getBody();
+            //LOG.debug("about to parse response for paged response {}: {}", typeRef, body1);
+            final T[] parse = CustomRenderableParser.parse(body1, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"));
+
             final HttpHeaders headers = exchange.getHeaders();
             final List<Link> links = parseLinks(headers);
 
-            final List<T> body = Arrays.asList((T[]) exchange.getBody()); // Ugly... but the only way to get the generic stuff working
+            final List<T> body = Arrays.asList(parse); // Ugly... but the only way to get the generic stuff working
 
             return PagedResponse.Builder.aPagedResponse(typeRef)
                     .withPages(headers)

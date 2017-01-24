@@ -600,7 +600,7 @@ public class ClientLiveIT {
     public void testGetPostTagsPaged() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
-        final int limit = 50;
+        final int limit = 10;
 
         IntStream.iterate(0, idx -> idx + 1).limit(limit).forEach(idx -> {
             try {
@@ -776,6 +776,7 @@ public class ClientLiveIT {
 
         try {
             final User user1 = client.getUser(createdUser.getId());
+            fail("Expected a UserNotFound exception!");
         } catch (com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException e) {
             LOG.error("Error ", e);
         }

@@ -2,12 +2,15 @@ package com.afrozaar.wordpress.wpapi.v2.model;
 
 import com.google.common.collect.ImmutableMap;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
+@JsonIgnoreProperties(value = { "_links", "meta"})
 public class Term {
     @JsonProperty("id")
     private Long id;
@@ -25,6 +28,9 @@ public class Term {
     private String taxonomySlug;
     @JsonProperty("parent")
     private Long parentId;
+
+    @JsonProperty("meta") //TODO: Keep an eye on https://github.com/WP-API/WP-API/issues/2859 and fix once it is resolved.
+    private List<Long> meta;
 
     public Integer getCount() {
         return count;
@@ -88,6 +94,15 @@ public class Term {
 
     public void setTaxonomySlug(String taxonomySlug) {
         this.taxonomySlug = taxonomySlug;
+    }
+
+    //TODO: add support for creating term with meta ids.
+    public List<Long> getMeta() {
+        return meta;
+    }
+
+    public void setMeta(List<Long> meta) {
+        this.meta = meta;
     }
 
     public Map<String, Object> asMap() {
