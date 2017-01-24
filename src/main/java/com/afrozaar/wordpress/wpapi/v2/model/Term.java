@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 
-@JsonIgnoreProperties(value = { "_links" })
+@JsonIgnoreProperties(value = { "_links", "meta"})
 public class Term {
     @JsonProperty("id")
     private Long id;
@@ -28,7 +28,8 @@ public class Term {
     private String taxonomySlug;
     @JsonProperty("parent")
     private Long parentId;
-    @JsonProperty("meta")
+
+    @JsonProperty("meta") //TODO: Keep an eye on https://github.com/WP-API/WP-API/issues/2859 and fix once it is resolved.
     private List<Long> meta;
 
     public Integer getCount() {
