@@ -81,10 +81,19 @@ public final class CustomRenderableParser {
     public static <T> DeleteResponse<T> parseDeleteResponse(String response, Class<T> clazz) {
         LOG.trace("parsing delete response for '{}' from {}", clazz.getCanonicalName(), response);
 
+        // 4.6 responds with the object JSON only.
+        // 4.7 responds with JSON that has a 'deleted' and 'previous' field. The previous is what the JSON-only response was for 4.6.
+        Function<JsonNode, DeleteResponse<T>> resolveFor4_7 = node -> DeleteResponse.of(node.get(FIELD_DELETED).asBoolean(), parseNode(node.get(FIELD_PREVIOUS), clazz));
+        Function<JsonNode, DeleteResponse<T>> resolveFor4_6 = node -> DeleteResponse.of(true, parseNode(node, clazz));
+
         try {
             final JsonNode rootNode = objectMapper.readValue(response, JsonNode.class);
 
-            return DeleteResponse.of(rootNode.get(FIELD_DELETED).asBoolean(), parseNode(rootNode.get(FIELD_PREVIOUS), clazz));
+            return ofNullable(rootNode.get(FIELD_DELETED))
+                    .map(jsonNode -> resolveFor4_7)
+                    .orElse(resolveFor4_6)
+                    .apply(rootNode);
+
         } catch (IOException e) {
             LOG.error("Error ", e);
             throw new HttpClientErrorException(HttpStatus.I_AM_A_TEAPOT, "There was an error reading the response body.", response.getBytes(), StandardCharsets.UTF_8);
