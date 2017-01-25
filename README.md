@@ -6,7 +6,7 @@
 
 A Java client to version 2 of the WP REST API
 
-(Currently coding against **WP REST API Version 2.0-beta13.1**)
+(Currently coding against **WP REST API Version 2.0-beta15.1**)
 
 See
 
@@ -15,7 +15,7 @@ See
 
 # Current Development Requirements
 
-* WordPress 4.4.1+ installation
+* WordPress 4.6.+ installation
 * JSON Basic Authentication (0.1 currently used)
 
 # Implemented
@@ -187,5 +187,5 @@ Release versions should also be available on public maven repositories:
     <dependency>
       <groupId>com.afrozaar.wordpress</groupId>
       <artifactId>wp-api-v2-client-java</artifactId>
-      <version>2.0-beta13</version>
+      <version>2.0-beta15</version>
     </dependency>
