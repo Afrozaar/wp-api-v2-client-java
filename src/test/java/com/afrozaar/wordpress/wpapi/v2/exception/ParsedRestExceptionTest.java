@@ -12,9 +12,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ParsedRestExceptionTest {
     @Test
@@ -25,11 +23,10 @@ public class ParsedRestExceptionTest {
 
         assertThat(parsedRestExceptionWithAdditionalErrors.getAdditionalErrors()).isNotNull();
 
-        parsedRestExceptionWithAdditionalErrors.getAdditionalErrors().ifPresent(errors -> {
-            final List<String> collect = errors.stream().map(ParsedRestException.RestException::getCode).collect(Collectors.toList());
-
-            assertThat(collect).contains("user_name", "user_email");
-        });
+        assertThat(parsedRestExceptionWithAdditionalErrors.getAdditionalErrors())
+                .isNotNull()
+                .isNotEmpty()
+                .extracting("code").contains("user_name", "user_email");
     }
 
     @Test

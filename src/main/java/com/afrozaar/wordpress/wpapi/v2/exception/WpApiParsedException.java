@@ -20,7 +20,7 @@ public class WpApiParsedException extends Exception {
     private final Collection<ParsedRestException.RestException> additionalErrors;
 
     public WpApiParsedException(ParsedRestException parsed) {
-        this(parsed.getCause().getMessage(), parsed.getCause(), parsed.getErrorMessage(), parsed.getCode(), parsed.getData(), parsed.getAdditionalErrors().orElse(null));
+        this(parsed.getCause().getMessage(), parsed.getCause(), parsed.getErrorMessage(), parsed.getCode(), parsed.getData(), parsed.getAdditionalErrors());
     }
 
     private WpApiParsedException(String message, HttpStatusCodeException cause, String errorMessage, String code, Object data, Collection<ParsedRestException.RestException> additionalErrors) {
@@ -32,7 +32,7 @@ public class WpApiParsedException extends Exception {
     }
 
     public static WpApiParsedException of(ParsedRestException parsed) {
-        return new WpApiParsedException(parsed.getCause().getMessage(), parsed.getCause(), parsed.getErrorMessage(), parsed.getCode(), parsed.getData(), parsed.getAdditionalErrors().orElse(null));
+        return new WpApiParsedException(parsed.getCause().getMessage(), parsed.getCause(), parsed.getErrorMessage(), parsed.getCode(), parsed.getData(), parsed.getAdditionalErrors());
     }
 
     public static WpApiParsedException of(HttpStatusCodeException cause) {

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,7 +90,7 @@ public class ParsedRestException {
                 .map(additionalErrors -> (List<RestException>) ((ArrayList) additionalErrors).stream()
                         .map(RestException::fromRaw)
                         .collect(Collectors.<RestException>toList()))
-                .orElse(null);
+                .orElse(Collections.emptyList());
     };
 
     public static ParsedRestException of(HttpStatusCodeException cause) {
@@ -121,8 +122,8 @@ public class ParsedRestException {
         return cause;
     }
 
-    public Optional<Collection<RestException>> getAdditionalErrors() {
-        return Optional.ofNullable(additionalErrors);
+    public Collection<RestException> getAdditionalErrors() {
+        return additionalErrors;
     }
 
     @Override
