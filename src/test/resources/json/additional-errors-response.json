@@ -1,0 +1,19 @@
+{
+  "code": "rest_invalid_param",
+  "message": "Invalid user parameter(s).",
+  "data": {
+    "status": 400
+  },
+  "additional_errors": [
+    {
+      "code": "user_name",
+      "message": "Sorry, that username already exists!",
+      "data": null
+    },
+    {
+      "code": "user_email",
+      "message": "Sorry, that email address is already used!",
+      "data": null
+    }
+  ]
+}

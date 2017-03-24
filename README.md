@@ -15,7 +15,7 @@ See
 
 # Current Development Requirements
 
-* WordPress 4.6.+ installation
+* WordPress 4.7.1+ installation
 * JSON Basic Authentication (0.1 currently used)
 
 # Implemented
