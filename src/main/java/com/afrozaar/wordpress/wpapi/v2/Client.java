@@ -849,6 +849,7 @@ public class Client implements Wordpress {
         biConsumer.accept("format", post.getFormat());
         biConsumer.accept("sticky", post.getSticky());
         biConsumer.accept("featured_media", post.getFeaturedMedia());
+        biConsumer.accept("categories", post.getCategoryIds());
 
         return builder.build();
     }
