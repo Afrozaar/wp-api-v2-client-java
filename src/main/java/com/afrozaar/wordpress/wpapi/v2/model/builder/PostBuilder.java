@@ -1,10 +1,18 @@
 package com.afrozaar.wordpress.wpapi.v2.model.builder;
 
+import static java.util.stream.Collectors.toList;
+
 import com.afrozaar.wordpress.wpapi.v2.model.Content;
 import com.afrozaar.wordpress.wpapi.v2.model.Excerpt;
 import com.afrozaar.wordpress.wpapi.v2.model.Guid;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
+import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.Title;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author johan
@@ -27,6 +35,7 @@ public class PostBuilder {
     private String modifiedGmt;
     private String type;
     private String pingStatus;
+    private List<Long> categoryIds;
 
     private PostBuilder() {
     }
@@ -120,6 +129,15 @@ public class PostBuilder {
         return this;
     }
 
+    public PostBuilder withCategories(List<Long> categoryIds) {
+        this.categoryIds = categoryIds;
+        return this;
+    }
+
+    public PostBuilder withCategories(Term... terms) {
+        return withCategories(Arrays.stream(terms).map(Term::getId).collect(toList()));
+    }
+
     public PostBuilder but() {
         return aPost()
                 .withAuthor(author)
@@ -138,7 +156,8 @@ public class PostBuilder {
                 .withDate(date)
                 .withModifiedGmt(modifiedGmt)
                 .withType(type)
-                .withPingStatus(pingStatus);
+                .withPingStatus(pingStatus)
+                .withCategories(categoryIds);
     }
 
     public Post build() {
@@ -160,6 +179,9 @@ public class PostBuilder {
         post.setModifiedGmt(modifiedGmt);
         post.setType(type);
         post.setPingStatus(pingStatus);
+        post.setCategoryIds(categoryIds);
         return post;
     }
+
+
 }

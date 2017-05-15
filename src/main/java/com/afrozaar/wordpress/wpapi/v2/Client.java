@@ -7,6 +7,7 @@ import static java.util.Objects.nonNull;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
+import com.afrozaar.wordpress.wpapi.v2.exception.InvalidParameterException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
 import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
@@ -681,15 +682,18 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public User createUser(User user, String username, String password) throws WpApiParsedException {
+
         final MultiValueMap userAsMap = userMap.apply(user);
         userAsMap.add("username", username); // Required: true
         userAsMap.add("password", password); // Required: true
         try {
             return doExchange1(Request.USERS, HttpMethod.POST, User.class, forExpand(), null, userAsMap).getBody();
-        } catch (HttpServerErrorException e) {
+        } catch (HttpServerErrorException | HttpClientErrorException e) {
             try {
                 ParsedRestException restException = ParsedRestException.of(e);
                 switch (restException.getCode()) {
+                case ExceptionCodes.INVALID_PARAM:
+                    throw new InvalidParameterException(restException);
                 case ExceptionCodes.EXISTING_USER_LOGIN:
                     throw new UsernameAlreadyExistsException(restException);
                 case ExceptionCodes.EXISTING_USER_EMAIL:
@@ -845,6 +849,7 @@ public class Client implements Wordpress {
         biConsumer.accept("format", post.getFormat());
         biConsumer.accept("sticky", post.getSticky());
         biConsumer.accept("featured_media", post.getFeaturedMedia());
+        biConsumer.accept("categories", post.getCategoryIds());
 
         return builder.build();
     }
