@@ -448,6 +448,26 @@ public class ClientLiveIT {
     }
 
     @Test
+    public void testCreatePostAtCategory() throws PostCreateException {
+
+        final String categoryName = randomAlphabetic(7);
+        final String expectedDescription = randomAlphabetic(10);
+        final Term createdCategory = client.createCategory(aTerm().withName(categoryName).withDescription(expectedDescription).build());
+
+        final Post post = aPost()
+                .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
+                .withExcerpt(anExcerpt().withRendered(randomAlphabetic(15)).build())
+                .withContent(aContent().withRendered(randomAlphabetic(150)).build())
+                .withCategories(createdCategory)
+                .build();
+
+        final Post createdPost = client.createPost(post, PostStatus.publish);
+
+        assertThat(createdPost).isNotNull();
+        assertThat(createdPost.getCategoryIds()).contains(createdCategory.getId());
+    }
+
+    @Test
     public void testCreateCategory() throws WpApiParsedException {
 
         final String expectedName = randomAlphabetic(5);
