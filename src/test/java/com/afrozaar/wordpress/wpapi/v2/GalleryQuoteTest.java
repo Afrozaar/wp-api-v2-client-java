@@ -23,7 +23,7 @@ public class GalleryQuoteTest {
     @Ignore
     @Test
     public void foo() throws PostCreateException, PostNotFoundException {
-        Wordpress wordpress = ClientFactory.fromConfig(ClientConfig.of("http://docker.dev", "docker", "docker!", true));
+        Wordpress wordpress = ClientFactory.fromConfig(ClientConfig.of("http://docker.dev", "docker", "docker!", true, true));
 
         final Post post = wordpress.createPost(PostBuilder.aPost()
                 .withTitle(TitleBuilder.aTitle().withRendered("Some Title").build())

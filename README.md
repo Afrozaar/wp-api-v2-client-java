@@ -4,14 +4,15 @@
 
 # WP-API v2 Java Client
 
-A Java client to version 2 of the WP REST API
+A Java client to version 2 of the WP REST API, recently merged into Wordpress Core
 
-(Currently coding against **WP REST API Version 2.0-beta15.1**)
+(Currently coding against **Wordpress 4.7.x**)
 
 See
 
 * http://v2.wp-api.org/
 * https://github.com/WP-API
+* https://developer.wordpress.org/rest-api/
 
 # Current Development Requirements
 
@@ -168,6 +169,7 @@ available at: `${project}/src/test/resources/config/${hostname}-test.yaml` with 
       username: "myUsername"
       password: "myPassword"
       baseUrl: "http://myhost"
+      usePermalinkEndpoint: false
     
     debug: "true"
     

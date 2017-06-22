@@ -73,6 +73,7 @@ import javax.xml.transform.Source;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,6 +83,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.StringJoiner;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -110,6 +112,7 @@ public class Client implements Wordpress {
     private final String username;
     private final String password;
     private final boolean debug;
+    private final boolean permalinkEndpoint;
     private Boolean canDeleteMetaViaPost = null;
 
     {
@@ -117,15 +120,16 @@ public class Client implements Wordpress {
         userAgentTuple = Tuple2.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
     }
 
-    public Client(String baseUrl, String username, String password, boolean debug) {
-       this(baseUrl, username, password, debug, null);
+    public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
+       this(baseUrl, username, password, usePermalinkEndpoint, debug, null);
     }
     
-    public Client(String baseUrl, String username, String password, boolean debug, ClientHttpRequestFactory requestFactory) {
+    public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug, ClientHttpRequestFactory requestFactory) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
         this.debug = debug;
+        this.permalinkEndpoint = usePermalinkEndpoint;
 
         final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT).build();
 
@@ -854,8 +858,34 @@ public class Client implements Wordpress {
         return builder.build();
     }
 
-    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
+    private URI alterUriForEndpointType(URI uri, Boolean usePermalinkEndpoint) {
+        if (usePermalinkEndpoint) {
+            return uri;
+        } else {
+            LOG.debug("Need to modify URI: {}", uri);
+
+            // http://localhost/wp-json/wp/v2/media
+            // http://localhost/wp-json/wp/v2/media/10?context=edit
+            // vvv
+            // http://localhost/?rest_route=/wp/v2/media/10&context=edit
+
+            // First Try:
+            String restRoute = format("rest_route=%s", uri.getRawPath().replace("/wp-json", ""));
+            final String newQueryString = Stream.of(restRoute, uri.getRawQuery())
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining("&"));
+
+            try {
+                return new URI(uri.getScheme(), uri.getHost(), null, newQueryString, null);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri0, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
         final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
+        final URI uri = alterUriForEndpointType(uri0, permalinkEndpoint);
         final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
 
         mediaType.ifPresent(builder::contentType);
