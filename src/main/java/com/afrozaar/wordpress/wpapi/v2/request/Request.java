@@ -38,6 +38,8 @@ public abstract class Request {
     public static final String QP_CONTEXT = "context";
     public static final String QP_ORDER_BY = "orderby";
     public static final String QP_ORDER = "order";
+    private static final String QP_REST_ROUTE = "rest_route";
+    private static final String WP_JSON = "/wp-json";
 
     final String uri;
     final Map<String, List<String>> params;
@@ -56,21 +58,28 @@ public abstract class Request {
         };
     }
 
-    protected UriComponentsBuilder init(String baseUrl, String context) {
-        return UriComponentsBuilder.fromHttpUrl(baseUrl + context + this.uri);
-    }
-
     public UriComponentsBuilder usingClient(Client client) {
-        return forHost(client.baseUrl, Client.CONTEXT);
+        return forHost(client, Client.CONTEXT);
     }
 
-    public UriComponentsBuilder forHost(String baseUrl, String context) {
-        final UriComponentsBuilder builder = init(baseUrl, context);
+    public UriComponentsBuilder forHost(Client client, String context0) {
+
+        final String context = (client.permalinkEndpoint ? context0 : context0.replace(WP_JSON, "")) + this.uri;
+        // context = "/wp-json/wp/v2"
+
+        final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(client.baseUrl + (client.permalinkEndpoint ? context : ""));
+        if (!client.permalinkEndpoint) {
+            builder.queryParam(QP_REST_ROUTE, context);
+        }
         params.forEach((key, values) -> builder.queryParam(key, values.toArray()));
         return builder;
     }
 
     public static URI fromLink(String apply) {
         return UriComponentsBuilder.fromHttpUrl(apply).build().toUri();
+    }
+
+    public String asRequestUrl(Client client) {
+        return usingClient(client).build().toUri().toASCIIString();
     }
 }

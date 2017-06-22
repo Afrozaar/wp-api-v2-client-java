@@ -31,10 +31,38 @@ public class UpdatePostRequestTest {
 
         final URI expected = new URI("http://localhost/wp-json/wp/v2/posts/" + post.getId());
 
+        Client client = new Client("http://localhost", "username", "password", true, true);
+
         // when
         final URI result = UpdatePostRequest
                 .forPost(post)
-                .forHost("http://localhost", Client.CONTEXT).buildAndExpand(post.getId())
+                .forHost(client, Client.CONTEXT).buildAndExpand(post.getId())
+                .toUri();
+
+        System.out.println("result = " + result);
+
+        // then
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    public void createUpdateRequestWithPermalinkOff() throws URISyntaxException {
+
+        // given
+        final Post post = PostBuilder.aPost()
+                .withId(new Random().nextLong())
+                .withContent(ContentBuilder.aContent()
+                        .withRendered("foo bar").build())
+                .build();
+
+        final URI expected = new URI("http://localhost?rest_route=/wp/v2/posts/" + post.getId());
+
+        Client client = new Client("http://localhost", "username", "password", false, true);
+
+        // when
+        final URI result = UpdatePostRequest
+                .forPost(post)
+                .forHost(client, Client.CONTEXT).buildAndExpand(post.getId())
                 .toUri();
 
         System.out.println("result = " + result);
