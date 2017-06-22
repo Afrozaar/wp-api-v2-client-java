@@ -46,22 +46,24 @@ public class ClientConfig {
         return load(resource.getInputStream());
     }
 
-    public static ClientConfig of(String baseUrl, String username, String password, boolean debug) {
-        return new ClientConfig(debug, new Wordpress(baseUrl, username, password));
+    public static ClientConfig of(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
+        return new ClientConfig(debug, new Wordpress(baseUrl, username, password, usePermalinkEndpoint));
     }
 
     public static class Wordpress {
         String username;
         String password;
         String baseUrl;
+        boolean usePermalinkEndpoint;
 
         Wordpress() {
         }
 
-        private Wordpress(String baseUrl, String username, String password) {
+        private Wordpress(String baseUrl, String username, String password, boolean usePermalinkEndpoint) {
             this.baseUrl = baseUrl;
             this.password = password;
             this.username = username;
+            this.usePermalinkEndpoint = usePermalinkEndpoint;
         }
 
         public String getBaseUrl() {
@@ -86,6 +88,14 @@ public class ClientConfig {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public boolean isUsePermalinkEndpoint() {
+            return usePermalinkEndpoint;
+        }
+
+        public void setUsePermalinkEndpoint(boolean usePermalinkEndpoint) {
+            this.usePermalinkEndpoint = usePermalinkEndpoint;
         }
     }
 }
