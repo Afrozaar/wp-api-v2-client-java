@@ -95,13 +95,23 @@ public class ClientLiveIT {
         }
     }
 
+    private String expectedUrlForContext(String clientContext, String apiContext, ClientConfig.Wordpress config) {
+        if (config.isUsePermalinkEndpoint()) {
+            return format("%s%s%s", config.getBaseUrl(), clientContext, apiContext);
+        } else {
+            //http://docker.dev?rest_route=/wp/v2/posts
+            return format("%s?rest_route=%s%s", config.getBaseUrl(), clientContext.replace("/wp-json", "") , apiContext);
+        }
+    }
+
     @Test
     public void testTraverse() throws PostCreateException {
 
         for (int i = 0; i < 11; i++) {
             client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         }
-        final String EXPECTED = format("%s%s/posts", clientConfig.getWordpress().getBaseUrl(), Client.CONTEXT);
+
+        final String EXPECTED = expectedUrlForContext(Client.CONTEXT, "/posts", clientConfig.getWordpress());
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
 

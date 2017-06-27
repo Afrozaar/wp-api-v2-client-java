@@ -61,7 +61,7 @@ public final class CustomRenderableParser {
     public static <T> T parse(String response, Class<T> clazz) {
         LOG.debug("Parsing response for {}", clazz.getCanonicalName());
 
-        LOG.trace("Type parameters: {}", clazz.getTypeParameters());
+        LOG.trace("Type parameters: {}", Arrays.asList(clazz.getTypeParameters()));
         LOG.trace("Response String: {}", response);
 
         try {
