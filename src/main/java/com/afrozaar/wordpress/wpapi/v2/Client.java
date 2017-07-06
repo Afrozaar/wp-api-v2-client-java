@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
@@ -69,6 +70,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import javax.xml.transform.Source;
 
 import java.lang.reflect.InvocationTargetException;
@@ -151,7 +153,7 @@ public class Client implements Wordpress {
     public Post createPost(final Map<String, Object> postFields, PostStatus status) throws PostCreateException {
         final ImmutableMap<String, Object> post = new ImmutableMap.Builder<String, Object>().putAll(postFields).put("status", status.value).build();
         try {
-            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post, Optional.of(MediaType.APPLICATION_JSON)).getBody();
+            return doExchange1(Request.POSTS, HttpMethod.POST, Post.class, forExpand(), null, post, MediaType.APPLICATION_JSON).getBody();
         } catch (HttpClientErrorException e) {
             throw new PostCreateException(e);
         }
@@ -208,7 +210,7 @@ public class Client implements Wordpress {
     public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
-            BiConsumer<String, Object> p = (index, value) -> Optional.ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
+            BiConsumer<String, Object> p = (index, value) -> ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
 
             p.accept("title", media.getTitle().getRendered());
             p.accept("post", media.getPost());
@@ -261,7 +263,7 @@ public class Client implements Wordpress {
     @Override
     public Media updateMedia(Media media) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-        BiConsumer<String, Object> p = (key, value) -> Optional.ofNullable(value).ifPresent(v -> builder.put(key, v));
+        BiConsumer<String, Object> p = (key, value) -> ofNullable(value).ifPresent(v -> builder.put(key, v));
 
         p.accept("title", media.getTitle().getRendered());
         p.accept("post", media.getPost());
@@ -289,7 +291,7 @@ public class Client implements Wordpress {
     public PostMeta createMeta(Long postId, String key, String value) {
         final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body,
-                Optional.of(MediaType.APPLICATION_JSON));
+                MediaType.APPLICATION_JSON);
         return exchange.getBody();
     }
 
@@ -313,7 +315,7 @@ public class Client implements Wordpress {
     @Override
     public PostMeta updatePostMeta(Long postId, Long metaId, String key, String value) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
-        BiConsumer<String, Object> biConsumer = (key1, value1) -> Optional.ofNullable(value1).ifPresent(v -> builder.put(key1, v));
+        BiConsumer<String, Object> biConsumer = (key1, value1) -> ofNullable(value1).ifPresent(v -> builder.put(key1, v));
 
         biConsumer.accept(META_KEY, key);
         biConsumer.accept(META_VALUE, value);
@@ -585,7 +587,7 @@ public class Client implements Wordpress {
 
     @Override
     public Term createCategory(Term categoryTerm) {
-        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap(), Optional.of(MediaType.APPLICATION_JSON)).getBody();
+        return doExchange1(Request.CATEGORIES, HttpMethod.POST, Term.class, forExpand(), null, categoryTerm.asMap(), MediaType.APPLICATION_JSON).getBody();
     }
 
     @Override
@@ -761,7 +763,7 @@ public class Client implements Wordpress {
     public <T> PagedResponse<T> getPagedResponse(final URI uri, Class<T> typeRef) {
         try {
 
-            final ResponseEntity<String> exchange = doExchange0(HttpMethod.GET, uri, String.class, null, Optional.empty());
+            final ResponseEntity<String> exchange = doExchange0(HttpMethod.GET, uri, String.class, null, null);
             final String body1 = exchange.getBody();
             //LOG.debug("about to parse response for paged response {}: {}", typeRef, body1);
             final T[] parse = CustomRenderableParser.parse(body1, (Class<T[]>) Class.forName("[L" + typeRef.getName() + ";"));
@@ -793,7 +795,7 @@ public class Client implements Wordpress {
     public List<Link> parseLinks(HttpHeaders headers) {
         //Link -> [<http://johan-wp/wp-json/wp/v2/posts?page=2>; rel="next"]
 
-        Optional<List<String>> linkHeader = Optional.ofNullable(headers.get(Strings.HEADER_LINK));
+        Optional<List<String>> linkHeader = ofNullable(headers.get(Strings.HEADER_LINK));
 
         return linkHeader
                 .map(List::stream)
@@ -856,11 +858,11 @@ public class Client implements Wordpress {
         return builder.build();
     }
 
-    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
+    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, @Nullable MediaType mediaType) {
         final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
         final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
 
-        mediaType.ifPresent(builder::contentType);
+        ofNullable(mediaType).ifPresent(builder::contentType);
 
         final RequestEntity<B> entity = builder.body(body);
         debugRequest(entity);
@@ -869,20 +871,20 @@ public class Client implements Wordpress {
         return exchange;
     }
 
-    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body, Optional<MediaType> mediaType) {
+    private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, UriComponents uriComponents, Class<T> typeRef, B body, @Nullable MediaType mediaType) {
         return doExchange0(method, uriComponents.toUri(), typeRef, body, mediaType);
     }
 
     private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body) {
-        return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, Optional.empty());
+        return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, null);
     }
 
     private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body,
-            Optional<MediaType> mediaType) {
+              @Nullable MediaType mediaType) {
         final UriComponentsBuilder builder = Request.of(context).usingClient(this);
-        if (queryParams != null) {
-            queryParams.forEach(builder::queryParam);
-        }
+
+        ofNullable(queryParams).ifPresent(params -> params.forEach(builder::queryParam));
+
         return doExchange0(method, builder.buildAndExpand(buildAndExpand), typeRef, body, mediaType);
     }
 
