@@ -4,9 +4,13 @@
 
 # WP-API v2 Java Client
 
-A Java client to version 2 of the WP REST API, recently merged into Wordpress Core
+A Java client to version 2 of the WP REST API, recently merged into WordPress Core
 
-(Currently coding against **Wordpress 4.7.x**)
+(Currently coding against **WordPress 4.8.x**)
+
+## WordPress Supported Versions
+
+The current 4.8 version supports WordPress 4.6-4.8.
 
 See
 
@@ -16,7 +20,7 @@ See
 
 # Current Development Requirements
 
-* WordPress 4.7.1+ installation
+* WordPress 4.8.0+ installation
 * JSON Basic Authentication (0.1 currently used)
 
 # Implemented
