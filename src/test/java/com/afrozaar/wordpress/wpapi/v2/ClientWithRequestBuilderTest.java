@@ -47,8 +47,9 @@ public class ClientWithRequestBuilderTest {
         String username = "username";
         String password = "password";
         boolean debug = false;
+        boolean usePermalinkEndpoint = true;
 
-        final Wordpress wordpress = ClientFactory.builder(ClientConfig.of(baseUrl, username, password, debug))
+        final Wordpress wordpress = ClientFactory.builder(ClientConfig.of(baseUrl, username, password, usePermalinkEndpoint, debug))
                 .withRequestFactory(requestFactory)
                 .build();
 

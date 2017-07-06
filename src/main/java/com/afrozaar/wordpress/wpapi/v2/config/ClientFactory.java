@@ -9,7 +9,7 @@ public class ClientFactory {
 
     public static Wordpress fromConfig(ClientConfig config) {
         final ClientConfig.Wordpress wordpress = config.getWordpress();
-        return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, config.debug);
+        return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, wordpress.usePermalinkEndpoint, config.debug);
     }
 
     public static Builder builder(ClientConfig config) {
@@ -33,7 +33,7 @@ public class ClientFactory {
 
         public Wordpress build() {
             final ClientConfig.Wordpress wordpress = config.getWordpress();
-            return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, config.debug, requestFactory);
+            return new Client(wordpress.baseUrl, wordpress.username, wordpress.password, wordpress.usePermalinkEndpoint, config.debug, requestFactory);
         }
     }
 }

@@ -110,6 +110,7 @@ public class Client implements Wordpress {
     private final String username;
     private final String password;
     private final boolean debug;
+    public final boolean permalinkEndpoint;
     private Boolean canDeleteMetaViaPost = null;
 
     {
@@ -117,15 +118,16 @@ public class Client implements Wordpress {
         userAgentTuple = Tuple2.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
     }
 
-    public Client(String baseUrl, String username, String password, boolean debug) {
-       this(baseUrl, username, password, debug, null);
+    public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
+       this(baseUrl, username, password, usePermalinkEndpoint, debug, null);
     }
     
-    public Client(String baseUrl, String username, String password, boolean debug, ClientHttpRequestFactory requestFactory) {
+    public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug, ClientHttpRequestFactory requestFactory) {
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
         this.debug = debug;
+        this.permalinkEndpoint = usePermalinkEndpoint;
 
         final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT).build();
 
@@ -897,7 +899,7 @@ public class Client implements Wordpress {
     private void debugHeaders(HttpHeaders headers) {
         if (debug) {
             LOG.debug("Response Headers:");
-            headers.entrySet().stream().forEach(entry -> LOG.debug("{} -> {}", entry.getKey(), entry.getValue()));
+            headers.forEach((key, value) -> LOG.debug("{} -> {}", key, value));
         }
     }
 

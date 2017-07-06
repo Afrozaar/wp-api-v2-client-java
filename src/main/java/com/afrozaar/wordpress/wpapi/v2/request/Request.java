@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.request;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.afrozaar.wordpress.wpapi.v2.Client;
 
 import com.google.common.collect.ImmutableMap;
@@ -7,6 +9,8 @@ import com.google.common.collect.ImmutableMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +42,8 @@ public abstract class Request {
     public static final String QP_CONTEXT = "context";
     public static final String QP_ORDER_BY = "orderby";
     public static final String QP_ORDER = "order";
+    private static final String QP_REST_ROUTE = "rest_route";
+    private static final String WP_JSON = "/wp-json";
 
     final String uri;
     final Map<String, List<String>> params;
@@ -56,21 +62,51 @@ public abstract class Request {
         };
     }
 
-    protected UriComponentsBuilder init(String baseUrl, String context) {
-        return UriComponentsBuilder.fromHttpUrl(baseUrl + context + this.uri);
-    }
-
     public UriComponentsBuilder usingClient(Client client) {
-        return forHost(client.baseUrl, Client.CONTEXT);
+        return forHost(client, Client.CONTEXT);
     }
 
-    public UriComponentsBuilder forHost(String baseUrl, String context) {
-        final UriComponentsBuilder builder = init(baseUrl, context);
+    public UriComponentsBuilder forHost(Client client, String context0) {
+
+        final String theUri = this.uri.contains("?")
+                ? this.uri.substring(0, this.uri.indexOf("?"))
+                : this.uri;
+
+        final Map<String, String> paramsFromUri = paramsFromUri(this.uri);
+
+        final String context = (client.permalinkEndpoint ? context0 : context0.replace(WP_JSON, "")) + theUri;
+
+        final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(client.baseUrl + (client.permalinkEndpoint ? context : ""));
+
+        if (!client.permalinkEndpoint) {
+            builder.queryParam(QP_REST_ROUTE, context);
+        }
+        if (!paramsFromUri.isEmpty()) {
+            paramsFromUri.forEach(builder::queryParam);
+        }
         params.forEach((key, values) -> builder.queryParam(key, values.toArray()));
         return builder;
     }
 
     public static URI fromLink(String apply) {
         return UriComponentsBuilder.fromHttpUrl(apply).build().toUri();
+    }
+
+    public String asRequestUrl(Client client) {
+        return usingClient(client).build().toUri().toASCIIString();
+    }
+
+    private Map<String, String> paramsFromUri(String uri) {
+        //"/tags?post={postId}"
+
+        if (uri.contains("?")) {
+            return Arrays.stream(uri.split("\\?"))
+                    .filter(it -> it.contains("="))
+                    .flatMap(it -> Arrays.stream(it.split("&")))
+                    .map(it -> it.split("=", 2))
+                    .collect(toMap(entry -> entry[0], entry -> entry[1]));
+        } else {
+            return Collections.emptyMap();
+        }
     }
 }
