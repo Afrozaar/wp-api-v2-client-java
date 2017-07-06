@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Categories;
+import com.afrozaar.wordpress.wpapi.v2.api.CustomCalls;
 import com.afrozaar.wordpress.wpapi.v2.api.Medias;
 import com.afrozaar.wordpress.wpapi.v2.api.Pages;
 import com.afrozaar.wordpress.wpapi.v2.api.PostMetas;
@@ -15,7 +16,7 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import java.net.URI;
 import java.util.function.Function;
 
-public interface Wordpress extends Posts, PostMetas, Taxonomies, Terms, Medias, Pages, Users, Tags, Categories {
+public interface Wordpress extends Posts, PostMetas, Taxonomies, Terms, Medias, Pages, Users, Tags, Categories, CustomCalls {
     String CONTEXT = "/wp-json/wp/v2";
 
     <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams);

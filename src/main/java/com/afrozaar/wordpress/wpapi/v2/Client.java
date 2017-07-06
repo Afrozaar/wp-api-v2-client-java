@@ -875,6 +875,12 @@ public class Client implements Wordpress {
         return doExchange0(method, uriComponents.toUri(), typeRef, body, mediaType);
     }
 
+    @Override
+    public <T, B> ResponseEntity<T> doCustomExchange(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand,
+                                                     Map<String, Object> queryParams, B body, @Nullable MediaType mediaType) {
+        return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, mediaType);
+    }
+
     private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body) {
         return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, null);
     }
@@ -905,7 +911,7 @@ public class Client implements Wordpress {
         }
     }
 
-    private Object[] forExpand(Object... values) {
+    static Object[] forExpand(Object... values) {
         return values;
     }
 }
