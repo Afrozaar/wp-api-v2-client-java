@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.google.common.base.MoreObjects;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -12,7 +14,7 @@ import java.util.Map;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({ "raw", "rendered" })
-public abstract class RenderableField {
+public class RenderableField {
     @JsonProperty("raw")
     private String raw;
     @JsonProperty("rendered")
@@ -34,6 +36,14 @@ public abstract class RenderableField {
 
     public void setRendered(String rendered) {
         this.rendered = rendered;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("raw", raw)
+                .add("rendered", rendered)
+                .toString();
     }
 
     @JsonAnyGetter
