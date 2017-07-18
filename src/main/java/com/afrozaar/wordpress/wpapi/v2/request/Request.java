@@ -63,7 +63,7 @@ public abstract class Request {
     }
 
     public UriComponentsBuilder usingClient(Client client) {
-        return forHost(client, Client.CONTEXT);
+        return forHost(client, client.getContext());
     }
 
     public UriComponentsBuilder forHost(Client client, String context0) {

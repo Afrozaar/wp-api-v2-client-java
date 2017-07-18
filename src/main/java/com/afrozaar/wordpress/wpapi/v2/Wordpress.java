@@ -17,7 +17,8 @@ import java.net.URI;
 import java.util.function.Function;
 
 public interface Wordpress extends Posts, PostMetas, Taxonomies, Terms, Medias, Pages, Users, Tags, Categories, CustomCalls {
-    String CONTEXT = "/wp-json/wp/v2";
+
+    String getContext();
 
     <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams);
 

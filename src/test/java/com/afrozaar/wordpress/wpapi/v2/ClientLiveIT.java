@@ -111,7 +111,7 @@ public class ClientLiveIT {
             client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         }
 
-        final String EXPECTED = expectedUrlForContext(Client.CONTEXT, "/posts", clientConfig.getWordpress());
+        final String EXPECTED = expectedUrlForContext(client.getContext(), "/posts", clientConfig.getWordpress());
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
 

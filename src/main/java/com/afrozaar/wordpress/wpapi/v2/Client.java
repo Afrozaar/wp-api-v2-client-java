@@ -95,6 +95,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Client implements Wordpress {
+    private static final String DEFAULT_CONTEXT = "/wp-json/wp/v2";
     private static final Logger LOG = LoggerFactory.getLogger(Client.class);
     private static final String META_KEY = "key";
     private static final String META_VALUE = "value";
@@ -106,15 +107,16 @@ public class Client implements Wordpress {
     private static final String VERSION = "version";
     private static final String ARTIFACT_ID = "artifactId";
 
-    private final RestTemplate restTemplate;
+    protected final RestTemplate restTemplate;
     private final Predicate<Link> next = link -> Strings.NEXT.equals(link.getRel());
     private final Predicate<Link> previous = link -> Strings.PREV.equals(link.getRel());
     private final Tuple2<String, String> userAgentTuple;
 
+    public final String context;
     public final String baseUrl;
-    private final String username;
-    private final String password;
-    private final boolean debug;
+    public final String username;
+    public final String password;
+    public final boolean debug;
     public final boolean permalinkEndpoint;
     private Boolean canDeleteMetaViaPost = null;
 
@@ -124,10 +126,20 @@ public class Client implements Wordpress {
     }
 
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
-       this(baseUrl, username, password, usePermalinkEndpoint, debug, null);
+       this(null, baseUrl, username, password, usePermalinkEndpoint, debug, null);
     }
-    
+
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug, ClientHttpRequestFactory requestFactory) {
+        this(null, baseUrl, username, password, usePermalinkEndpoint, debug, requestFactory);
+    }
+
+    public Client(String context, String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
+       this(context, baseUrl, username, password, usePermalinkEndpoint, debug, null);
+    }
+
+    public Client(String context, String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug,
+                  ClientHttpRequestFactory requestFactory) {
+        this.context = context;
         this.baseUrl = baseUrl;
         this.username = username;
         this.password = password;
@@ -145,11 +157,16 @@ public class Client implements Wordpress {
         messageConverters.add(new MappingJackson2HttpMessageConverter(emptyArrayAsNullObjectMapper));
         //messageConverters.add(new MappingJackson2HttpMessageConverter());
         restTemplate = new RestTemplate(messageConverters);
-        
-        if(requestFactory != null){;
-        	restTemplate.setRequestFactory(requestFactory);
+
+        if (requestFactory != null) {
+            restTemplate.setRequestFactory(requestFactory);
         } 
         
+    }
+
+    @Override
+    public String getContext() {
+        return ofNullable(this.context).orElse(DEFAULT_CONTEXT);
     }
 
     @Override
@@ -859,6 +876,7 @@ public class Client implements Wordpress {
         biConsumer.accept("sticky", post.getSticky());
         biConsumer.accept("featured_media", post.getFeaturedMedia());
         biConsumer.accept("categories", post.getCategoryIds());
+        //biConsumer.accept("type", post.getType());
 
         return builder.build();
     }
