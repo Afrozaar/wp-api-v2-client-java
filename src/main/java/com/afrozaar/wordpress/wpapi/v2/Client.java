@@ -1,5 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
+import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.renderableField;
+
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
@@ -206,13 +209,14 @@ public class Client implements Wordpress {
         return getPagedResponse(uri, search.getClazz());
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
             BiConsumer<String, Object> p = (index, value) -> ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
 
-            p.accept("title", media.getTitle().getRendered());
+            p.accept("title", extractField(Media::getTitle, media).orElse(null));
             p.accept("post", media.getPost());
             p.accept("alt_text", media.getAltText());
             p.accept("caption", media.getCaption());
@@ -265,7 +269,7 @@ public class Client implements Wordpress {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
         BiConsumer<String, Object> p = (key, value) -> ofNullable(value).ifPresent(v -> builder.put(key, v));
 
-        p.accept("title", media.getTitle().getRendered());
+        p.accept("title", extractField(Media::getTitle, media).orElse(null));
         p.accept("post", media.getPost());
         p.accept("alt_text", media.getAltText());
         p.accept("caption", media.getCaption());
@@ -831,6 +835,7 @@ public class Client implements Wordpress {
 
     }
 
+    @SuppressWarnings("unchecked")
     private Map<String, Object> fieldsFrom(Post post) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
 
@@ -844,10 +849,10 @@ public class Client implements Wordpress {
         biConsumer.accept("modified_gmt", post.getModified());
         //        biConsumer.accept("slug", post.getSlug());
         //        biConsumer.accept("status",post.getStatus());
-        biConsumer.accept("title", post.getTitle().getRendered());
-        biConsumer.accept("content", post.getContent().getRendered());
+        biConsumer.accept("title", renderableField.apply(Post::getTitle, post).orElse(null));
+        biConsumer.accept("content", renderableField.apply(Post::getContent, post).orElse(null));
         biConsumer.accept("author", post.getAuthor());
-        biConsumer.accept("excerpt", post.getExcerpt().getRendered());
+        biConsumer.accept("excerpt", renderableField.apply(Post::getExcerpt, post).orElse(null));
         biConsumer.accept("comment_status", post.getCommentStatus());
         biConsumer.accept("ping_status", post.getPingStatus());
         biConsumer.accept("format", post.getFormat());
