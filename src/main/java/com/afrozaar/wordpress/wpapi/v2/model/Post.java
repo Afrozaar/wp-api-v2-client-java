@@ -37,7 +37,9 @@ import java.util.Map;
         "type",
         "slug",
         "date",
-        "date_gmt"
+        "date_gmt",
+        "categories",
+        "tags"
 })
 public class Post {
 
@@ -87,6 +89,9 @@ public class Post {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
     @JsonProperty("categories")
     private List<Long> categoryIds = new ArrayList<>();
+
+    @JsonProperty("tags")
+    private List<Long> tagIds = new ArrayList<>();
 
     public List<Long> getCategoryIds() {
         return categoryIds;
@@ -316,4 +321,13 @@ public class Post {
         this.additionalProperties.put(name, value);
     }
 
+    @JsonProperty("tags")
+    public List<Long> getTagIds() {
+        return tagIds;
+    }
+
+    @JsonProperty("tags")
+    public void setTagIds(List<Long> tagIds) {
+        this.tagIds = tagIds;
+    }
 }

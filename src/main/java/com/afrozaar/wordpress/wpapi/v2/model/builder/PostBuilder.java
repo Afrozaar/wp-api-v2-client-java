@@ -11,8 +11,6 @@ import com.afrozaar.wordpress.wpapi.v2.model.Title;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author johan
@@ -36,6 +34,7 @@ public class PostBuilder {
     private String type;
     private String pingStatus;
     private List<Long> categoryIds;
+    private List<Long> tagIds;
 
     private PostBuilder() {
     }
@@ -134,8 +133,17 @@ public class PostBuilder {
         return this;
     }
 
+    public PostBuilder withTags(List<Long> tagIds) {
+        this.tagIds = tagIds;
+        return this;
+    }
+
     public PostBuilder withCategories(Term... terms) {
         return withCategories(Arrays.stream(terms).map(Term::getId).collect(toList()));
+    }
+
+    public PostBuilder withTags(Term... tags) {
+        return withTags(Arrays.stream(tags).map(Term::getId).collect(toList()));
     }
 
     public PostBuilder but() {
@@ -157,7 +165,8 @@ public class PostBuilder {
                 .withModifiedGmt(modifiedGmt)
                 .withType(type)
                 .withPingStatus(pingStatus)
-                .withCategories(categoryIds);
+                .withCategories(categoryIds)
+                .withTags(tagIds);
     }
 
     public Post build() {
@@ -180,6 +189,7 @@ public class PostBuilder {
         post.setType(type);
         post.setPingStatus(pingStatus);
         post.setCategoryIds(categoryIds);
+        post.setTagIds(tagIds);
         return post;
     }
 
