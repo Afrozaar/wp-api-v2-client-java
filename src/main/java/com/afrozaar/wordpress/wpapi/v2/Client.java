@@ -1,7 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
-import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.renderableField;
 
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
@@ -28,6 +27,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Page;
 import com.afrozaar.wordpress.wpapi.v2.model.Post;
 import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
 import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
+import com.afrozaar.wordpress.wpapi.v2.model.RenderableField;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
@@ -59,17 +59,20 @@ import org.springframework.http.converter.support.AllEncompassingFormHttpMessage
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.assertj.core.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -852,31 +855,55 @@ public class Client implements Wordpress {
 
     }
 
+    @VisibleForTesting
     @SuppressWarnings("unchecked")
-    private Map<String, Object> fieldsFrom(Post post) {
+    protected Map<String, Object> fieldsFrom(Post post) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
 
-        BiConsumer<String, Object> biConsumer = (key, value) -> {
-            if (value != null) {
-                builder.put(key, value);
-            }
-        };
+        BiConsumer<String, Object> biConsumer = (key, value) -> ofNullable(value).ifPresent(v -> builder.put(key, v));
 
-        biConsumer.accept("date", post.getDate());
-        biConsumer.accept("modified_gmt", post.getModified());
-        //        biConsumer.accept("slug", post.getSlug());
-        //        biConsumer.accept("status",post.getStatus());
-        biConsumer.accept("title", renderableField.apply(Post::getTitle, post).orElse(null));
-        biConsumer.accept("content", renderableField.apply(Post::getContent, post).orElse(null));
-        biConsumer.accept("author", post.getAuthor());
-        biConsumer.accept("excerpt", renderableField.apply(Post::getExcerpt, post).orElse(null));
-        biConsumer.accept("comment_status", post.getCommentStatus());
-        biConsumer.accept("ping_status", post.getPingStatus());
-        biConsumer.accept("format", post.getFormat());
-        biConsumer.accept("sticky", post.getSticky());
-        biConsumer.accept("featured_media", post.getFeaturedMedia());
-        biConsumer.accept("categories", post.getCategoryIds());
-        //biConsumer.accept("type", post.getType());
+        List<String> processableFields = Arrays.asList(
+                "author",
+                "categories",
+                "comment_status",
+                "content",
+                "date",
+                "featured_media",
+                "format",
+                "excerpt",
+                "modified_gmt",
+                "ping_status",
+                //"slug",
+                //"status",
+                "sticky",
+                "tags",
+                "title"
+                //"type"
+        );
+
+        // types ignored for now: slug, status, type
+
+        Arrays.stream(post.getClass().getDeclaredFields())
+                .filter(field -> field.getAnnotationsByType(JsonProperty.class).length > 0)
+                .map(field -> Tuple2.of(field, field.getAnnotationsByType(JsonProperty.class)[0]))
+                .filter(fieldTuple -> processableFields.contains(fieldTuple.b.value()))
+                .forEach(field -> {
+                    try {
+                        ReflectionUtils.makeAccessible(field.a);
+                        Object theField = field.a.get(post);
+                        if (nonNull(theField)) {
+                            final Object value;
+                            if (theField instanceof RenderableField) {
+                                value = ((RenderableField) theField).getRendered();
+                            } else {
+                                value = theField;
+                            }
+                            biConsumer.accept(field.b.value(), value);
+                        }
+                    } catch (IllegalAccessException e) {
+                        LOG.error("Error populating post fields builder.", e);
+                    }
+                });
 
         return builder.build();
     }
