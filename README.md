@@ -193,5 +193,5 @@ Release versions should also be available on public maven repositories:
     <dependency>
       <groupId>com.afrozaar.wordpress</groupId>
       <artifactId>wp-api-v2-client-java</artifactId>
-      <version>4.8.1-SNAPSHOT</version>
+      <version>4.8.1</version>
     </dependency>
