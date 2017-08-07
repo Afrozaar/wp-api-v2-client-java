@@ -128,20 +128,32 @@ public class PostBuilder {
         return this;
     }
 
+    /**
+     * Add existing categories when building a post.
+     */
     public PostBuilder withCategories(List<Long> categoryIds) {
         this.categoryIds = categoryIds;
         return this;
     }
 
+    /**
+     * Add existing tags when building a post.
+     */
     public PostBuilder withTags(List<Long> tagIds) {
         this.tagIds = tagIds;
         return this;
     }
 
+    /**
+     * Add existing Category term items when building a post.
+     */
     public PostBuilder withCategories(Term... terms) {
         return withCategories(Arrays.stream(terms).map(Term::getId).collect(toList()));
     }
 
+    /**
+     * Add existing Tag term items when building a post.
+     */
     public PostBuilder withTags(Term... tags) {
         return withTags(Arrays.stream(tags).map(Term::getId).collect(toList()));
     }
