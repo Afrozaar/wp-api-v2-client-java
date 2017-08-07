@@ -3,7 +3,7 @@
 
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
-    <version>4.8</version>
+    <version>4.8.1-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
@@ -250,6 +250,11 @@
             <artifactId>jackson-mapper-asl</artifactId>
             <version>1.9.10</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.1</version>
         </dependency>
     </dependencies>
 </project>

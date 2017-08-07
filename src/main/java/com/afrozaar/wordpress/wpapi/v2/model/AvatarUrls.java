@@ -30,49 +30,31 @@ public class AvatarUrls {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * @return The _24
-     */
     @JsonProperty("24")
     public String get24() {
         return _24;
     }
 
-    /**
-     * @param _24 The 24
-     */
     @JsonProperty("24")
     public void set24(String _24) {
         this._24 = _24;
     }
 
-    /**
-     * @return The _48
-     */
     @JsonProperty("48")
     public String get48() {
         return _48;
     }
 
-    /**
-     * @param _48 The 48
-     */
     @JsonProperty("48")
     public void set48(String _48) {
         this._48 = _48;
     }
 
-    /**
-     * @return The _96
-     */
     @JsonProperty("96")
     public String get96() {
         return _96;
     }
 
-    /**
-     * @param _96 The 96
-     */
     @JsonProperty("96")
     public void set96(String _96) {
         this._96 = _96;

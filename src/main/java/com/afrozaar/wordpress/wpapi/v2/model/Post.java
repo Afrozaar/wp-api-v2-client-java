@@ -37,7 +37,9 @@ import java.util.Map;
         "type",
         "slug",
         "date",
-        "date_gmt"
+        "date_gmt",
+        "categories",
+        "tags"
 })
 public class Post {
 
@@ -88,6 +90,9 @@ public class Post {
     @JsonProperty("categories")
     private List<Long> categoryIds = new ArrayList<>();
 
+    @JsonProperty("tags")
+    private List<Long> tagIds = new ArrayList<>();
+
     public List<Long> getCategoryIds() {
         return categoryIds;
     }
@@ -96,337 +101,211 @@ public class Post {
         this.categoryIds = categoryIds;
     }
 
-    /**
-     * @return The author
-     */
     @JsonProperty("author")
     public Long getAuthor() {
         return author;
     }
 
-    /**
-     * @param author The author
-     */
     @JsonProperty("author")
     public void setAuthor(Long author) {
         this.author = author;
     }
 
-    /**
-     * @return The content
-     */
     @JsonProperty("content")
     public Content getContent() {
         return content;
     }
 
-    /**
-     * @param content The content
-     */
     @JsonProperty("content")
     public void setContent(Content content) {
         this.content = content;
     }
 
-    /**
-     * @return The status
-     */
     @JsonProperty("status")
     public String getStatus() {
         return status;
     }
 
-    /**
-     * @param status The status
-     */
     @JsonProperty("status")
     public void setStatus(String status) {
         this.status = status;
     }
 
-    /**
-     * @return The Links
-     */
     @JsonProperty("_links")
     public com.afrozaar.wordpress.wpapi.v2.model.Links getLinks() {
         return Links;
     }
 
-    /**
-     * @param Links The _links
-     */
     @JsonProperty("_links")
     public void setLinks(com.afrozaar.wordpress.wpapi.v2.model.Links Links) {
         this.Links = Links;
     }
 
-    /**
-     * @return The modified
-     */
     @JsonProperty("modified")
     public String getModified() {
         return modified;
     }
 
-    /**
-     * @param modified The modified
-     */
     @JsonProperty("modified")
     public void setModified(String modified) {
         this.modified = modified;
     }
 
-    /**
-     * @return The guid
-     */
     @JsonProperty("guid")
     public Guid getGuid() {
         return guid;
     }
 
-    /**
-     * @param guid The guid
-     */
     @JsonProperty("guid")
     public void setGuid(Guid guid) {
         this.guid = guid;
     }
 
-    /**
-     * @return The featuredMedia
-     */
     @JsonProperty("featured_media")
     public Long getFeaturedMedia() {
         return featuredMedia;
     }
 
-    /**
-     * @param featuredMedia The featured_media
-     */
     @JsonProperty("featured_media")
     public void setFeaturedMedia(Long featuredMedia) {
         this.featuredMedia = featuredMedia;
     }
 
-    /**
-     * @return The sticky
-     */
     @JsonProperty("sticky")
     public Boolean getSticky() {
         return sticky;
     }
 
-    /**
-     * @param sticky The sticky
-     */
     @JsonProperty("sticky")
     public void setSticky(Boolean sticky) {
         this.sticky = sticky;
     }
 
-    /**
-     * @return The password
-     */
     @JsonProperty("password")
     public String getPassword() {
         return password;
     }
 
-    /**
-     * @param password The password
-     */
     @JsonProperty("password")
     public void setPassword(String password) {
         this.password = password;
     }
 
-    /**
-     * @return The format
-     */
     @JsonProperty("format")
     public String getFormat() {
         return format;
     }
 
-    /**
-     * @param format The format
-     */
     @JsonProperty("format")
     public void setFormat(String format) {
         this.format = format;
     }
 
-    /**
-     * @return The link
-     */
     @JsonProperty("link")
     public String getLink() {
         return link;
     }
 
-    /**
-     * @param link The link
-     */
     @JsonProperty("link")
     public void setLink(String link) {
         this.link = link;
     }
 
-    /**
-     * @return The pingStatus
-     */
     @JsonProperty("ping_status")
     public String getPingStatus() {
         return pingStatus;
     }
 
-    /**
-     * @param pingStatus The ping_status
-     */
     @JsonProperty("ping_status")
     public void setPingStatus(String pingStatus) {
         this.pingStatus = pingStatus;
     }
 
-    /**
-     * @return The excerpt
-     */
     @JsonProperty("excerpt")
     public Excerpt getExcerpt() {
         return excerpt;
     }
 
-    /**
-     * @param excerpt The excerpt
-     */
     @JsonProperty("excerpt")
     public void setExcerpt(Excerpt excerpt) {
         this.excerpt = excerpt;
     }
 
-    /**
-     * @return The modifiedGmt
-     */
     @JsonProperty("modified_gmt")
     public String getModifiedGmt() {
         return modifiedGmt;
     }
 
-    /**
-     * @param modifiedGmt The modified_gmt
-     */
     @JsonProperty("modified_gmt")
     public void setModifiedGmt(String modifiedGmt) {
         this.modifiedGmt = modifiedGmt;
     }
 
-    /**
-     * @return The id
-     */
     @JsonProperty("id")
     public Long getId() {
         return id;
     }
 
-    /**
-     * @param id The id
-     */
     @JsonProperty("id")
     public void setId(Long id) {
         this.id = id;
     }
 
-    /**
-     * @return The title
-     */
     @JsonProperty("title")
     public Title getTitle() {
         return title;
     }
 
-    /**
-     * @param title The title
-     */
     @JsonProperty("title")
     public void setTitle(Title title) {
         this.title = title;
     }
 
-    /**
-     * @return The commentStatus
-     */
     @JsonProperty("comment_status")
     public String getCommentStatus() {
         return commentStatus;
     }
 
-    /**
-     * @param commentStatus The comment_status
-     */
     @JsonProperty("comment_status")
     public void setCommentStatus(String commentStatus) {
         this.commentStatus = commentStatus;
     }
 
-    /**
-     * @return The type
-     */
     @JsonProperty("type")
     public String getType() {
         return type;
     }
 
-    /**
-     * @param type The type
-     */
     @JsonProperty("type")
     public void setType(String type) {
         this.type = type;
     }
 
-    /**
-     * @return The slug
-     */
     @JsonProperty("slug")
     public String getSlug() {
         return slug;
     }
 
-    /**
-     * @param slug The slug
-     */
     @JsonProperty("slug")
     public void setSlug(String slug) {
         this.slug = slug;
     }
 
-    /**
-     * @return The date
-     */
     @JsonProperty("date")
     public String getDate() {
         return date;
     }
 
-    /**
-     * @param date The date
-     */
     @JsonProperty("date")
     public void setDate(String date) {
         this.date = date;
     }
 
-    /**
-     * @return The dateGmt
-     */
     @JsonProperty("date_gmt")
     public String getDateGmt() {
         return dateGmt;
     }
 
-    /**
-     * @param dateGmt The date_gmt
-     */
     @JsonProperty("date_gmt")
     public void setDateGmt(String dateGmt) {
         this.dateGmt = dateGmt;
@@ -442,4 +321,13 @@ public class Post {
         this.additionalProperties.put(name, value);
     }
 
+    @JsonProperty("tags")
+    public List<Long> getTagIds() {
+        return tagIds;
+    }
+
+    @JsonProperty("tags")
+    public void setTagIds(List<Long> tagIds) {
+        this.tagIds = tagIds;
+    }
 }

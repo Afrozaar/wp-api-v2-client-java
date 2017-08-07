@@ -35,6 +35,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
 import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
@@ -111,7 +112,7 @@ public class ClientLiveIT {
             client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         }
 
-        final String EXPECTED = expectedUrlForContext(Client.CONTEXT, "/posts", clientConfig.getWordpress());
+        final String EXPECTED = expectedUrlForContext(client.getContext(), "/posts", clientConfig.getWordpress());
 
         final PagedResponse<Post> postPagedResponse = client.search(Posts.list());
 
@@ -627,6 +628,27 @@ public class ClientLiveIT {
     }
 
     @Test
+    public void testCreatePostWithTags() throws WpApiParsedException {
+
+        final Post aPost = newTestPostBuilderWithRandomData()
+                .withTags(
+                        client.createTag(aTerm().withName("tag-" + randomAlphabetic(5)).build()),
+                        client.createTag(aTerm().withName("tag-" + randomAlphabetic(5)).build()),
+                        client.createTag(aTerm().withName("tag-" + randomAlphabetic(5)).build()),
+                        client.createTag(aTerm().withName("tag-" + randomAlphabetic(5)).build())
+                )
+                .build();
+
+        final Post post = client.createPost(aPost, PostStatus.publish);
+
+        final List<Long> tagIds = post.getTagIds();
+
+        LOG.debug("Tags: {}", tagIds);
+
+        assertThat(tagIds).isNotEmpty();
+    }
+
+    @Test
     public void testGetPostTagsPaged() throws WpApiParsedException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
 
@@ -843,10 +865,15 @@ public class ClientLiveIT {
     }
 
     private Post newTestPostWithRandomData() {
-        return aPost().withContent(aContent().withRendered(randomAlphabetic(20)).build())
-                .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
-                .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build())
+        return newTestPostBuilderWithRandomData()
                 .build();
+    }
+
+    private PostBuilder newTestPostBuilderWithRandomData() {
+        return aPost()
+                .withContent(aContent().withRendered(randomAlphabetic(20)).build())
+                .withTitle(aTitle().withRendered(randomAlphabetic(5)).build())
+                .withExcerpt(anExcerpt().withRendered(randomAlphabetic(5)).build());
     }
 
     private Tuple2<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {

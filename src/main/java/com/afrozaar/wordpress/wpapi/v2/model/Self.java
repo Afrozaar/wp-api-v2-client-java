@@ -24,17 +24,11 @@ public class Self {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * @return The href
-     */
     @JsonProperty("href")
     public String getHref() {
         return href;
     }
 
-    /**
-     * @param href The href
-     */
     @JsonProperty("href")
     public void setHref(String href) {
         this.href = href;

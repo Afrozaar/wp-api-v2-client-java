@@ -36,7 +36,7 @@ public class UpdatePostRequestTest {
         // when
         final URI result = UpdatePostRequest
                 .forPost(post)
-                .forHost(client, Client.CONTEXT).buildAndExpand(post.getId())
+                .forHost(client, client.getContext()).buildAndExpand(post.getId())
                 .toUri();
 
         System.out.println("result = " + result);
@@ -62,7 +62,7 @@ public class UpdatePostRequestTest {
         // when
         final URI result = UpdatePostRequest
                 .forPost(post)
-                .forHost(client, Client.CONTEXT).buildAndExpand(post.getId())
+                .forHost(client, client.getContext()).buildAndExpand(post.getId())
                 .toUri();
 
         System.out.println("result = " + result);

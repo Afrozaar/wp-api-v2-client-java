@@ -30,49 +30,31 @@ public class HttpsApiWOrgTerm {
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * @return The href
-     */
     @JsonProperty("href")
     public String getHref() {
         return href;
     }
 
-    /**
-     * @param href The href
-     */
     @JsonProperty("href")
     public void setHref(String href) {
         this.href = href;
     }
 
-    /**
-     * @return The embeddable
-     */
     @JsonProperty("embeddable")
     public Boolean getEmbeddable() {
         return embeddable;
     }
 
-    /**
-     * @param embeddable The embeddable
-     */
     @JsonProperty("embeddable")
     public void setEmbeddable(Boolean embeddable) {
         this.embeddable = embeddable;
     }
 
-    /**
-     * @return The taxonomy
-     */
     @JsonProperty("taxonomy")
     public String getTaxonomy() {
         return taxonomy;
     }
 
-    /**
-     * @param taxonomy The taxonomy
-     */
     @JsonProperty("taxonomy")
     public void setTaxonomy(String taxonomy) {
         this.taxonomy = taxonomy;
