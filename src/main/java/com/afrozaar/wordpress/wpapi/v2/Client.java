@@ -876,6 +876,7 @@ public class Client implements Wordpress {
                 //"slug",
                 //"status",
                 "sticky",
+                "tags",
                 "title"
                 //"type"
         );
