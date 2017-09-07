@@ -232,6 +232,8 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
+        Objects.requireNonNull(resource.getFilename(), "The resource used to create a media item does not provide a filename. Please supply a Resource that overrides getFilename().");
+
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
             BiConsumer<String, Object> p = (index, value) -> ofNullable(value).ifPresent(v -> uploadMap.add(index, v));
