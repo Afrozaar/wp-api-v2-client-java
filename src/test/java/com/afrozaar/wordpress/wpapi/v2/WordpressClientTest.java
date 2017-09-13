@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import static org.junit.Assert.fail;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
 import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
@@ -60,9 +61,6 @@ public class WordpressClientTest {
 
     @Test
     public void CreateMedia_MustNotFallOverWhenResourceReturnsFileName() throws WpApiParsedException {
-
-
-
         try {
             wordpress.createMedia(MediaBuilder.aMedia().build(), new FilenameWrapperByteArrayResource(new byte[0], "myfile.png"));
         } catch (RuntimeException e) {
@@ -70,6 +68,11 @@ public class WordpressClientTest {
                 fail("Did not expect a nullpointer exception");
             }
         }
+    }
+
+    @Test
+    public void GetMediaWithViewContext_MustReturnMediaWithAvailableFieldsPopulated() {
+        System.out.println("media = " + wordpress.getMedia(1033L, Contexts.VIEW));
     }
 
 }

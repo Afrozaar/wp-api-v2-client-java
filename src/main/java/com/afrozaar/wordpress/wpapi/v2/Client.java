@@ -283,7 +283,13 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id) {
-        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), ImmutableMap.of(CONTEXT_, Contexts.EDIT), null), Media.class);
+        return getMedia(id, null);
+    }
+
+    @Override
+    public Media getMedia(Long id, @Nullable String context) {
+        final ImmutableMap<String, Object> queryParams = ImmutableMap.of(CONTEXT_, ofNullable(context).orElse(Contexts.EDIT));
+        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), queryParams, null), Media.class);
     }
 
     @Override
@@ -879,8 +885,8 @@ public class Client implements Wordpress {
                 //"status",
                 "sticky",
                 "tags",
-                "title"
-                //"type"
+                "title",
+                "type"
         );
 
         // types ignored for now: slug, status, type
