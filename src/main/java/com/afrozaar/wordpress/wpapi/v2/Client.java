@@ -879,8 +879,8 @@ public class Client implements Wordpress {
                 //"status",
                 "sticky",
                 "tags",
-                "title"
-                //"type"
+                "title",
+                "type"
         );
 
         // types ignored for now: slug, status, type
