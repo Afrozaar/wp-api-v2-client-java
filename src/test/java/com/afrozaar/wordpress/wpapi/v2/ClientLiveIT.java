@@ -10,6 +10,7 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.TermBuilder.aTerm;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
+import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +41,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
-import com.afrozaar.wordpress.wpapi.v2.util.Tuple2;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
 
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -190,7 +191,7 @@ public class ClientLiveIT {
 
         final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withFilter("meta_key", postWithMeta.b.getKey()).build());
+        final PagedResponse<Post> response = client.search(aSearchRequest(Post.class).withFilter("meta_key", postWithMeta.v2.getKey()).build());
 
         assertThat(response.getList()).isNotEmpty().hasSize(1);
     }
@@ -274,10 +275,10 @@ public class ClientLiveIT {
 
         final Tuple2<Post, Media> postWithMedia = newTestPostWithMedia();
 
-        final Media media = client.getMedia(postWithMedia.b.getId());
+        final Media media = client.getMedia(postWithMedia.v2.getId());
 
         assertThat(media).isNotNull();
-        assertThat(media.getDescription()).isEqualTo(postWithMedia.b.getDescription());
+        assertThat(media.getDescription()).isEqualTo(postWithMedia.v2.getDescription());
 
         LOG.debug("Media: {}", media);
     }
@@ -323,7 +324,7 @@ public class ClientLiveIT {
     public void testGetPostMedias() throws WpApiParsedException {
         final Tuple2<Post, Media> postMediaTwo = newTestPostWithMedia();
 
-        final List<Media> postMedias = client.getPostMedias(postMediaTwo.a.getId());
+        final List<Media> postMedias = client.getPostMedias(postMediaTwo.v1.getId());
 
         assertThat(postMedias).isNotNull().isNotEmpty();
     }
@@ -334,7 +335,7 @@ public class ClientLiveIT {
         final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
         //when
-        final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.a.getId());
+        final List<PostMeta> postMetas = client.getPostMetas(postWithMeta.v1.getId());
 
         // then
         assertThat(postMetas).isNotNull();
@@ -346,7 +347,7 @@ public class ClientLiveIT {
 
         final Tuple2<Post, PostMeta> postWithMeta = newTestPostWithRandomDataWithMeta();
 
-        final PostMeta postMeta = client.getPostMeta(postWithMeta.a.getId(), postWithMeta.b.getId());
+        final PostMeta postMeta = client.getPostMeta(postWithMeta.v1.getId(), postWithMeta.v2.getId());
 
         assertThat(postMeta).isNotNull();
 
@@ -879,7 +880,7 @@ public class ClientLiveIT {
     private Tuple2<Post, PostMeta> newTestPostWithRandomDataWithMeta() throws PostCreateException {
         final Post post = client.createPost(newTestPostWithRandomData(), PostStatus.publish);
         final PostMeta meta = client.createMeta(post.getId(), randomAlphabetic(5), randomAlphabetic(10));
-        return Tuple2.of(post, meta);
+        return tuple(post, meta);
     }
 
     private Media newRandomMedia(Post post) {
@@ -897,6 +898,6 @@ public class ClientLiveIT {
         Resource resource = new ClassPathResource("/bin/gradient_colormap.jpg");
         final Media mediaItem = client.createMedia(newRandomMedia(post), resource);
 
-        return Tuple2.of(post, mediaItem);
+        return tuple(post, mediaItem);
     }
 }

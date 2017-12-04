@@ -1,6 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
+import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
 
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
@@ -37,7 +38,7 @@ import com.afrozaar.wordpress.wpapi.v2.response.CustomRenderableParser;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
-import com.afrozaar.wordpress.wpapi.v2.util.Tuple2;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -125,7 +126,7 @@ public class Client implements Wordpress {
 
     {
         Properties properties = MavenProperties.getProperties();
-        userAgentTuple = Tuple2.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
+        userAgentTuple = tuple("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
     }
 
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
@@ -893,12 +894,12 @@ public class Client implements Wordpress {
 
         Arrays.stream(post.getClass().getDeclaredFields())
                 .filter(field -> field.getAnnotationsByType(JsonProperty.class).length > 0)
-                .map(field -> Tuple2.of(field, field.getAnnotationsByType(JsonProperty.class)[0]))
-                .filter(fieldTuple -> processableFields.contains(fieldTuple.b.value()))
+                .map(field -> tuple(field, field.getAnnotationsByType(JsonProperty.class)[0]))
+                .filter(fieldTuple -> processableFields.contains(fieldTuple.v2.value()))
                 .forEach(field -> {
                     try {
-                        ReflectionUtils.makeAccessible(field.a);
-                        Object theField = field.a.get(post);
+                        ReflectionUtils.makeAccessible(field.v1);
+                        Object theField = field.v1.get(post);
                         if (nonNull(theField)) {
                             final Object value;
                             if (theField instanceof RenderableField) {
@@ -906,7 +907,7 @@ public class Client implements Wordpress {
                             } else {
                                 value = theField;
                             }
-                            biConsumer.accept(field.b.value(), value);
+                            biConsumer.accept(field.v2.value(), value);
                         }
                     } catch (IllegalAccessException e) {
                         LOG.error("Error populating post fields builder.", e);
@@ -918,7 +919,9 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, @Nullable MediaType mediaType) {
         final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
+        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri)
+                .header(authTuple.v1, authTuple.v2)
+                .header(userAgentTuple.v1, userAgentTuple.v2);
 
         ofNullable(mediaType).ifPresent(builder::contentType);
 
