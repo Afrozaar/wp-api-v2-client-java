@@ -663,6 +663,11 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Term updateCategory(Term categoryTerm) {
+        return doExchange1(Request.CATEGORY, HttpMethod.POST, Term.class, forExpand(categoryTerm.getId()), null, categoryTerm.asMap()).getBody();
+    }
+
+    @Override
     public Page createPage(Page page, PostStatus status) {
         final Map<String, Object> map = page.asMap();
         final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>().putAll(map).put("status", status.value).build();
