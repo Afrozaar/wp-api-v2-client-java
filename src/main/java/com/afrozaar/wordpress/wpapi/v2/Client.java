@@ -915,7 +915,7 @@ public class Client implements Wordpress {
                             biConsumer.accept(field.v2.value(), value);
                         }
                     } catch (IllegalAccessException e) {
-                        LOG.error("Error populating post fields builder.", e);
+                        LOG.error("Error populating post fields builder for field '{}'", field.v1.getName(), e);
                     }
                 });
 
