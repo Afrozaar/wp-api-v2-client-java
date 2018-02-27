@@ -2,7 +2,6 @@ package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
 import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
-
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
@@ -71,7 +70,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.assertj.core.util.VisibleForTesting;
 import org.slf4j.Logger;
@@ -189,14 +187,23 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post getCustomPost(Long id, String postTypeName) throws PostNotFoundException {
+        return getPost(id, postTypeName, Contexts.VIEW);
+    }
+
+    @Override
     public Post getPost(Long id) throws PostNotFoundException {
         return getPost(id, Contexts.VIEW);
     }
 
     @Override
     public Post getPost(Long id, String context) throws PostNotFoundException {
+        return getPost(id, Request.POST, context);
+    }
+
+    public Post getPost(Long id, String postTypeName, String context) throws PostNotFoundException {
         try {
-            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
+            return doExchange1(postTypeName, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new PostNotFoundException(e);
