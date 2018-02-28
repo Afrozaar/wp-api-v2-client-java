@@ -23,7 +23,7 @@ public interface PostMetas {
 
     PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
 
-    PostMeta updatePostMeta(Long postId, Long metaId, String key, String value, String requestPath);
+    PostMeta updateCustomPostMeta(Long postId, Long metaId, String key, String value, String customPostTypeName);
 
     boolean deletePostMeta(Long postId, Long metaId);
 

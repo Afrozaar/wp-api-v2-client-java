@@ -348,14 +348,14 @@ public class Client implements Wordpress {
     }
 
     @Override
-    public List<PostMeta> getCustomPostMetas(Long postId, String requestPath) {
-        final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.GET, PostMeta[].class, forExpand(requestPath, postId), null, null);
+    public List<PostMeta> getCustomPostMetas(Long postId, String customPostTypeName) {
+        final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.GET, PostMeta[].class, forExpand(customPostTypeName, postId), null, null);
         return Arrays.asList(exchange.getBody());
     }
 
     @Override
-    public PostMeta getCustomPostMeta(Long postId, Long metaId, String requestPath) {
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.GET, PostMeta.class, forExpand(requestPath, postId, metaId), null, null);
+    public PostMeta getCustomPostMeta(Long postId, Long metaId, String customPostTypeName) {
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.GET, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, null);
         return exchange.getBody();
     }
 
@@ -366,17 +366,24 @@ public class Client implements Wordpress {
 
     @Override
     public PostMeta updatePostMeta(Long postId, Long metaId, String key, String value) {
-        return updatePostMeta(postId, metaId, null, value, Request.META);
-    }
-
-    @Override
-    public PostMeta updatePostMeta(Long postId, Long metaId, String key, String value, String requestPath) {
         ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
         BiConsumer<String, Object> biConsumer = (key1, value1) -> ofNullable(value1).ifPresent(v -> builder.put(key1, v));
 
         biConsumer.accept(META_KEY, key);
         biConsumer.accept(META_VALUE, value);
-        final ResponseEntity<PostMeta> exchange = doExchange1(requestPath, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
+
+        return exchange.getBody();
+    }
+
+    @Override
+    public PostMeta updateCustomPostMeta(Long postId, Long metaId, String key, String value, String customPostTypeName) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        BiConsumer<String, Object> biConsumer = (key1, value1) -> ofNullable(value1).ifPresent(v -> builder.put(key1, v));
+
+        biConsumer.accept(META_KEY, key);
+        biConsumer.accept(META_VALUE, value);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, builder.build());
 
         return exchange.getBody();
     }
