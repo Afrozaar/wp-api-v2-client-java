@@ -15,13 +15,15 @@ public interface PostMetas {
 
     PostMeta getPostMeta(Long postId, Long metaId);
 
-    List<PostMeta> getCustomPostMetas(Long postId, String customPostType);
+    List<PostMeta> getCustomPostMetas(Long postId, String requestPath);
 
-    PostMeta getCustomPostMeta(Long postId, Long metaId, String customPostType);
+    PostMeta getCustomPostMeta(Long postId, Long metaId, String requestPath);
 
     PostMeta updatePostMetaValue(Long postId, Long metaId, String value);
 
     PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
+
+    PostMeta updatePostMeta(Long postId, Long metaId, String key, String value, String requestPath);
 
     boolean deletePostMeta(Long postId, Long metaId);
 
