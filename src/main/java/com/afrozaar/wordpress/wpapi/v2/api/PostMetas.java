@@ -15,6 +15,10 @@ public interface PostMetas {
 
     PostMeta getPostMeta(Long postId, Long metaId);
 
+    List<PostMeta> getCustomPostMetas(Long postId, String customPostType);
+
+    PostMeta getCustomPostMeta(Long postId, Long metaId, String customPostType);
+
     PostMeta updatePostMetaValue(Long postId, Long metaId, String value);
 
     PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
