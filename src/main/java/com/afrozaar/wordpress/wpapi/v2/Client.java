@@ -336,6 +336,14 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public PostMeta createCustomPostMeta(Long postId, String key, String value, String customPostTypeName) {
+        final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId), null, body,
+                MediaType.APPLICATION_JSON);
+        return exchange.getBody();
+    }
+
+    @Override
     public List<PostMeta> getPostMetas(Long postId) {
         final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.METAS, HttpMethod.GET, PostMeta[].class, forExpand(postId), null, null);
         return Arrays.asList(exchange.getBody());
