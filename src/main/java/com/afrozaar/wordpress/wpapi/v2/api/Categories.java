@@ -16,6 +16,8 @@ public interface Categories {
     Term deleteCategory(Term categoryTerm) throws TermNotFoundException;
     Term deleteCategory(Term categoryTerm, boolean force) throws TermNotFoundException;
 
+    Term updateCategory(Term categoryTerm);
+
     List<Term> deleteCategories(Term... terms);
     List<Term> deleteCategories(boolean force,Term... terms);
 }

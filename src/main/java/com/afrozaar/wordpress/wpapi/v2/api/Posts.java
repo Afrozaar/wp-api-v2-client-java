@@ -33,6 +33,8 @@ public interface Posts {
 
     Post createPost(Post post, PostStatus status) throws PostCreateException;
 
+    Post getCustomPost(Long id, String postTypeName) throws PostNotFoundException;
+
     Post getPost(Long id) throws PostNotFoundException;
     Post getPost(Long id, String context) throws PostNotFoundException;
 

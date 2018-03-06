@@ -11,13 +11,21 @@ public interface PostMetas {
 
     PostMeta createMeta(Long postId, String key, String value);
 
+    PostMeta createCustomPostMeta(Long postId, String key, String value, String customPostTypeName);
+
     List<PostMeta> getPostMetas(Long postId);
 
     PostMeta getPostMeta(Long postId, Long metaId);
 
+    List<PostMeta> getCustomPostMetas(Long postId, String requestPath);
+
+    PostMeta getCustomPostMeta(Long postId, Long metaId, String requestPath);
+
     PostMeta updatePostMetaValue(Long postId, Long metaId, String value);
 
     PostMeta updatePostMeta(Long postId, Long metaId, String key, String value);
+
+    PostMeta updateCustomPostMeta(Long postId, Long metaId, String key, String value, String customPostTypeName);
 
     boolean deletePostMeta(Long postId, Long metaId);
 

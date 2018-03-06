@@ -1,7 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
-
+import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
@@ -37,7 +37,7 @@ import com.afrozaar.wordpress.wpapi.v2.response.CustomRenderableParser;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
-import com.afrozaar.wordpress.wpapi.v2.util.Tuple2;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -70,7 +70,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.assertj.core.util.VisibleForTesting;
 import org.slf4j.Logger;
@@ -125,7 +124,7 @@ public class Client implements Wordpress {
 
     {
         Properties properties = MavenProperties.getProperties();
-        userAgentTuple = Tuple2.of("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
+        userAgentTuple = tuple("User-Agent", format("%s/%s", properties.getProperty(ARTIFACT_ID), properties.getProperty(VERSION)));
     }
 
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
@@ -188,14 +187,23 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post getCustomPost(Long id, String requestPath) throws PostNotFoundException {
+        return getPost(id, requestPath, Contexts.VIEW);
+    }
+
+    @Override
     public Post getPost(Long id) throws PostNotFoundException {
         return getPost(id, Contexts.VIEW);
     }
 
     @Override
     public Post getPost(Long id, String context) throws PostNotFoundException {
+        return getPost(id, Request.POST, context);
+    }
+
+    public Post getPost(Long id, String postTypeName, String context) throws PostNotFoundException {
         try {
-            return doExchange1(Request.POST, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
+            return doExchange1(postTypeName, HttpMethod.GET, Post.class, forExpand(id), ImmutableMap.of(CONTEXT_, context), null).getBody();
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
                 throw new PostNotFoundException(e);
@@ -328,6 +336,14 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public PostMeta createCustomPostMeta(Long postId, String key, String value, String customPostTypeName) {
+        final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId), null, body,
+                MediaType.APPLICATION_JSON);
+        return exchange.getBody();
+    }
+
+    @Override
     public List<PostMeta> getPostMetas(Long postId) {
         final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.METAS, HttpMethod.GET, PostMeta[].class, forExpand(postId), null, null);
         return Arrays.asList(exchange.getBody());
@@ -336,6 +352,18 @@ public class Client implements Wordpress {
     @Override
     public PostMeta getPostMeta(Long postId, Long metaId) {
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.GET, PostMeta.class, forExpand(postId, metaId), null, null);
+        return exchange.getBody();
+    }
+
+    @Override
+    public List<PostMeta> getCustomPostMetas(Long postId, String customPostTypeName) {
+        final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.GET, PostMeta[].class, forExpand(customPostTypeName, postId), null, null);
+        return Arrays.asList(exchange.getBody());
+    }
+
+    @Override
+    public PostMeta getCustomPostMeta(Long postId, Long metaId, String customPostTypeName) {
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.GET, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, null);
         return exchange.getBody();
     }
 
@@ -352,6 +380,18 @@ public class Client implements Wordpress {
         biConsumer.accept(META_KEY, key);
         biConsumer.accept(META_VALUE, value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.META, HttpMethod.POST, PostMeta.class, forExpand(postId, metaId), null, builder.build());
+
+        return exchange.getBody();
+    }
+
+    @Override
+    public PostMeta updateCustomPostMeta(Long postId, Long metaId, String key, String value, String customPostTypeName) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+        BiConsumer<String, Object> biConsumer = (key1, value1) -> ofNullable(value1).ifPresent(v -> builder.put(key1, v));
+
+        biConsumer.accept(META_KEY, key);
+        biConsumer.accept(META_VALUE, value);
+        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, builder.build());
 
         return exchange.getBody();
     }
@@ -662,6 +702,11 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Term updateCategory(Term categoryTerm) {
+        return doExchange1(Request.CATEGORY, HttpMethod.POST, Term.class, forExpand(categoryTerm.getId()), null, categoryTerm.asMap()).getBody();
+    }
+
+    @Override
     public Page createPage(Page page, PostStatus status) {
         final Map<String, Object> map = page.asMap();
         final ImmutableMap<String, Object> pageFields = new ImmutableMap.Builder<String, Object>().putAll(map).put("status", status.value).build();
@@ -893,12 +938,12 @@ public class Client implements Wordpress {
 
         Arrays.stream(post.getClass().getDeclaredFields())
                 .filter(field -> field.getAnnotationsByType(JsonProperty.class).length > 0)
-                .map(field -> Tuple2.of(field, field.getAnnotationsByType(JsonProperty.class)[0]))
-                .filter(fieldTuple -> processableFields.contains(fieldTuple.b.value()))
+                .map(field -> tuple(field, field.getAnnotationsByType(JsonProperty.class)[0]))
+                .filter(fieldTuple -> processableFields.contains(fieldTuple.v2.value()))
                 .forEach(field -> {
                     try {
-                        ReflectionUtils.makeAccessible(field.a);
-                        Object theField = field.a.get(post);
+                        ReflectionUtils.makeAccessible(field.v1);
+                        Object theField = field.v1.get(post);
                         if (nonNull(theField)) {
                             final Object value;
                             if (theField instanceof RenderableField) {
@@ -906,10 +951,10 @@ public class Client implements Wordpress {
                             } else {
                                 value = theField;
                             }
-                            biConsumer.accept(field.b.value(), value);
+                            biConsumer.accept(field.v2.value(), value);
                         }
                     } catch (IllegalAccessException e) {
-                        LOG.error("Error populating post fields builder.", e);
+                        LOG.error("Error populating post fields builder for field '{}'", field.v1.getName(), e);
                     }
                 });
 
@@ -918,7 +963,9 @@ public class Client implements Wordpress {
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, @Nullable MediaType mediaType) {
         final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
-        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri).header(authTuple.a, authTuple.b).header(userAgentTuple.a, userAgentTuple.b);
+        final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri)
+                .header(authTuple.v1, authTuple.v2)
+                .header(userAgentTuple.v1, userAgentTuple.v2);
 
         ofNullable(mediaType).ifPresent(builder::contentType);
 
