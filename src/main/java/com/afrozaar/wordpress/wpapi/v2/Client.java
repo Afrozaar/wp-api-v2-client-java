@@ -278,6 +278,17 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public List<Media> getPostMedias(Long postId, @Nullable String context) {
+        Media[] medias = CustomRenderableParser.parse(
+                doExchange1(
+                        Request.MEDIAS, HttpMethod.GET, String.class, forExpand(),
+                        ImmutableMap.of("parent", postId, CONTEXT_, context), null
+                ).getBody(),
+                Media[].class);
+        return Arrays.asList(medias);
+    }
+
+    @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
@@ -435,6 +446,23 @@ public class Client implements Wordpress {
         } else {
             // attempt normal delete
             final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+
+            return exchange.getStatusCode().is2xxSuccessful();
+        }
+    }
+
+    @Override
+    public boolean deleteCustomPostMeta(Long postId, Long metaId, Boolean force, String customPostTypeName) {
+        if (supportsMetaDeleteViaPostMethod.apply(postId, metaId)) {
+            // deleting meta via meta POST is available, so use that to delete.
+            final ResponseEntity<Map> result = doExchange1(Request.CUSTOM_META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(customPostTypeName, postId, metaId),
+                    isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            return result.getStatusCode().is2xxSuccessful() && "Deleted meta".equals(result.getBody().get("message"));
+        } else {
+            // attempt normal delete
+            final ResponseEntity<Map> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.DELETE, Map.class, forExpand(customPostTypeName, postId, metaId),
+                    isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
             Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
             return exchange.getStatusCode().is2xxSuccessful();
@@ -646,7 +674,8 @@ public class Client implements Wordpress {
         return getAllTermsForEndpoint(Request.CATEGORIES);
     }
 
-    private List<Term> getAllTermsForEndpoint(final String endpoint, String... expandParams) {
+    @Override
+    public List<Term> getAllTermsForEndpoint(final String endpoint, String... expandParams) {
         List<Term> collected = new ArrayList<>();
         PagedResponse<Term> pagedResponse = this.getPagedResponse(endpoint, Term.class, expandParams);
         collected.addAll(pagedResponse.getList());
@@ -962,10 +991,12 @@ public class Client implements Wordpress {
     }
 
     private <T, B> ResponseEntity<T> doExchange0(HttpMethod method, URI uri, Class<T> typeRef, B body, @Nullable MediaType mediaType) {
-        final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
         final RequestEntity.BodyBuilder builder = RequestEntity.method(method, uri)
-                .header(authTuple.v1, authTuple.v2)
                 .header(userAgentTuple.v1, userAgentTuple.v2);
+        if (username != null && password != null) {
+            final Tuple2<String, String> authTuple = AuthUtil.authTuple(username, password);
+            builder.header(authTuple.v1, authTuple.v2);
+        }
 
         ofNullable(mediaType).ifPresent(builder::contentType);
 

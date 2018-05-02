@@ -26,6 +26,7 @@ public abstract class Request {
     public static final String CUSTOM_POST_METAS = "/{postType}/{postId}/meta";
     public static final String CUSTOM_POST_META = "/{postType}/{postId}/meta/{metaId}";
     public static final String META_POST_DELETE = "/posts/{postId}/meta/{metaId}/delete";
+    public static final String CUSTOM_META_POST_DELETE = "/{postType}/{postId}/meta/{metaId}/delete";
     public static final String TAXONOMIES = "/taxonomies";
     public static final String TAXONOMY = "/taxonomies/{slug}";
     public static final String TERMS = "/terms/{taxonomySlug}";

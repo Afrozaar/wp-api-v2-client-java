@@ -30,4 +30,6 @@ public interface PostMetas {
     boolean deletePostMeta(Long postId, Long metaId);
 
     boolean deletePostMeta(Long postId, Long metaId, Boolean force);
+
+    boolean deleteCustomPostMeta(Long postId, Long metaId, Boolean force, String customPostTypeName);
 }

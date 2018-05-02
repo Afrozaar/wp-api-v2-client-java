@@ -9,6 +9,8 @@ public interface Categories {
 
     List<Term> getCategories();
 
+    List<Term> getAllTermsForEndpoint(final String endpoint, String... expandParams);
+
     Term getCategory(Long id);
 
     Term createCategory(Term categoryTerm);

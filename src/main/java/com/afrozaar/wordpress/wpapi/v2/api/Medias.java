@@ -34,4 +34,7 @@ public interface Medias {
     Post setPostFeaturedMedia(Long postId, Media media);
 
     List<Media> getPostMedias(Long postId);
+
+    List<Media> getPostMedias(Long postId, @Nullable String context);
+
 }

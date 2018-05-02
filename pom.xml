@@ -3,11 +3,10 @@
 
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
-    <version>4.8.5</version>
+    <version>4.9.0-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
-    
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Java client implementation to the WordPress WP-API v2 plugin.</description>
     <url>https://github.com/afrozaar/wp-api-v2-client-java</url>
@@ -34,7 +33,6 @@
         </developer>
         <developer>
             <name>Freddie O'Donnell</name>
-            <email></email>
             <organization>Afrozaar</organization>
             <organizationUrl>https://afrozaar.com</organizationUrl>
         </developer>
@@ -110,7 +108,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>1.6</version>
                 <configuration>
                     <useAgent>true</useAgent>
                 </configuration>
@@ -244,12 +242,6 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils-core</artifactId>
             <version>1.8.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.9.10</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
