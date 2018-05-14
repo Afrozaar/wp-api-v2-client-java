@@ -268,24 +268,19 @@ public class Client implements Wordpress {
 
     @Override
     public List<Media> getPostMedias(Long postId) {
-        Media[] medias = CustomRenderableParser.parse(
-                doExchange1(
-                        Request.MEDIAS, HttpMethod.GET, String.class, forExpand(),
-                        ImmutableMap.of("parent", postId, CONTEXT_, Contexts.EDIT), null
-                ).getBody(),
-                Media[].class);
-        return Arrays.asList(medias);
+        return getPostMedias(postId, Contexts.EDIT);
     }
 
     @Override
     public List<Media> getPostMedias(Long postId, @Nullable String context) {
-        Media[] medias = CustomRenderableParser.parse(
-                doExchange1(
-                        Request.MEDIAS, HttpMethod.GET, String.class, forExpand(),
-                        ImmutableMap.of("parent", postId, CONTEXT_, context), null
-                ).getBody(),
-                Media[].class);
-        return Arrays.asList(medias);
+        List<Media> collected = new ArrayList<>();
+        PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.POST_MEDIAS, Media.class, String.valueOf(postId), context);
+        collected.addAll(pagedResponse.getList());
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+        return collected;
     }
 
     @Override

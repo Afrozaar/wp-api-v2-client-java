@@ -31,6 +31,7 @@ public abstract class Request {
     public static final String TAXONOMY = "/taxonomies/{slug}";
     public static final String TERMS = "/terms/{taxonomySlug}";
     public static final String TERM = "/terms/{taxonomySlug}/{termId}";
+    public static final String POST_MEDIAS = "/media?parent={postId}?context={context}";
     public static final String MEDIAS = "/media";
     public static final String MEDIA = "/media/{mediaId}";
     public static final String PAGES = "/pages";
