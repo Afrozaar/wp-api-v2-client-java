@@ -10,6 +10,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.Term;
 import com.afrozaar.wordpress.wpapi.v2.model.Title;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -183,7 +184,7 @@ public class PostBuilder {
 
     public Post build() {
         Post post = new Post();
-        post.setAuthor(author);
+        post.setAuthor(Collections.singletonList(author));
         post.setId(id);
         post.setTitle(title);
         post.setLinks(Links);
