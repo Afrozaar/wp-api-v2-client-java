@@ -7,12 +7,13 @@ import com.afrozaar.wordpress.wpapi.v2.model.Media;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.client.HttpClientErrorException;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,7 @@ public final class CustomRenderableParser {
     private static final Logger LOG = LoggerFactory.getLogger(CustomRenderableParser.class);
     public static final String FIELD_PREVIOUS = "previous";
     public static final String FIELD_DELETED = "deleted";
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY).build();
     private static final Set<String> modifiableFields = new HashSet<>(Arrays.asList("description", "caption"));
     private static final String RENDERED = "rendered";
     private static final String RAW = "raw";

@@ -44,7 +44,7 @@ import java.util.Map;
 public class Post {
 
     @JsonProperty("author")
-    private Long author;
+    private List<Long> author = new ArrayList<>();
     @JsonProperty("content")
     private Content content;
     @JsonProperty("status")
@@ -101,13 +101,11 @@ public class Post {
         this.categoryIds = categoryIds;
     }
 
-    @JsonProperty("author")
     public Long getAuthor() {
-        return author;
+        return author.size() > 0 ? author.get(0) : null;
     }
 
-    @JsonProperty("author")
-    public void setAuthor(Long author) {
+    public void setAuthor(List<Long> author) {
         this.author = author;
     }
 
