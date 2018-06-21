@@ -16,9 +16,14 @@ import com.afrozaar.wordpress.wpapi.v2.util.FilenameWrapperByteArrayResource;
 
 import org.springframework.core.io.ByteArrayResource;
 
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.time.Instant;
 import java.util.Map;
@@ -26,12 +31,26 @@ import java.util.Map;
 /**
  * @author johan
  */
-public class WordpressClientTest {
+public class WordpressClientIT {
 
-    private static final Logger LOG = LoggerFactory.getLogger(WordpressClientTest.class);
-    Wordpress wordpress = ClientFactory.fromConfig(ClientConfig.of("http://localhost", "username", "password", false, true));
+    private static final Logger LOG = LoggerFactory.getLogger(WordpressClientIT.class);
+
+    @ClassRule
+    @SuppressWarnings("unchecked")
+    public static GenericContainer wordpressContainer = new GenericContainer<>("afrozaar/wordpress:latest").withExposedPorts(80).waitingFor(
+            new LogMessageWaitStrategy().withRegEx("[\\s\\S]*INFO success: mysqld entered RUNNING state[\\s\\S]*"));
+
+    private static Wordpress wordpress;
+
+    @BeforeClass
+    public static void setup() {
+        wordpress = ClientFactory.fromConfig(ClientConfig.of("http://" + wordpressContainer.getContainerIpAddress() + ":" + wordpressContainer.getMappedPort(
+                80), "username",
+                                                             "password", false, true));
+    }
 
     @Test
+    @Ignore("don't know how this media is created")
     public void TestCreateClient() {
         System.out.println("media = " + wordpress.getMedia(10L));
     }
@@ -48,7 +67,7 @@ public class WordpressClientTest {
 
         final Map<String, Object> fieldMap = ((Client) wordpress).fieldsFrom(post);
 
-        assertThat(fieldMap).containsOnlyKeys("title", "modified_gmt","format");
+        assertThat(fieldMap).containsOnlyKeys("title", "modified_gmt", "format", "author");
 
         LOG.debug("map to post: {}", fieldMap);
 
@@ -71,6 +90,7 @@ public class WordpressClientTest {
     }
 
     @Test
+    @Ignore("don't know how this is creawted")
     public void GetMediaWithViewContext_MustReturnMediaWithAvailableFieldsPopulated() {
         System.out.println("media = " + wordpress.getMedia(1033L, Contexts.VIEW));
     }

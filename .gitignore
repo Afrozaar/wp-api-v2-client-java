@@ -7,3 +7,4 @@
 /**/pom.xml~
 /atlassian-ide-plugin.xml
 /**/*.yaml
+/.classpath

@@ -14,10 +14,10 @@ import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.junit.Assert.fail;
-
 import static java.lang.String.format;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
+
+import static org.junit.Assert.fail;
 
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
 import com.afrozaar.wordpress.wpapi.v2.api.Posts;
@@ -50,10 +50,13 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.apache.commons.lang.RandomStringUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -69,13 +72,22 @@ public class ClientLiveIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientLiveIT.class);
 
+    @ClassRule
+    @SuppressWarnings("unchecked")
+    public static GenericContainer wordpress = new GenericContainer<>("afrozaar/wordpress:latest").withExposedPorts(80)
+            .waitingFor(new LogMessageWaitStrategy().withRegEx("[\\s\\S]*INFO success: mysqld entered RUNNING state[\\s\\S]*"));
+
     private static ClientConfig clientConfig;
     private static Wordpress client;
 
     @BeforeClass
     public static void init() throws IOException {
-        clientConfig = resolveConfig();
+        clientConfig = getDockerConfig();
         client = ClientFactory.fromConfig(clientConfig);
+    }
+
+    private static ClientConfig getDockerConfig() {
+        return ClientConfig.of("http://localhost:" + wordpress.getMappedPort(80), "docker", "docker!", false, true);
     }
 
     @Before
@@ -93,7 +105,8 @@ public class ClientLiveIT {
             return ClientConfig.load(resourceToUse);
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Can not run tests without a configuration. Please ensure you have a valid configuration in ${project}/src/test/resources/config/<hostname>-test.yaml");
+                    "Can not run tests without a configuration. Please ensure you have a valid configuration in "
+                            + "${project}/src/test/resources/config/<hostname>-test.yaml");
         }
     }
 
@@ -102,7 +115,7 @@ public class ClientLiveIT {
             return format("%s%s%s", config.getBaseUrl(), clientContext, apiContext);
         } else {
             //http://docker.dev?rest_route=/wp/v2/posts
-            return format("%s?rest_route=%s%s", config.getBaseUrl(), clientContext.replace("/wp-json", "") , apiContext);
+            return format("%s?rest_route=%s%s", config.getBaseUrl(), clientContext.replace("/wp-json", ""), apiContext);
         }
     }
 
@@ -202,9 +215,9 @@ public class ClientLiveIT {
 
         final PagedResponse<Post> response = client
                 .search(aSearchRequest(Post.class).withUri(Request.POSTS)
-                        .withFilter("meta_key", "baobab_indexed")
-                        .withFilter("meta_compare", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
-                        .build());
+                                .withFilter("meta_key", "baobab_indexed")
+                                .withFilter("meta_compare", "NOT EXISTS") //RestTemplate takes care of escaping values ('space' -> '%20')
+                                .build());
 
         // this request using curl/httpie:
         // http --auth 'username:wordpress!' http://myhost/wp-json/wp/v2/posts?filter[meta_key]=baobab_indexed&filter[meta_compare]=NOT%20EXISTS
@@ -515,12 +528,18 @@ public class ClientLiveIT {
 
         LOG.debug("rootTerm: {}", rootTerm);
 
-        final Term child1 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
-        final Term child2 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
-        final Term child3 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
-        final Term child4 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
-        final Term child41 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
-        final Term child42 = client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
+        final Term child1 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child2 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child3 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child4 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(rootTerm.getId()).build());
+        final Term child41 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
+        final Term child42 =
+                client.createCategory(aTerm().withName(randomAlphabetic(5)).withDescription(randomAlphabetic(20)).withParentId(child4.getId()).build());
 
         assertThat(child42.getParentId()).isEqualTo(child4.getId());
         assertThat(child41.getParentId()).isEqualTo(child4.getId());
@@ -820,7 +839,9 @@ public class ClientLiveIT {
     @Test
     public void testDeleteUser() throws WpApiParsedException {
 
-        User user = aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3))).build();
+        User user =
+                aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
+                        .build();
         String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);
@@ -837,7 +858,9 @@ public class ClientLiveIT {
 
     @Test
     public void testUpdateUser() throws WpApiParsedException {
-        User user = aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3))).build();
+        User user =
+                aUser().withName(randomAlphabetic(4)).withLastName(randomAlphabetic(5)).withEmail(format("%s@%s.dev", randomAlphabetic(3), randomAlphabetic(3)))
+                        .build();
         String username = randomAlphabetic(4);
         String password = RandomStringUtils.randomAlphanumeric(5);
         final User createdUser = client.createUser(user, username, password);

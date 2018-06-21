@@ -10,16 +10,20 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
 import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+
 import org.apache.commons.beanutils.BeanUtils;
 import org.assertj.core.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -41,7 +45,7 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
-import javax.xml.transform.Source;
+
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -55,6 +59,7 @@ import java.util.stream.Stream;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
 import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
+
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
@@ -93,7 +98,7 @@ public class Client implements Wordpress {
     }
 
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
-       this(null, baseUrl, username, password, usePermalinkEndpoint, debug, null);
+        this(null, baseUrl, username, password, usePermalinkEndpoint, debug, null);
     }
 
     public Client(String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug, ClientHttpRequestFactory requestFactory) {
@@ -101,7 +106,7 @@ public class Client implements Wordpress {
     }
 
     public Client(String context, String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug) {
-       this(context, baseUrl, username, password, usePermalinkEndpoint, debug, null);
+        this(context, baseUrl, username, password, usePermalinkEndpoint, debug, null);
     }
 
     public Client(String context, String baseUrl, String username, String password, boolean usePermalinkEndpoint, boolean debug,
@@ -121,7 +126,7 @@ public class Client implements Wordpress {
         messageConverters.add(new ByteArrayHttpMessageConverter());
         messageConverters.add(new StringHttpMessageConverter());
         messageConverters.add(new ResourceHttpMessageConverter());
-        messageConverters.add(new SourceHttpMessageConverter<Source>());
+        messageConverters.add(new SourceHttpMessageConverter<>());
         messageConverters.add(new AllEncompassingFormHttpMessageConverter());
         messageConverters.add(new MappingJackson2HttpMessageConverter(emptyArrayAsNullObjectMapper));
         //messageConverters.add(new MappingJackson2HttpMessageConverter());
@@ -129,8 +134,8 @@ public class Client implements Wordpress {
 
         if (requestFactory != null) {
             restTemplate.setRequestFactory(requestFactory);
-        } 
-        
+        }
+
     }
 
     @Override
@@ -182,7 +187,8 @@ public class Client implements Wordpress {
 
     @Override
     public Post updatePost(Post post) {
-        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.PUT, Post.class, forExpand(post.getId()), ImmutableMap.of(), fieldsFrom(post));
+        final ResponseEntity<Post> exchange =
+                doExchange1(Request.POST, HttpMethod.PUT, Post.class, forExpand(post.getId()), ImmutableMap.of(), fieldsFrom(post));
         return exchange.getBody();
     }
 
@@ -193,7 +199,8 @@ public class Client implements Wordpress {
 
     @Override
     public Post deletePost(Post post) {
-        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.DELETE, Post.class, forExpand(post.getId()), null, null);// Deletion of a post returns the post's data before removing it.
+        final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.DELETE, Post.class, forExpand(post.getId()), null,
+                                                          null);// Deletion of a post returns the post's data before removing it.
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
         return exchange.getBody();
     }
@@ -207,7 +214,8 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
-        Objects.requireNonNull(resource.getFilename(), "The resource used to create a media item does not provide a filename. Please supply a Resource that overrides getFilename().");
+        Objects.requireNonNull(resource.getFilename(),
+                               "The resource used to create a media item does not provide a filename. Please supply a Resource that overrides getFilename().");
 
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
@@ -284,12 +292,14 @@ public class Client implements Wordpress {
         p.accept("caption", media.getCaption());
         p.accept("description", media.getDescription());
 
-        return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.POST, String.class, forExpand(media.getId()), null, builder.build()), Media.class);
+        return CustomRenderableParser
+                .parse(doExchange1(Request.MEDIA, HttpMethod.POST, String.class, forExpand(media.getId()), null, builder.build()), Media.class);
     }
 
     @Override
     public boolean deleteMedia(Media media, boolean force) {
-        final ResponseEntity<String> exchange = doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
+        final ResponseEntity<String> exchange =
+                doExchange1(Request.MEDIA, HttpMethod.DELETE, String.class, forExpand(media.getId()), ImmutableMap.of(FORCE, force), null);
         return exchange.getStatusCode().is2xxSuccessful();
     }
 
@@ -304,15 +314,16 @@ public class Client implements Wordpress {
     public PostMeta createMeta(Long postId, String key, String value) {
         final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
         final ResponseEntity<PostMeta> exchange = doExchange1(Request.METAS, HttpMethod.POST, PostMeta.class, forExpand(postId), null, body,
-                MediaType.APPLICATION_JSON);
+                                                              MediaType.APPLICATION_JSON);
         return exchange.getBody();
     }
 
     @Override
     public PostMeta createCustomPostMeta(Long postId, String key, String value, String customPostTypeName) {
         final Map<String, String> body = ImmutableMap.of(META_KEY, key, META_VALUE, value);
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId), null, body,
-                MediaType.APPLICATION_JSON);
+        final ResponseEntity<PostMeta> exchange =
+                doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId), null, body,
+                            MediaType.APPLICATION_JSON);
         return exchange.getBody();
     }
 
@@ -330,13 +341,15 @@ public class Client implements Wordpress {
 
     @Override
     public List<PostMeta> getCustomPostMetas(Long postId, String customPostTypeName) {
-        final ResponseEntity<PostMeta[]> exchange = doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.GET, PostMeta[].class, forExpand(customPostTypeName, postId), null, null);
+        final ResponseEntity<PostMeta[]> exchange =
+                doExchange1(Request.CUSTOM_POST_METAS, HttpMethod.GET, PostMeta[].class, forExpand(customPostTypeName, postId), null, null);
         return Arrays.asList(exchange.getBody());
     }
 
     @Override
     public PostMeta getCustomPostMeta(Long postId, Long metaId, String customPostTypeName) {
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.GET, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, null);
+        final ResponseEntity<PostMeta> exchange =
+                doExchange1(Request.CUSTOM_POST_META, HttpMethod.GET, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, null);
         return exchange.getBody();
     }
 
@@ -364,7 +377,8 @@ public class Client implements Wordpress {
 
         biConsumer.accept(META_KEY, key);
         biConsumer.accept(META_VALUE, value);
-        final ResponseEntity<PostMeta> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, builder.build());
+        final ResponseEntity<PostMeta> exchange =
+                doExchange1(Request.CUSTOM_POST_META, HttpMethod.POST, PostMeta.class, forExpand(customPostTypeName, postId, metaId), null, builder.build());
 
         return exchange.getBody();
     }
@@ -375,12 +389,15 @@ public class Client implements Wordpress {
         }
 
         try {
-            Function<Map, Boolean> expected = map -> nonNull(map) && Stream.of("endpoints", "methods", "namespace").allMatch(map::containsKey) && Objects.equals(((ArrayList) map.get("methods")).get(0), "POST");
+            Function<Map, Boolean> expected = map -> nonNull(map) && Stream.of("endpoints", "methods", "namespace").allMatch(map::containsKey) && Objects
+                    .equals(((ArrayList) map.get("methods")).get(0), "POST");
 
             final ResponseEntity<Map> responseEntity = doExchange1(Request.META_POST_DELETE, HttpMethod.OPTIONS, Map.class, forExpand(pid, mid), null, null);
             final Map body = responseEntity.getBody();
             canDeleteMetaViaPost = responseEntity.getStatusCode().is2xxSuccessful() && expected.apply(body);
-            LOG.info("Wordpress instance at {} supports deleting meta via POST /posts/:pid/meta/:mid/delete : {}", Client.this.baseUrl, canDeleteMetaViaPost);
+            // need a getter for getBaseUrl as it is used in this function (and eclipse compiler doesn't like it being used directly cause it says it's not initalised
+            LOG.info("Wordpress instance at {} supports deleting meta via POST /posts/:pid/meta/:mid/delete : {}", getBaseUrl(), canDeleteMetaViaPost);
+
             return canDeleteMetaViaPost;
         } catch (Exception jme) {
             canDeleteMetaViaPost = false;
@@ -403,12 +420,16 @@ public class Client implements Wordpress {
     public boolean deletePostMeta(Long postId, Long metaId, Boolean force) {
         if (supportsMetaDeleteViaPostMethod.apply(postId, metaId)) {
             // deleting meta via meta POST is available, so use that to delete.
-            final ResponseEntity<Map> result = doExchange1(Request.META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            final ResponseEntity<Map> result = doExchange1(Request.META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(postId, metaId),
+                                                           isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
             return result.getStatusCode().is2xxSuccessful() && "Deleted meta".equals(result.getBody().get("message"));
         } else {
             // attempt normal delete
-            final ResponseEntity<Map> exchange = doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
-            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+            final ResponseEntity<Map> exchange =
+                    doExchange1(Request.META, HttpMethod.DELETE, Map.class, forExpand(postId, metaId), isNull(force) ? null : ImmutableMap.of(FORCE, force),
+                                null);
+            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(),
+                                        format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
             return exchange.getStatusCode().is2xxSuccessful();
         }
@@ -418,14 +439,17 @@ public class Client implements Wordpress {
     public boolean deleteCustomPostMeta(Long postId, Long metaId, Boolean force, String customPostTypeName) {
         if (supportsMetaDeleteViaPostMethod.apply(postId, metaId)) {
             // deleting meta via meta POST is available, so use that to delete.
-            final ResponseEntity<Map> result = doExchange1(Request.CUSTOM_META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(customPostTypeName, postId, metaId),
-                    isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            final ResponseEntity<Map> result =
+                    doExchange1(Request.CUSTOM_META_POST_DELETE, HttpMethod.POST, Map.class, forExpand(customPostTypeName, postId, metaId),
+                                isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
             return result.getStatusCode().is2xxSuccessful() && "Deleted meta".equals(result.getBody().get("message"));
         } else {
             // attempt normal delete
-            final ResponseEntity<Map> exchange = doExchange1(Request.CUSTOM_POST_META, HttpMethod.DELETE, Map.class, forExpand(customPostTypeName, postId, metaId),
-                    isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
-            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(), format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
+            final ResponseEntity<Map> exchange =
+                    doExchange1(Request.CUSTOM_POST_META, HttpMethod.DELETE, Map.class, forExpand(customPostTypeName, postId, metaId),
+                                isNull(force) ? null : ImmutableMap.of(FORCE, force), null);
+            Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful(),
+                                        format("Expected success on post meta delete request: /posts/%s/meta/%s", postId, metaId));
 
             return exchange.getStatusCode().is2xxSuccessful();
         }
@@ -553,10 +577,12 @@ public class Client implements Wordpress {
         try {
             Map<String, Object> queryParams = force ? ImmutableMap.of("force", true) : null;
 
-            final ResponseEntity<String> tResponseEntity = doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null);
+            final ResponseEntity<String> tResponseEntity =
+                    doExchange1(Request.TAG, HttpMethod.DELETE, String.class, forExpand(tagTerm.getId()), queryParams, null);
             final DeleteResponse<Term> termDeleteResponse = CustomRenderableParser.parseDeleteResponse(tResponseEntity, Term.class);
             final Term previous = termDeleteResponse.getPrevious();
-            LOG.debug("Deleted term @{}/'{}' of taxonomy '{}': {}", previous.getId(), previous.getName(), previous.getTaxonomySlug(), termDeleteResponse.getDeleted());
+            LOG.debug("Deleted term @{}/'{}' of taxonomy '{}': {}", previous.getId(), previous.getName(), previous.getTaxonomySlug(),
+                      termDeleteResponse.getDeleted());
             return previous;
         } catch (HttpClientErrorException e) {
             if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
@@ -806,7 +832,8 @@ public class Client implements Wordpress {
     @Override
     public User deleteUser(User user, Long reassign) {
         try {
-            return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()), ImmutableMap.of(FORCE, true, REASSIGN, (nonNull(reassign) ? reassign : 1L)), null).getBody();
+            return doExchange1(Request.USER, HttpMethod.DELETE, User.class, forExpand(user.getId()),
+                               ImmutableMap.of(FORCE, true, REASSIGN, (nonNull(reassign) ? reassign : 1L)), null).getBody();
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             final WpApiParsedException of = WpApiParsedException.of(e);
             LOG.error("Error Deleting user {}", user.getId(), of);
@@ -979,12 +1006,14 @@ public class Client implements Wordpress {
         return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, mediaType);
     }
 
-    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body) {
+    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams,
+                                                 B body) {
         return doExchange1(context, method, typeRef, buildAndExpand, queryParams, body, null);
     }
 
-    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams, B body,
-              @Nullable MediaType mediaType) {
+    private <T, B> ResponseEntity<T> doExchange1(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand, Map<String, Object> queryParams,
+                                                 B body,
+                                                 @Nullable MediaType mediaType) {
         final UriComponentsBuilder builder = Request.of(context).usingClient(this);
 
         ofNullable(queryParams).ifPresent(params -> params.forEach(builder::queryParam));
@@ -1011,5 +1040,12 @@ public class Client implements Wordpress {
 
     static Object[] forExpand(Object... values) {
         return values;
+    }
+
+    /**
+     * need a getter for getBaseUrl as it is used in this function (and eclipse compiler doesn't like it being used directly cause it says it's not initalised
+     */
+    public String getBaseUrl() {
+        return baseUrl;
     }
 }
