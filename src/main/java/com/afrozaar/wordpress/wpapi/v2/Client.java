@@ -1,36 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
-import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
-import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
-import static java.lang.String.format;
-import static java.net.URLDecoder.decode;
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static java.util.Optional.ofNullable;
-
 import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
-import com.afrozaar.wordpress.wpapi.v2.exception.ExceptionCodes;
-import com.afrozaar.wordpress.wpapi.v2.exception.InvalidParameterException;
-import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.ParsedRestException;
-import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
-import com.afrozaar.wordpress.wpapi.v2.exception.PostNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UserEmailAlreadyExistsException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
-import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
-import com.afrozaar.wordpress.wpapi.v2.model.DeleteResponse;
-import com.afrozaar.wordpress.wpapi.v2.model.Link;
-import com.afrozaar.wordpress.wpapi.v2.model.Media;
-import com.afrozaar.wordpress.wpapi.v2.model.Page;
-import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
-import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
-import com.afrozaar.wordpress.wpapi.v2.model.RenderableField;
-import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
-import com.afrozaar.wordpress.wpapi.v2.model.Term;
-import com.afrozaar.wordpress.wpapi.v2.model.User;
+import com.afrozaar.wordpress.wpapi.v2.exception.*;
+import com.afrozaar.wordpress.wpapi.v2.model.*;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.CustomRenderableParser;
@@ -38,16 +10,18 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
 import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-
+import org.apache.commons.beanutils.BeanUtils;
+import org.assertj.core.util.VisibleForTesting;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
@@ -66,35 +40,26 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.beanutils.BeanUtils;
-import org.assertj.core.util.VisibleForTesting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.Nullable;
 import javax.xml.transform.Source;
-
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
+import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
+import static java.lang.String.format;
+import static java.net.URLDecoder.decode;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Optional.ofNullable;
 
 public class Client implements Wordpress {
     private static final String DEFAULT_CONTEXT = "/wp-json/wp/v2";
@@ -148,7 +113,9 @@ public class Client implements Wordpress {
         this.debug = debug;
         this.permalinkEndpoint = usePermalinkEndpoint;
 
-        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json().featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT).build();
+        final ObjectMapper emptyArrayAsNullObjectMapper = Jackson2ObjectMapperBuilder.json()
+                .featuresToEnable(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT)
+                .featuresToEnable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY).build();
 
         List<HttpMessageConverter<?>> messageConverters = new ArrayList<>();
         messageConverters.add(new ByteArrayHttpMessageConverter());
