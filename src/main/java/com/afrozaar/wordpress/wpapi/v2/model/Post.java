@@ -1,14 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.*;
 
 import javax.annotation.Generated;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +38,7 @@ import java.util.Map;
 public class Post {
 
     @JsonProperty("author")
-    private List<Long> author = new ArrayList<>();
+    private List<Number> author = new ArrayList<>();
     @JsonProperty("content")
     private Content content;
     @JsonProperty("status")
@@ -102,10 +96,10 @@ public class Post {
     }
 
     public Long getAuthor() {
-        return author.size() > 0 ? author.get(0) : null;
+        return author.size() > 0 ? author.get(0).longValue() : null;
     }
 
-    public void setAuthor(List<Long> author) {
+    public void setAuthor(List<Number> author) {
         this.author = author;
     }
 
