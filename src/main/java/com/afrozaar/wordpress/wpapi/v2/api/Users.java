@@ -1,17 +1,16 @@
 package com.afrozaar.wordpress.wpapi.v2.api;
 
-import static java.util.Objects.nonNull;
-
 import com.afrozaar.wordpress.wpapi.v2.exception.UserNotFoundException;
 import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
 import com.afrozaar.wordpress.wpapi.v2.model.User;
-
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+
+import static java.util.Objects.nonNull;
 
 public interface Users {
     List<User> getUsers();
@@ -39,14 +38,13 @@ public interface Users {
         map.add("last_name", input.getLastName());
         map.add("name", input.getName());
         map.add("nickname", input.getNickname());
-        input.getRoles().forEach(role -> map.add("role", role));
+        input.getRoles().forEach(role -> map.add("roles", role));
 
         Function<String, Optional<String>> nullableStringOptional = stringInput -> (nonNull(stringInput) && stringInput.trim().length() > 0)
                 ? Optional.of(stringInput)
                 : Optional.empty();
 
-        nullableStringOptional.apply(input.getSlug())
-                .ifPresent(slug -> map.add("slug", slug));
+        nullableStringOptional.apply(input.getSlug()).ifPresent(slug -> map.add("slug", slug));
 
         return map;
     };

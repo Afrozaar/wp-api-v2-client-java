@@ -1,5 +1,34 @@
 package com.afrozaar.wordpress.wpapi.v2;
 
+import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
+import com.afrozaar.wordpress.wpapi.v2.api.Posts;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
+import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
+import com.afrozaar.wordpress.wpapi.v2.exception.*;
+import com.afrozaar.wordpress.wpapi.v2.model.*;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
+import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
+import com.afrozaar.wordpress.wpapi.v2.request.Request;
+import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
+import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
+import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
+import org.apache.commons.lang.RandomStringUtils;
+import org.junit.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.web.client.HttpServerErrorException;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
+
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.IntStream;
+
 import static com.afrozaar.wordpress.wpapi.v2.api.Taxonomies.CATEGORY;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ContentBuilder.aContent;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.ExcerptBuilder.anExcerpt;
@@ -11,59 +40,10 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.TitleBuilder.aTitle;
 import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
 import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static java.lang.String.format;
 import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
-
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
-
-import com.afrozaar.wordpress.wpapi.v2.api.Contexts;
-import com.afrozaar.wordpress.wpapi.v2.api.Posts;
-import com.afrozaar.wordpress.wpapi.v2.config.ClientConfig;
-import com.afrozaar.wordpress.wpapi.v2.config.ClientFactory;
-import com.afrozaar.wordpress.wpapi.v2.exception.PageNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.PostCreateException;
-import com.afrozaar.wordpress.wpapi.v2.exception.TermNotFoundException;
-import com.afrozaar.wordpress.wpapi.v2.exception.UsernameAlreadyExistsException;
-import com.afrozaar.wordpress.wpapi.v2.exception.WpApiParsedException;
-import com.afrozaar.wordpress.wpapi.v2.model.Media;
-import com.afrozaar.wordpress.wpapi.v2.model.Page;
-import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.model.PostMeta;
-import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
-import com.afrozaar.wordpress.wpapi.v2.model.Taxonomy;
-import com.afrozaar.wordpress.wpapi.v2.model.Term;
-import com.afrozaar.wordpress.wpapi.v2.model.User;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.PostBuilder;
-import com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder;
-import com.afrozaar.wordpress.wpapi.v2.request.Request;
-import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
-import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
-import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
-
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
-import org.springframework.web.client.HttpServerErrorException;
-
-import org.apache.commons.lang.RandomStringUtils;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.LogMessageWaitStrategy;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.IntStream;
 
 /**
  * @author johan
@@ -764,12 +744,11 @@ public class ClientLiveIT {
                 .build();
         final User createdUser = client.createUser(userRequest, randomAlphabetic(3), RandomStringUtils.randomAlphanumeric(3));
 
-        LOG.debug("createdUser: {}", createdUser);
-
         assertThat(userRequest.getEmail()).isEqualTo(createdUser.getEmail());
         assertThat(userRequest.getDescription()).isEqualTo(createdUser.getDescription());
         assertThat(userRequest.getFirstName()).isEqualTo(createdUser.getFirstName());
         assertThat(userRequest.getLastName()).isEqualTo(createdUser.getLastName());
+        assertThat(userRequest.getRoles()).containsAll(createdUser.getRoles());
         assertThat(createdUser.getId()).isNotNull();
     }
 

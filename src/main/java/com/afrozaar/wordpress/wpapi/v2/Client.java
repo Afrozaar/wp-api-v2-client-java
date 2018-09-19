@@ -10,20 +10,16 @@ import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.AuthUtil;
 import com.afrozaar.wordpress.wpapi.v2.util.MavenProperties;
 import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-
 import org.apache.commons.beanutils.BeanUtils;
 import org.assertj.core.util.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestFactory;
@@ -45,7 +41,6 @@ import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
-
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -59,7 +54,6 @@ import java.util.stream.Stream;
 
 import static com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor.extractField;
 import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
-
 import static java.lang.String.format;
 import static java.net.URLDecoder.decode;
 import static java.util.Objects.isNull;
@@ -200,7 +194,7 @@ public class Client implements Wordpress {
     @Override
     public Post deletePost(Post post) {
         final ResponseEntity<Post> exchange = doExchange1(Request.POST, HttpMethod.DELETE, Post.class, forExpand(post.getId()), null,
-                                                          null);// Deletion of a post returns the post's data before removing it.
+                null);// Deletion of a post returns the post's data before removing it.
         Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
         return exchange.getBody();
     }
@@ -215,7 +209,7 @@ public class Client implements Wordpress {
     @Override
     public Media createMedia(Media media, Resource resource) throws WpApiParsedException {
         Objects.requireNonNull(resource.getFilename(),
-                               "The resource used to create a media item does not provide a filename. Please supply a Resource that overrides getFilename().");
+                "The resource used to create a media item does not provide a filename. Please supply a Resource that overrides getFilename()");
 
         try {
             final MultiValueMap<String, Object> uploadMap = new LinkedMultiValueMap<>();
@@ -838,6 +832,20 @@ public class Client implements Wordpress {
             final WpApiParsedException of = WpApiParsedException.of(e);
             LOG.error("Error Deleting user {}", user.getId(), of);
             throw new RuntimeException(of);
+        }
+    }
+
+    @Override
+    public Object getCustom(String customPath, String context, Class clazz) throws NotFoundException {
+        final Map<String, Object> params = context == null ? null : ImmutableMap.of(CONTEXT_, context);
+        try {
+            return doExchange1(customPath, HttpMethod.GET, clazz, new Object[0], params, null).getBody();
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode().is4xxClientError() && e.getStatusCode().value() == 404) {
+                throw new NotFoundException(e);
+            } else {
+                throw e;
+            }
         }
     }
 
