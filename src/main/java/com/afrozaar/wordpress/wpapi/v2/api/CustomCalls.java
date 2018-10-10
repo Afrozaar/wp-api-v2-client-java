@@ -15,6 +15,8 @@ public interface CustomCalls {
 
     Object getCustom(String customPath, String context, Class clazz) throws NotFoundException;
 
+    void putCustom(String customPath);
+
     <T, B> ResponseEntity<T> doCustomExchange(String context, HttpMethod method, Class<T> typeRef, Object[] buildAndExpand,
                                                      Map<String, Object> queryParams, B body, @Nullable MediaType mediaType);
 }

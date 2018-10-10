@@ -850,6 +850,11 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public void putCustom(String customPath) {
+        doExchange1(customPath, HttpMethod.PUT, null, new Object[0], null, null).getBody();
+    }
+
+    @Override
     public User updateUser(User user) {
         return doExchange1(Request.USER, HttpMethod.POST, User.class, forExpand(user.getId()), null, userMap.apply(user)).getBody();
     }
