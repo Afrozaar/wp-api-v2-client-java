@@ -8,11 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.function.Function;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class PagedResponse<T> {
 
@@ -125,10 +126,15 @@ public class PagedResponse<T> {
         }
 
         public Builder<BT> withPages(HttpHeaders headers) {
-            headers.get(Strings.HEADER_TOTAL_PAGES).stream()
+
+            getHeaders(headers, Strings.HEADER_TOTAL_PAGES).stream()
                     .findFirst()
                     .ifPresent(pages -> Builder.this.withPages(Integer.valueOf(pages)));
             return this;
+        }
+
+        private List<String> getHeaders(HttpHeaders headers, String headerTotalPages) {
+            return Optional.ofNullable(headers.get(headerTotalPages)).orElse(headers.get(headerTotalPages.toLowerCase()));
         }
     }
 }
