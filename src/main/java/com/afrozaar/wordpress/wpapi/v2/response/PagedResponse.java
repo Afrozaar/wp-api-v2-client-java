@@ -14,6 +14,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public class PagedResponse<T> {
 
@@ -126,15 +127,12 @@ public class PagedResponse<T> {
         }
 
         public Builder<BT> withPages(HttpHeaders headers) {
-
-            getHeaders(headers, Strings.HEADER_TOTAL_PAGES).stream()
-                    .findFirst()
-                    .ifPresent(pages -> Builder.this.withPages(Integer.valueOf(pages)));
+            Optional<String> totalPages = headers.keySet().stream().filter(x -> Strings.HEADER_TOTAL_PAGES.compareToIgnoreCase(x) == 0).findFirst();
+            LOG.debug("found pages {} from headers {}", totalPages, headers);
+            Stream<String> totalPageHeader = totalPages.map(x -> headers.get(x)).map(x -> x.stream()).orElse(Stream.empty());
+            totalPageHeader.findFirst().ifPresent(pages -> Builder.this.withPages(Integer.valueOf(pages)));
             return this;
         }
 
-        private List<String> getHeaders(HttpHeaders headers, String headerTotalPages) {
-            return Optional.ofNullable(headers.get(headerTotalPages)).orElse(headers.get(headerTotalPages.toLowerCase()));
-        }
     }
 }
