@@ -1,5 +1,6 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.afrozaar.wordpress.wpapi.v2.util.FieldExtractor;
 import com.fasterxml.jackson.annotation.*;
 
 import javax.annotation.Generated;
@@ -38,7 +39,7 @@ import java.util.Map;
 public class Post {
 
     @JsonProperty("author")
-    private List<Number> author = new ArrayList<>();
+    private String author;
     @JsonProperty("content")
     private Content content;
     @JsonProperty("status")
@@ -96,10 +97,14 @@ public class Post {
     }
 
     public Long getAuthor() {
-        return author.size() > 0 ? author.get(0).longValue() : null;
+        return FieldExtractor.getLongValue(author);
     }
 
-    public void setAuthor(List<Number> author) {
+    public String getAuthorString() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
         this.author = author;
     }
 

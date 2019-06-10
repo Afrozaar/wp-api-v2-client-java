@@ -1,23 +1,17 @@
 package com.afrozaar.wordpress.wpapi.v2.model.builder;
 
-import static java.util.stream.Collectors.toList;
-
-import com.afrozaar.wordpress.wpapi.v2.model.Content;
-import com.afrozaar.wordpress.wpapi.v2.model.Excerpt;
-import com.afrozaar.wordpress.wpapi.v2.model.Guid;
-import com.afrozaar.wordpress.wpapi.v2.model.Post;
-import com.afrozaar.wordpress.wpapi.v2.model.Term;
-import com.afrozaar.wordpress.wpapi.v2.model.Title;
+import com.afrozaar.wordpress.wpapi.v2.model.*;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author johan
  */
 public class PostBuilder {
-    private Long author;
+    private String author;
     private Long id;
     private Title title;
     private com.afrozaar.wordpress.wpapi.v2.model.Links Links;
@@ -44,7 +38,7 @@ public class PostBuilder {
         return new PostBuilder();
     }
 
-    public PostBuilder withAuthor(Long author) {
+    public PostBuilder withAuthor(String author) {
         this.author = author;
         return this;
     }
@@ -184,7 +178,7 @@ public class PostBuilder {
 
     public Post build() {
         Post post = new Post();
-        post.setAuthor(Collections.singletonList(author));
+        post.setAuthor(author);
         post.setId(id);
         post.setTitle(title);
         post.setLinks(Links);

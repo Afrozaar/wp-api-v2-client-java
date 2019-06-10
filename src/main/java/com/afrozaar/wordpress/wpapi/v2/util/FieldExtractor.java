@@ -24,4 +24,12 @@ public class FieldExtractor {
         return Optional.ofNullable(func.apply(source))
                 .map(RenderableField::getRendered);
     }
+
+    public static Long getLongValue(String field) {
+        try {
+            return Long.valueOf(field);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
