@@ -21,6 +21,9 @@ public abstract class Request {
     public static final String POST_TERM = "/posts/{postId}/{taxonomy}/{termId}";
     public static final String POST_TAGS = "/tags?post={postId}";
 
+    public static final String COMMENTS = "/comments";
+    public static final String COMMENT = "/comments/{id}";
+
     public static final String METAS = "/posts/{postId}/meta";
     public static final String META = "/posts/{postId}/meta/{metaId}";
     public static final String CUSTOM_POST_METAS = "/{postType}/{postId}/meta";
