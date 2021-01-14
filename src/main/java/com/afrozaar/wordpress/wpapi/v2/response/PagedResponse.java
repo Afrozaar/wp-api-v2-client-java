@@ -40,15 +40,6 @@ public class PagedResponse<T> {
         return total;
     }
 
-//    public PagedResponse(Class<T> clazz, String self, String next, String previous, int pages, List<T> list) {
-//        this.clazz = clazz;
-//        this.self = self;
-//        this.next = next;
-//        this.previous = previous;
-//        this.pages = pages;
-//        this.list = list;
-//    }
-
     public PagedResponse(Class<T> clazz, String self, String next, String previous, int pages, List<T> list, int total) {
         this.clazz = clazz;
         this.self = self;
