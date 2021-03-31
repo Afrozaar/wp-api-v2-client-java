@@ -253,6 +253,21 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public List<Post> getCategoryPosts(Long categoryId) {
+//        final ResponseEntity<Post[]> exchange = doExchange1(Request.CATEGORY_POSTS, HttpMethod.GET, Post[].class, forExpand(categoryId), null, null);
+//        return Arrays.asList(exchange.getBody());
+        List<Post> collected = new ArrayList<>();
+        PagedResponse<Post> pagedResponse = this.getPagedResponse(Request.CATEGORY_POSTS, Post.class, String.valueOf(categoryId), context);
+        collected.addAll(pagedResponse.getList());
+        while (pagedResponse.hasNext()) {
+            pagedResponse = this.traverse(pagedResponse, PagedResponse.NEXT);
+            collected.addAll(pagedResponse.getList());
+        }
+        return collected;
+
+    }
+
+    @Override
     public List<Media> getMedia() {
         List<Media> collected = new ArrayList<>();
         PagedResponse<Media> pagedResponse = this.getPagedResponse(Request.MEDIAS, Media.class);
@@ -271,7 +286,7 @@ public class Client implements Wordpress {
 
     @Override
     public Media getMedia(Long id, @Nullable String context) {
-        final ImmutableMap<String, Object> queryParams = ImmutableMap.of(CONTEXT_, ofNullable(context).orElse(Contexts.EDIT));
+        final ImmutableMap<String, Object> queryParams = ImmutableMap.of(CONTEXT_, ofNullable(context).orElse(Contexts.VIEW));
         return CustomRenderableParser.parse(doExchange1(Request.MEDIA, HttpMethod.GET, String.class, forExpand(id), queryParams, null), Media.class);
     }
 

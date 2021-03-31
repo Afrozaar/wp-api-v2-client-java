@@ -7,6 +7,7 @@ import com.afrozaar.wordpress.wpapi.v2.model.PostStatus;
 import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 
+import java.util.List;
 import java.util.Map;
 
 public interface Posts {
@@ -48,6 +49,8 @@ public interface Posts {
     Post updatePostField(Long postId, String field, Object value);
 
     Post deletePost(Post post);
+
+    List<Post> getCategoryPosts(Long categoryId);
 
     /**
      * Search request just returning the first page of posts.

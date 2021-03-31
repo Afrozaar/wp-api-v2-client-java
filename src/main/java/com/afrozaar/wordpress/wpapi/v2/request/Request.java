@@ -1,11 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.request;
 
-import static java.util.stream.Collectors.toMap;
-
 import com.afrozaar.wordpress.wpapi.v2.Client;
-
 import com.google.common.collect.ImmutableMap;
-
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -13,6 +9,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.stream.Collectors.toMap;
 
 public abstract class Request {
     public static final String POSTS = "/posts";
@@ -43,6 +41,7 @@ public abstract class Request {
     public static final String TAG = "/tags/{tagId}";
     public static final String CATEGORIES = "/categories";
     public static final String CATEGORY = "/categories/{categoryId}";
+    public static final String CATEGORY_POSTS = "/posts?categories={categoryId}";
     public static final String QP_CONTEXT = "context";
     public static final String QP_ORDER_BY = "orderby";
     public static final String QP_ORDER = "order";
