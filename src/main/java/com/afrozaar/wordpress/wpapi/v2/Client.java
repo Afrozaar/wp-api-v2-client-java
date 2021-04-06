@@ -865,6 +865,18 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public <T> List<T> getCustomObjects(String customPath, String context, Class clazz) throws NotFoundException {
+        List<T> collected = new ArrayList<>();
+        PagedResponse<T> response = this.getPagedResponse(customPath, clazz, context);
+        collected.addAll(response.getList());
+        while (response.hasNext()) {
+            response = traverse(response, PagedResponse.NEXT);
+            collected.addAll(response.getList());
+        }
+        return collected;
+    }
+
+    @Override
     public void putCustom(String customPath) {
         doExchange1(customPath, HttpMethod.PUT, null, new Object[0], null, null).getBody();
     }

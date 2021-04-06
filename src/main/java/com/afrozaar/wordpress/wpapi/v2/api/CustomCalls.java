@@ -6,6 +6,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -14,6 +15,8 @@ import java.util.Map;
 public interface CustomCalls {
 
     Object getCustom(String customPath, String context, Class clazz) throws NotFoundException;
+
+    <T> List<T> getCustomObjects(String customPath, String context, Class clazz) throws NotFoundException;
 
     void putCustom(String customPath);
 
