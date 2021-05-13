@@ -17,6 +17,8 @@ public interface Users {
 
     List<User> getUsers(String context);
 
+    List<User> getUsersWithRole(String role, String contextType);
+
     User createUser(User user, String username, String password) throws WpApiParsedException;
 
     User getUser(long userId) throws UserNotFoundException;

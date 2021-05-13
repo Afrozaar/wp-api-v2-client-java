@@ -22,6 +22,7 @@ import java.util.Map;
         "sticky",
         "password",
         "format",
+        "meta",
         "link",
         "ping_status",
         "excerpt",
@@ -58,6 +59,8 @@ public class Post {
     private String password;
     @JsonProperty("format")
     private String format;
+    @JsonProperty("meta")
+    private Map<String, List<String>> meta;
     @JsonProperty("link")
     private String link;
     @JsonProperty("ping_status")
@@ -196,6 +199,14 @@ public class Post {
     @JsonProperty("format")
     public void setFormat(String format) {
         this.format = format;
+    }
+
+    public Map<String, List<String>> getMeta() {
+        return meta;
+    }
+
+    public void setMeta(Map<String, List<String>> meta) {
+        this.meta = meta;
     }
 
     @JsonProperty("link")

@@ -1,0 +1,235 @@
+{
+  "id": 98,
+  "date": "2020-08-04T11:47:32",
+  "date_gmt": "2020-08-04T09:47:32",
+  "guid": {
+    "rendered": "https://imiginodev.wpengine.com/?p=98"
+  },
+  "modified": "2020-08-04T14:41:32",
+  "modified_gmt": "2020-08-04T12:41:32",
+  "slug": "jems",
+  "status": "publish",
+  "type": "post",
+  "link": "https://imiginodev.wpengine.com/jems/",
+  "title": {
+    "rendered": "Jems"
+  },
+  "content": {
+    "rendered": "",
+    "protected": false
+  },
+  "excerpt": {
+    "rendered": "",
+    "protected": false
+  },
+  "author": 3,
+  "featured_media": 99,
+  "comment_status": "open",
+  "ping_status": "open",
+  "sticky": false,
+  "template": "",
+  "format": "standard",
+  "meta": {
+    "_edit_lock": [
+      "1600086490:6"
+    ],
+    "_edit_last": [
+      "3"
+    ],
+    "_thumbnail_id": [
+      "99"
+    ],
+    "player_group_name": [
+      "Clarion"
+    ],
+    "player_download_enabled": [
+      ""
+    ],
+    "player_watermark_enabled": [
+      "true"
+    ],
+    "player_vast_enabled": [
+      ""
+    ],
+    "player_vast_tag": [
+      ""
+    ],
+    "player_watermark_image": [
+      "https://clarion-cdn.imigino.com/Jems.svg"
+    ],
+    "player_watermark_position": [
+      "top-left"
+    ],
+    "player_ga_enabled": [
+      ""
+    ],
+    "player_ga_code": [
+      ""
+    ],
+    "player_parsely_enabled": [
+      ""
+    ],
+    "player_parsely_code": [
+      ""
+    ],
+    "player_brand_enabled": [
+      ""
+    ],
+    "player_brand_title": [
+      ""
+    ],
+    "player_brand_image": [
+      ""
+    ],
+    "player_brand_destination": [
+      ""
+    ],
+    "player_autoplay_enabled": [
+      ""
+    ],
+    "player_seek_enabled": [
+      "true"
+    ],
+    "player_seek_forward": [
+      ""
+    ],
+    "player_seek_backward": [
+      ""
+    ],
+    "player_object_schema_enabled": [
+      ""
+    ],
+    "player_object_schema_organization": [
+      ""
+    ],
+    "player_not_fluid": [
+      ""
+    ],
+    "player_preload": [
+      "auto"
+    ],
+    "player_standalone_enabled": [
+      "true"
+    ],
+    "player_share_enabled": [
+      ""
+    ],
+    "player_share_facebook_enabled": [
+      ""
+    ],
+    "player_share_fbmetaid": [
+      ""
+    ],
+    "player_share_twitter_enabled": [
+      ""
+    ],
+    "player_share_tumblr_enabled": [
+      ""
+    ],
+    "player_share_pinterest_enabled": [
+      ""
+    ],
+    "player_share_linkedin_enabled": [
+      ""
+    ],
+    "player_endcap_enabled": [
+      ""
+    ],
+    "player_playlist": [
+      ""
+    ],
+    "player_playlist_enabled_static": [
+      ""
+    ],
+    "player_playlist_static_urls": [
+      ""
+    ],
+    "player_playlist_enabled_bibliodam": [
+      ""
+    ],
+    "player_playlist_bibliodam": [
+      ""
+    ],
+    "player_playlist_bibliodam_key": [
+      ""
+    ],
+    "player_playlist_vertical": [
+      ""
+    ],
+    "player_playlist_horizontal": [
+      ""
+    ],
+    "player_playlist_none": [
+      ""
+    ]
+  },
+  "categories": [
+    1
+  ],
+  "tags": [],
+  "_links": {
+    "self": [
+      {
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/posts/98"
+      }
+    ],
+    "collection": [
+      {
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/posts"
+      }
+    ],
+    "about": [
+      {
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/types/post"
+      }
+    ],
+    "author": [
+      {
+        "embeddable": true,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/users/3"
+      }
+    ],
+    "replies": [
+      {
+        "embeddable": true,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/comments?post=98"
+      }
+    ],
+    "version-history": [
+      {
+        "count": 0,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/posts/98/revisions"
+      }
+    ],
+    "wp:featuredmedia": [
+      {
+        "embeddable": true,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/media/99"
+      }
+    ],
+    "wp:attachment": [
+      {
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/media?parent=98"
+      }
+    ],
+    "wp:term": [
+      {
+        "taxonomy": "category",
+        "embeddable": true,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/categories?post=98"
+      },
+      {
+        "taxonomy": "post_tag",
+        "embeddable": true,
+        "href": "https://imiginodev.wpengine.com/wp-json/wp/v2/tags?post=98"
+      }
+    ],
+    "curies": [
+      {
+        "name": "wp",
+        "href": "https://api.w.org/{rel}",
+        "templated": true
+      }
+    ]
+  }
+}

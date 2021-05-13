@@ -36,6 +36,7 @@ public abstract class Request {
     public static final String PAGE = "/pages/{pageId}";
     public static final String USERS = "/users";
     public static final String USERS_WITH_CONTEXT = "/users?context={context}";
+    public static final String USERS_WITH_ROLE = "/users?roles={role}&context={context}";
     public static final String USER = "/users/{userId}";
     public static final String TAGS = "/tags";
     public static final String TAG = "/tags/{tagId}";

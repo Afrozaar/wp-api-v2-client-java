@@ -43,6 +43,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -85,6 +86,7 @@ public class Client implements Wordpress {
     public final boolean debug;
     public final boolean permalinkEndpoint;
     private Boolean canDeleteMetaViaPost = null;
+    public Integer perPage;
 
     {
         Properties properties = MavenProperties.getProperties();
@@ -130,6 +132,10 @@ public class Client implements Wordpress {
             restTemplate.setRequestFactory(requestFactory);
         }
 
+    }
+
+    public void setPerPage(Integer perPage) {
+        this.perPage = perPage;
     }
 
     @Override
@@ -786,6 +792,18 @@ public class Client implements Wordpress {
         return collected;
     }
 
+    @Override
+    public List<User> getUsersWithRole(final String role, final String contextType) {
+        List<User> collected = new ArrayList<>();
+        PagedResponse<User> usersResponse = this.getPagedResponse(Request.USERS_WITH_ROLE, User.class, role, contextType);
+        collected.addAll(usersResponse.getList());
+        while (usersResponse.hasNext()) {
+            usersResponse = traverse(usersResponse, PagedResponse.NEXT);
+            collected.addAll(usersResponse.getList());
+        }
+        return collected;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public User createUser(User user, String username, String password) throws WpApiParsedException {
@@ -889,15 +907,34 @@ public class Client implements Wordpress {
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(String context, Class<T> typeRef, String... expandParams) {
-        final URI uri = Request.of(context).usingClient(this).buildAndExpand((Object[]) expandParams).toUri();
+        URI uri = Request.of(context).usingClient(this).buildAndExpand((Object[]) expandParams).toUri();
+        if (perPage != null) {
+            try {
+                uri = adjustPerPage(uri);
+            } catch (URISyntaxException e) {
+                LOG.error("Error setting per_page request parameter: " + e.getMessage());
+            }
+        }
         return getPagedResponse(uri, typeRef);
     }
+
+    private URI adjustPerPage(URI uri) throws URISyntaxException {
+        String perPageQuery = "per_page=" + this.perPage;
+        String newQuery = uri.getQuery();
+        if (newQuery == null) {
+            newQuery = perPageQuery;
+        } else {
+            newQuery += "&" + perPageQuery;
+        }
+
+        return new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), newQuery, uri.getFragment());
+    }
+
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> PagedResponse<T> getPagedResponse(final URI uri, Class<T> typeRef) {
         try {
-
             final ResponseEntity<String> exchange = doExchange0(HttpMethod.GET, uri, String.class, null, null);
             final String body1 = exchange.getBody();
             //LOG.debug("about to parse response for paged response {}: {}", typeRef, body1);

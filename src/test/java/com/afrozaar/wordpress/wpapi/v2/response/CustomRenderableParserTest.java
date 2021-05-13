@@ -1,11 +1,8 @@
 package com.afrozaar.wordpress.wpapi.v2.response;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.afrozaar.wordpress.wpapi.v2.model.DeleteResponse;
 import com.afrozaar.wordpress.wpapi.v2.model.Media;
 import com.afrozaar.wordpress.wpapi.v2.model.Term;
-
 import org.junit.Test;
 
 import java.io.IOException;
@@ -14,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CustomRenderableParserTest {
 
