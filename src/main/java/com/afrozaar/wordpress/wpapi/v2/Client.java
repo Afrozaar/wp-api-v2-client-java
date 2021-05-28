@@ -164,6 +164,11 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post getCustomPost(Long id, String requestPath, String context) throws PostNotFoundException {
+        return getPost(id, requestPath, context);
+    }
+
+    @Override
     public Post getPost(Long id) throws PostNotFoundException {
         return getPost(id, Contexts.VIEW);
     }
