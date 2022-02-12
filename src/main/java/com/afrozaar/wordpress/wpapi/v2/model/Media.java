@@ -20,6 +20,8 @@ public class Media {
     private Guid guid;
     @JsonProperty("date")
     private String date;
+    @JsonProperty("date_gmt")
+    private String dateGmt;
 
     @JsonProperty("modified")
     private String modified;
@@ -181,6 +183,14 @@ public class Media {
         this.date = date;
     }
 
+    public String getDateGmt() {
+        return dateGmt;
+    }
+
+    public void setDateGmt(String dateGmt) {
+        this.dateGmt = dateGmt;
+    }
+
     public Guid getGuid() {
         return guid;
     }
@@ -221,6 +231,7 @@ public class Media {
                 ", author=" + author +
                 ", guid=" + guid +
                 ", date='" + date + '\'' +
+                ", dateGmt='" + dateGmt + '\'' +
                 ", modified='" + modified + '\'' +
                 ", modifiedGmt='" + modifiedGmt + '\'' +
                 ", slug='" + slug + '\'' +
