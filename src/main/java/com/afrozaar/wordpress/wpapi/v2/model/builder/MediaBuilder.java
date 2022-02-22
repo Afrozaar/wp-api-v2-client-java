@@ -13,6 +13,7 @@ public class MediaBuilder {
     private int author;
     private Guid guid;
     private String date;
+    private String dateGmt;
     private String modified;
     private String modifiedGmt;
     private String slug;
@@ -62,6 +63,11 @@ public class MediaBuilder {
 
     public MediaBuilder withDate(String date) {
         this.date = date;
+        return this;
+    }
+
+    public MediaBuilder withDateGmt(String dateGmt) {
+        this.dateGmt = dateGmt;
         return this;
     }
 
@@ -136,7 +142,7 @@ public class MediaBuilder {
     }
 
     public MediaBuilder but() {
-        return aMedia().withAltText(altText).withId(id).withMediaDetails(mediaDetails).withAuthor(author).withGuid(guid).withDate(date).withModified(modified).withModifiedGmt(modifiedGmt).withSlug(slug).withType(type).withLink(link).withTitle(title).withCommentStatus(commentStatus).withPingStatus(pingStatus).withCaption(caption).withDescription(description).withMediaType(mediaType).withPost(post).withSourceUrl(sourceUrl).withMimeType(mimeType);
+        return aMedia().withAltText(altText).withId(id).withMediaDetails(mediaDetails).withAuthor(author).withGuid(guid).withDate(date).withDateGmt(dateGmt).withModified(modified).withModifiedGmt(modifiedGmt).withSlug(slug).withType(type).withLink(link).withTitle(title).withCommentStatus(commentStatus).withPingStatus(pingStatus).withCaption(caption).withDescription(description).withMediaType(mediaType).withPost(post).withSourceUrl(sourceUrl).withMimeType(mimeType);
     }
 
     public Media build() {
@@ -147,6 +153,7 @@ public class MediaBuilder {
         media.setAuthor(author);
         media.setGuid(guid);
         media.setDate(date);
+        media.setDateGmt(dateGmt);
         media.setModified(modified);
         media.setModifiedGmt(modifiedGmt);
         media.setSlug(slug);
