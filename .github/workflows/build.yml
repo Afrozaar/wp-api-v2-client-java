@@ -1,0 +1,25 @@
+name: Build and test
+
+on: [ pull_request, push ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: [ 8, 11, 17 ]
+
+    name: Java ${{ matrix.java }} build
+
+    steps:
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.3.1
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Run docker image for integration tests
+        run: docker run -d --name wp_build_test -p 80:80 afrozaar/wordpress:latest
+
+      - run: mvn verify
