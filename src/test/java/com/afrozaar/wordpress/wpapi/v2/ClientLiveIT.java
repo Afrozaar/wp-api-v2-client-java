@@ -12,7 +12,7 @@ import com.afrozaar.wordpress.wpapi.v2.request.Request;
 import com.afrozaar.wordpress.wpapi.v2.request.SearchRequest;
 import com.afrozaar.wordpress.wpapi.v2.response.PagedResponse;
 import com.afrozaar.wordpress.wpapi.v2.util.Tuples.Tuple2;
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ import static com.afrozaar.wordpress.wpapi.v2.model.builder.UserBuilder.aUser;
 import static com.afrozaar.wordpress.wpapi.v2.request.SearchRequest.Builder.aSearchRequest;
 import static com.afrozaar.wordpress.wpapi.v2.util.Tuples.tuple;
 import static java.lang.String.format;
-import static org.apache.commons.lang.RandomStringUtils.randomAlphabetic;
+import static org.apache.commons.lang3.RandomStringUtils.randomAlphabetic;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
