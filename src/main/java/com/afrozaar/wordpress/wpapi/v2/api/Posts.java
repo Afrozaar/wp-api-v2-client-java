@@ -38,6 +38,8 @@ public interface Posts {
 
     Post getCustomPost(Long id, String postTypeName, String context) throws PostNotFoundException;
 
+    Post deleteCustomPost(Long id, String postTypeName);
+
     Post getPost(Long id) throws PostNotFoundException;
     Post getPost(Long id, String context) throws PostNotFoundException;
 

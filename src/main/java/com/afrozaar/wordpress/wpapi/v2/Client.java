@@ -159,6 +159,14 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Post deleteCustomPost(Long id, String customPostTypeName) {
+        final ResponseEntity<Post> exchange = doExchange1(Request.CUSTOM_POST, HttpMethod.DELETE, Post.class,
+                forExpand(customPostTypeName, id), null, null);// Deletion of a post returns the post's data before removing it.
+        Preconditions.checkArgument(exchange.getStatusCode().is2xxSuccessful());
+        return exchange.getBody();
+    }
+
+    @Override
     public Post getCustomPost(Long id, String requestPath) throws PostNotFoundException {
         return getPost(id, requestPath, Contexts.VIEW);
     }
@@ -265,8 +273,6 @@ public class Client implements Wordpress {
 
     @Override
     public List<Post> getCategoryPosts(Long categoryId) {
-//        final ResponseEntity<Post[]> exchange = doExchange1(Request.CATEGORY_POSTS, HttpMethod.GET, Post[].class, forExpand(categoryId), null, null);
-//        return Arrays.asList(exchange.getBody());
         List<Post> collected = new ArrayList<>();
         PagedResponse<Post> pagedResponse = this.getPagedResponse(Request.CATEGORY_POSTS, Post.class, String.valueOf(categoryId), context);
         collected.addAll(pagedResponse.getList());
@@ -275,7 +281,6 @@ public class Client implements Wordpress {
             collected.addAll(pagedResponse.getList());
         }
         return collected;
-
     }
 
     @Override

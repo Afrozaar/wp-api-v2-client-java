@@ -4,7 +4,7 @@
 
     <groupId>com.afrozaar.wordpress</groupId>
     <artifactId>wp-api-v2-client-java</artifactId>
-    <version>4.18.0-SNAPSHOT</version>
+    <version>4.19.0</version>
 
     <packaging>jar</packaging>
 
@@ -148,6 +148,11 @@
     </build>
 
     <dependencies>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr250-api</artifactId>
+            <version>1.0</version>
+        </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>

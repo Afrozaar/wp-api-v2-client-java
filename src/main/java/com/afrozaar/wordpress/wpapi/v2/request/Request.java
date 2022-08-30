@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toMap;
 public abstract class Request {
     public static final String POSTS = "/posts";
     public static final String POST = "/posts/{id}";
+    public static final String CUSTOM_POST = "/{postType}/{id}";
     public static final String POST_TERMS = "/posts/{postId}/{taxonomy}";
     public static final String POST_TERM = "/posts/{postId}/{taxonomy}/{termId}";
     public static final String POST_TAGS = "/tags?post={postId}";
