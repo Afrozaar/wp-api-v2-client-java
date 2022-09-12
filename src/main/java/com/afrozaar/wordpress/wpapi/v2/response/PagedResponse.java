@@ -30,14 +30,24 @@ public class PagedResponse<T> {
     final String previous;
     final int pages;
     final List<T> list;
+    final int total;
 
-    public PagedResponse(Class<T> clazz, String self, String next, String previous, int pages, List<T> list) {
+    public int getPages() {
+        return pages;
+    }
+
+    public int getTotal() {
+        return total;
+    }
+
+    public PagedResponse(Class<T> clazz, String self, String next, String previous, int pages, List<T> list, int total) {
         this.clazz = clazz;
         this.self = self;
         this.next = next;
         this.previous = previous;
         this.pages = pages;
         this.list = list;
+        this.total = total;
     }
 
     public boolean hasNext() {
@@ -88,6 +98,7 @@ public class PagedResponse<T> {
         private List<BT> posts;
         private int pages;
         private Class<BT> t1;
+        private int total;
 
         private Builder(Class<BT> t1) {
             this.t1 = t1;
@@ -118,7 +129,7 @@ public class PagedResponse<T> {
         }
 
         public PagedResponse<BT> build() {
-            return new PagedResponse<>(t1, self, next, previous, pages, posts);
+            return new PagedResponse<>(t1, self, next, previous, pages, posts, total);
         }
 
         public Builder<BT> withPages(int pages) {
@@ -126,11 +137,22 @@ public class PagedResponse<T> {
             return this;
         }
 
+        public Builder<BT> withPages(int pages, int total) {
+            this.pages = pages;
+            this.total = total;
+            return this;
+        }
+
         public Builder<BT> withPages(HttpHeaders headers) {
             Optional<String> totalPages = headers.keySet().stream().filter(x -> Strings.HEADER_TOTAL_PAGES.compareToIgnoreCase(x) == 0).findFirst();
-            LOG.debug("found pages {} from headers {}", totalPages, headers);
+            Optional<String> totalOptional = headers.keySet().stream().filter(x -> Strings.HEADER_TOTAL.compareToIgnoreCase(x) == 0).findFirst();
+            LOG.debug("found pages {}, total {} from headers {}", totalPages, totalOptional, headers);
             Stream<String> totalPageHeader = totalPages.map(x -> headers.get(x)).map(x -> x.stream()).orElse(Stream.empty());
-            totalPageHeader.findFirst().ifPresent(pages -> Builder.this.withPages(Integer.valueOf(pages)));
+            int page = Integer.valueOf(totalPageHeader.findFirst().get());
+
+            Stream<String> totalHeader = totalOptional.map(x -> headers.get(x)).map(x -> x.stream()).orElse(Stream.empty());
+            totalHeader.findFirst().ifPresent(total -> Builder.this.withPages(page, Integer.valueOf(total)));
+
             return this;
         }
 
