@@ -219,6 +219,13 @@ public class Client implements Wordpress {
     }
 
     @Override
+    public Comment updateComment(Comment comment) {
+        final ResponseEntity<Comment> exchange =
+            doExchange1(Request.COMMENT, HttpMethod.POST, Comment.class, forExpand(comment.getId()), ImmutableMap.of(), fieldsFrom(comment));
+        return exchange.getBody();
+    }
+
+    @Override
     public <T> PagedResponse<T> search(SearchRequest<T> search) {
         final URI uri = search.usingClient(this).build().toUri();
         return getPagedResponse(uri, search.getClazz());
@@ -1062,6 +1069,56 @@ public class Client implements Wordpress {
                         LOG.error("Error populating post fields builder for field '{}'", field.v1.getName(), e);
                     }
                 });
+
+        return builder.build();
+    }
+
+    @VisibleForTesting
+    @SuppressWarnings("unchecked")
+    protected Map<String, Object> fieldsFrom(Comment comment) {
+        ImmutableMap.Builder<String, Object> builder = new ImmutableMap.Builder<>();
+
+        BiConsumer<String, Object> biConsumer = (key, value) -> ofNullable(value).ifPresent(v -> builder.put(key, v));
+
+        List<String> processableFields = Arrays.asList(
+            "author",
+            "author_email",
+            "author_ip",
+            "author_name",
+            "author_url",
+            "author_user_agent",
+            "content",
+            "date",
+            "date_gmt",
+            "parent",
+            "post",
+            // "status",
+            "meta"
+        );
+
+        // types ignored for now: slug, status, type
+
+        Arrays.stream(comment.getClass().getDeclaredFields())
+            .filter(field -> field.getAnnotationsByType(JsonProperty.class).length > 0)
+            .map(field -> tuple(field, field.getAnnotationsByType(JsonProperty.class)[0]))
+            .filter(fieldTuple -> processableFields.contains(fieldTuple.v2.value()))
+            .forEach(field -> {
+                try {
+                    ReflectionUtils.makeAccessible(field.v1);
+                    Object theField = field.v1.get(comment);
+                    if (nonNull(theField)) {
+                        final Object value;
+                        if (theField instanceof RenderableField) {
+                            value = ((RenderableField) theField).getRendered();
+                        } else {
+                            value = theField;
+                        }
+                        biConsumer.accept(field.v2.value(), value);
+                    }
+                } catch (IllegalAccessException e) {
+                    LOG.error("Error populating comment fields builder for field '{}'", field.v1.getName(), e);
+                }
+            });
 
         return builder.build();
     }

@@ -1,5 +1,7 @@
 package com.afrozaar.wordpress.wpapi.v2.model;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -28,6 +30,8 @@ public class Term {
     private String taxonomySlug;
     @JsonProperty("parent")
     private Long parentId;
+    @JsonIgnore
+    private Map<String, String> additionalProps;
 
     @JsonProperty("meta") //TODO: Keep an eye on https://github.com/WP-API/WP-API/issues/2859 and fix once it is resolved.
     private List<Long> meta;
@@ -103,6 +107,11 @@ public class Term {
 
     public void setMeta(List<Long> meta) {
         this.meta = meta;
+    }
+
+    @JsonAnyGetter
+    public void setAdditionalProps(Map<String, String> additionalProps) {
+        this.additionalProps = additionalProps;
     }
 
     public Map<String, Object> asMap() {
