@@ -67,7 +67,7 @@ public class WordpressClientIT {
 
         final Map<String, Object> fieldMap = ((Client) wordpress).fieldsFrom(post);
 
-        assertThat(fieldMap).containsOnlyKeys("title", "modified_gmt", "format", "author");
+        assertThat(fieldMap).containsOnlyKeys("title", "modified_gmt", "format");
 
         LOG.debug("map to post: {}", fieldMap);
 

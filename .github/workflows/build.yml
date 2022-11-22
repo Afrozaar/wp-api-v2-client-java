@@ -1,0 +1,41 @@
+name: Build and test
+
+on: [ pull_request, push ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java: [ 8, 11, 17 ]
+
+    name: Java ${{ matrix.java }} build
+
+    steps:
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.6.0
+        with:
+          java-version: ${{ matrix.java }}
+
+      - name: Run docker image for integration tests
+        run: docker run -d --name wp_build_test -p 80:80 afrozaar/wordpress:latest
+
+      - name: Alter hosts file
+        run: |
+          HOSTN=`hostname`
+          FIL=/etc/hosts
+
+          echo "hostname: '$HOSTN'"
+
+          if grep -q "$HOSTN" $FIL; then
+            if grep -q 'docker.dev' $FIL; then
+              echo "SKIPPING. 'docker.dev' already exists in $FIL"
+            else
+              echo "ADDING 'docker.dev' entry to $FIL"
+              sudo sed -i "s#$HOSTN#$HOSTN docker.dev #g" $FIL
+            fi
+          fi
+
+      - run: mvn verify
