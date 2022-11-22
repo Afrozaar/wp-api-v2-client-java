@@ -15,7 +15,7 @@ jobs:
     steps:
 
       - name: Setup Maven Action
-        uses: s4u/setup-maven-action@v1.3.1
+        uses: s4u/setup-maven-action@v1.6.0
         with:
           java-version: ${{ matrix.java }}
 
